@@ -3,4 +3,5 @@
 
 pub mod calc;
 pub mod titlebar;
+pub mod types;
 pub mod ui;
