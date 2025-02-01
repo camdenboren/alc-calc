@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2025 Camden Boren
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[package]
+name = "alc-calc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+strum = "0.26.3"
+strum_macros = "0.26.4"
+gpui = { git = "https://github.com/zed-industries/zed" }
+gpui_macros = { git = "https://github.com/zed-industries/zed" }
