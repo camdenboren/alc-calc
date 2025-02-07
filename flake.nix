@@ -76,7 +76,7 @@
             version = "0.1.0";
             src = ./.;
 
-            cargoHash = "sha256-HhjYy2oCjgX/nCScmfcA+jkN+MFcRk78Jo5qPSZ6whc=";
+            cargoHash = "sha256-0mCN6uO10NJi/2+cWxkl2ZDa8KwQlK8Bn1fQXfY9ReY=";
             useFetchCargoVendor = true;
             buildInputs = deps;
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
