@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::calc::alc_weight;
+use crate::input::TextElement;
 use crate::titlebar::titlebar;
 use gpui::{
-    actions, div, fill, hsla, point, prelude::*, px, relative, rgb, rgba, size, white, AppContext,
-    Bounds, ClipboardItem, CursorStyle, ElementId, ElementInputHandler, FocusHandle, FocusableView,
-    GlobalElementId, LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent,
-    PaintQuad, Pixels, Point, ShapedLine, SharedString, Style, TextRun, UTF16Selection,
-    UnderlineStyle, View, ViewContext, ViewInputHandler, WindowContext,
+    actions, div, point, prelude::*, px, rgb, AppContext, Bounds, CursorStyle, FocusHandle,
+    FocusableView, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, Pixels, Point,
+    ShapedLine, SharedString, UTF16Selection, View, ViewContext, ViewInputHandler, WindowContext,
 };
 use std::env::consts::OS;
 use std::ops::Range;
@@ -24,27 +23,21 @@ actions!(
         SelectLeft,
         SelectRight,
         SelectAll,
-        Home,
-        End,
-        ShowCharacterPalette,
-        Paste,
-        Cut,
-        Copy,
     ]
 );
 
 pub struct UI {
     text: SharedString,
     num: u32,
-    focus_handle: FocusHandle,
-    content: SharedString,
-    placeholder: SharedString,
-    selected_range: Range<usize>,
-    selection_reversed: bool,
-    marked_range: Option<Range<usize>>,
-    last_layout: Option<ShapedLine>,
-    last_bounds: Option<Bounds<Pixels>>,
-    is_selecting: bool,
+    pub focus_handle: FocusHandle,
+    pub content: SharedString,
+    pub placeholder: SharedString,
+    pub selected_range: Range<usize>,
+    pub selection_reversed: bool,
+    pub marked_range: Option<Range<usize>>,
+    pub last_layout: Option<ShapedLine>,
+    pub last_bounds: Option<Bounds<Pixels>>,
+    pub is_selecting: bool,
 }
 
 impl UI {
@@ -94,14 +87,6 @@ impl UI {
         self.select_to(self.content.len(), cx)
     }
 
-    fn home(&mut self, _: &Home, cx: &mut ViewContext<Self>) {
-        self.move_to(0, cx);
-    }
-
-    fn end(&mut self, _: &End, cx: &mut ViewContext<Self>) {
-        self.move_to(self.content.len(), cx);
-    }
-
     fn backspace(&mut self, _: &Backspace, cx: &mut ViewContext<Self>) {
         if self.selected_range.is_empty() {
             self.select_to(self.previous_boundary(self.cursor_offset()), cx)
@@ -136,38 +121,12 @@ impl UI {
         }
     }
 
-    fn show_character_palette(&mut self, _: &ShowCharacterPalette, cx: &mut ViewContext<Self>) {
-        cx.show_character_palette();
-    }
-
-    fn paste(&mut self, _: &Paste, cx: &mut ViewContext<Self>) {
-        if let Some(text) = cx.read_from_clipboard().and_then(|item| item.text()) {
-            self.replace_text_in_range(None, &text.replace("\n", " "), cx);
-        }
-    }
-
-    fn copy(&mut self, _: &Copy, cx: &mut ViewContext<Self>) {
-        if !self.selected_range.is_empty() {
-            cx.write_to_clipboard(ClipboardItem::new_string(
-                (&self.content[self.selected_range.clone()]).to_string(),
-            ));
-        }
-    }
-    fn cut(&mut self, _: &Copy, cx: &mut ViewContext<Self>) {
-        if !self.selected_range.is_empty() {
-            cx.write_to_clipboard(ClipboardItem::new_string(
-                (&self.content[self.selected_range.clone()]).to_string(),
-            ));
-            self.replace_text_in_range(None, "", cx)
-        }
-    }
-
     fn move_to(&mut self, offset: usize, cx: &mut ViewContext<Self>) {
         self.selected_range = offset..offset;
         cx.notify()
     }
 
-    fn cursor_offset(&self) -> usize {
+    pub fn cursor_offset(&self) -> usize {
         if self.selection_reversed {
             self.selected_range.start
         } else {
@@ -257,16 +216,6 @@ impl UI {
             .grapheme_indices(true)
             .find_map(|(idx, _)| (idx > offset).then_some(idx))
             .unwrap_or(self.content.len())
-    }
-
-    fn reset(&mut self) {
-        self.content = "".into();
-        self.selected_range = 0..0;
-        self.selection_reversed = false;
-        self.marked_range = None;
-        self.last_layout = None;
-        self.last_bounds = None;
-        self.is_selecting = false;
     }
 }
 
@@ -376,173 +325,6 @@ impl FocusableView for UI {
     }
 }
 
-struct TextElement {
-    input: View<UI>,
-}
-
-struct PrepaintState {
-    line: Option<ShapedLine>,
-    cursor: Option<PaintQuad>,
-    selection: Option<PaintQuad>,
-}
-
-impl IntoElement for TextElement {
-    type Element = Self;
-
-    fn into_element(self) -> Self::Element {
-        self
-    }
-}
-
-impl Element for TextElement {
-    type RequestLayoutState = ();
-
-    type PrepaintState = PrepaintState;
-
-    fn id(&self) -> Option<ElementId> {
-        None
-    }
-
-    fn request_layout(
-        &mut self,
-        _id: Option<&GlobalElementId>,
-        cx: &mut WindowContext,
-    ) -> (LayoutId, Self::RequestLayoutState) {
-        let mut style = Style::default();
-        style.size.width = relative(1.).into();
-        style.size.height = cx.line_height().into();
-        (cx.request_layout(style, []), ())
-    }
-
-    fn prepaint(
-        &mut self,
-        _id: Option<&GlobalElementId>,
-        bounds: Bounds<Pixels>,
-        _request_layout: &mut Self::RequestLayoutState,
-        cx: &mut WindowContext,
-    ) -> Self::PrepaintState {
-        let input = self.input.read(cx);
-        let content = input.content.clone();
-        let selected_range = input.selected_range.clone();
-        let cursor = input.cursor_offset();
-        let style = cx.text_style();
-
-        let (display_text, text_color) = if content.is_empty() {
-            (input.placeholder.clone(), hsla(0., 0., 0., 0.2))
-        } else {
-            (content.clone(), style.color)
-        };
-
-        let run = TextRun {
-            len: display_text.len(),
-            font: style.font(),
-            color: text_color,
-            background_color: None,
-            underline: None,
-            strikethrough: None,
-        };
-        let runs = if let Some(marked_range) = input.marked_range.as_ref() {
-            vec![
-                TextRun {
-                    len: marked_range.start,
-                    ..run.clone()
-                },
-                TextRun {
-                    len: marked_range.end - marked_range.start,
-                    underline: Some(UnderlineStyle {
-                        color: Some(run.color),
-                        thickness: px(1.0),
-                        wavy: false,
-                    }),
-                    ..run.clone()
-                },
-                TextRun {
-                    len: display_text.len() - marked_range.end,
-                    ..run.clone()
-                },
-            ]
-            .into_iter()
-            .filter(|run| run.len > 0)
-            .collect()
-        } else {
-            vec![run]
-        };
-
-        let font_size = style.font_size.to_pixels(cx.rem_size());
-        let line = cx
-            .text_system()
-            .shape_line(display_text, font_size, &runs)
-            .unwrap();
-
-        let cursor_pos = line.x_for_index(cursor);
-        let (selection, cursor) = if selected_range.is_empty() {
-            (
-                None,
-                Some(fill(
-                    Bounds::new(
-                        point(bounds.left() + cursor_pos, bounds.top()),
-                        size(px(2.), bounds.bottom() - bounds.top()),
-                    ),
-                    gpui::blue(),
-                )),
-            )
-        } else {
-            (
-                Some(fill(
-                    Bounds::from_corners(
-                        point(
-                            bounds.left() + line.x_for_index(selected_range.start),
-                            bounds.top(),
-                        ),
-                        point(
-                            bounds.left() + line.x_for_index(selected_range.end),
-                            bounds.bottom(),
-                        ),
-                    ),
-                    rgba(0x3311ff30),
-                )),
-                None,
-            )
-        };
-        PrepaintState {
-            line: Some(line),
-            cursor,
-            selection,
-        }
-    }
-
-    fn paint(
-        &mut self,
-        _id: Option<&GlobalElementId>,
-        bounds: Bounds<Pixels>,
-        _request_layout: &mut Self::RequestLayoutState,
-        prepaint: &mut Self::PrepaintState,
-        cx: &mut WindowContext,
-    ) {
-        let focus_handle = self.input.read(cx).focus_handle.clone();
-        cx.handle_input(
-            &focus_handle,
-            ElementInputHandler::new(bounds, self.input.clone()),
-        );
-        if let Some(selection) = prepaint.selection.take() {
-            cx.paint_quad(selection)
-        }
-        let line = prepaint.line.take().unwrap();
-        line.paint(bounds.origin, cx.line_height(), cx).unwrap();
-
-        if focus_handle.is_focused(cx) {
-            if let Some(cursor) = prepaint.cursor.take() {
-                cx.paint_quad(cursor);
-            }
-        }
-
-        self.input.update(cx, |input, _cx| {
-            input.last_layout = Some(line);
-            input.last_bounds = Some(bounds);
-        });
-    }
-}
-
 impl Render for UI {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
@@ -561,12 +343,6 @@ impl Render for UI {
             .on_action(cx.listener(Self::select_left))
             .on_action(cx.listener(Self::select_right))
             .on_action(cx.listener(Self::select_all))
-            .on_action(cx.listener(Self::home))
-            .on_action(cx.listener(Self::end))
-            .on_action(cx.listener(Self::show_character_palette))
-            .on_action(cx.listener(Self::paste))
-            .on_action(cx.listener(Self::cut))
-            .on_action(cx.listener(Self::copy))
             .on_mouse_down(MouseButton::Left, cx.listener(Self::on_mouse_down))
             .on_mouse_up(MouseButton::Left, cx.listener(Self::on_mouse_up))
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))
@@ -577,7 +353,7 @@ impl Render for UI {
                     .h(px(30. + 4. * 2.))
                     .w_full()
                     .p(px(4.))
-                    .bg(white())
+                    .bg(gpui::opaque_grey(0.5, 0.5))
                     .child(TextElement {
                         input: cx.view().clone(),
                     }),

@@ -16,12 +16,6 @@ actions!(
         SelectLeft,
         SelectRight,
         SelectAll,
-        Home,
-        End,
-        ShowCharacterPalette,
-        Paste,
-        Cut,
-        Copy,
     ]
 );
 
@@ -39,12 +33,6 @@ fn main() {
             KeyBinding::new("shift-left", SelectLeft, None),
             KeyBinding::new("shift-right", SelectRight, None),
             KeyBinding::new("cmd-a", SelectAll, None),
-            KeyBinding::new("cmd-v", Paste, None),
-            KeyBinding::new("cmd-c", Copy, None),
-            KeyBinding::new("cmd-x", Cut, None),
-            KeyBinding::new("home", Home, None),
-            KeyBinding::new("end", End, None),
-            KeyBinding::new("ctrl-cmd-space", ShowCharacterPalette, None),
         ]);
 
         cx.set_menus(vec![Menu {
