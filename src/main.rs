@@ -5,19 +5,7 @@ use alc_calc::ui::UI;
 use gpui::{actions, App, AppContext, KeyBinding, Menu, MenuItem, WindowOptions};
 use std::env::consts::OS;
 
-actions!(
-    alc_alc,
-    [
-        Quit,
-        Backspace,
-        Delete,
-        Left,
-        Right,
-        SelectLeft,
-        SelectRight,
-        SelectAll,
-    ]
-);
+actions!(alc_alc, [Quit, Backspace,]);
 
 fn main() {
     App::new().run(|cx: &mut AppContext| {
@@ -27,12 +15,6 @@ fn main() {
         cx.bind_keys([
             KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, None),
             KeyBinding::new("backspace", Backspace, None),
-            KeyBinding::new("delete", Delete, None),
-            KeyBinding::new("left", Left, None),
-            KeyBinding::new("right", Right, None),
-            KeyBinding::new("shift-left", SelectLeft, None),
-            KeyBinding::new("shift-right", SelectRight, None),
-            KeyBinding::new("cmd-a", SelectAll, None),
         ]);
 
         cx.set_menus(vec![Menu {
