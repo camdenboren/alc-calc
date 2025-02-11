@@ -50,6 +50,7 @@ dependencies = [
  "gpui_macros",
  "strum",
  "strum_macros",
+ "unicode-segmentation",
 ]
 
 [[package]]
