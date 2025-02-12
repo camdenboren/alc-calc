@@ -3,14 +3,15 @@
 
 // Adapted from GPUI Example: input.rs
 
+use std::env::consts::OS;
 use std::ops::Range;
 
 use gpui::{
     actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgb, rgba, size,
     AppContext, Bounds, ClipboardItem, CursorStyle, ElementId, ElementInputHandler, FocusHandle,
-    FocusableView, GlobalElementId, LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent,
-    MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine, SharedString, Style, TextRun,
-    UTF16Selection, UnderlineStyle, View, ViewContext, ViewInputHandler, WindowContext,
+    FocusableView, GlobalElementId, KeyBinding, LayoutId, MouseButton, MouseDownEvent,
+    MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine, SharedString, Style,
+    TextRun, UTF16Selection, UnderlineStyle, View, ViewContext, ViewInputHandler, WindowContext,
 };
 use unicode_segmentation::*;
 
@@ -520,6 +521,27 @@ impl Element for TextElement {
 
 impl Render for TextInput {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+        cx.bind_keys([
+            KeyBinding::new("backspace", Backspace, None),
+            KeyBinding::new("delete", Delete, None),
+            KeyBinding::new("left", Left, None),
+            KeyBinding::new("right", Right, None),
+            KeyBinding::new("shift-left", SelectLeft, None),
+            KeyBinding::new("shift-right", SelectRight, None),
+            KeyBinding::new(format!("{ctrl}-a").as_str(), SelectAll, None),
+            KeyBinding::new(format!("{ctrl}-v").as_str(), Paste, None),
+            KeyBinding::new(format!("{ctrl}-c").as_str(), Copy, None),
+            KeyBinding::new(format!("{ctrl}-x").as_str(), Cut, None),
+            KeyBinding::new("home", Home, None),
+            KeyBinding::new("end", End, None),
+            KeyBinding::new(
+                format!("{ctrl}-shift-space").as_str(),
+                ShowCharacterPalette,
+                None,
+            ),
+        ]);
+
         div()
             .flex()
             .key_context("TextInput")
