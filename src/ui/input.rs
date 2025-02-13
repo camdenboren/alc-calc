@@ -7,11 +7,11 @@ use std::env::consts::OS;
 use std::ops::Range;
 
 use gpui::{
-    actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgb, rgba, size,
-    AppContext, Bounds, ClipboardItem, CursorStyle, ElementId, ElementInputHandler, FocusHandle,
-    FocusableView, GlobalElementId, KeyBinding, LayoutId, MouseButton, MouseDownEvent,
-    MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine, SharedString, Style,
-    TextRun, UTF16Selection, UnderlineStyle, View, ViewContext, ViewInputHandler, WindowContext,
+    actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgba, size, AppContext,
+    Bounds, ClipboardItem, CursorStyle, ElementId, ElementInputHandler, FocusHandle, FocusableView,
+    GlobalElementId, KeyBinding, LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent,
+    MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine, SharedString, Style, TextRun,
+    UTF16Selection, UnderlineStyle, View, ViewContext, ViewInputHandler, WindowContext,
 };
 use unicode_segmentation::*;
 

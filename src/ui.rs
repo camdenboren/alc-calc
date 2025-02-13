@@ -1,9 +1,11 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+pub mod input;
+pub mod titlebar;
 use crate::calc::alc_weight;
-use crate::input::TextInput;
-use crate::titlebar::titlebar;
+use crate::ui::input::TextInput;
+use crate::ui::titlebar::titlebar;
 use gpui::{
     div, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke, SharedString, View,
     ViewContext, WindowContext,
