@@ -569,9 +569,10 @@ impl Render for TextInput {
             .child(
                 div()
                     .h(px(30. + 4. * 2.))
-                    .w_full()
+                    .w(px(120. + 4. * 2.))
                     .p(px(4.))
                     .bg(opaque_grey(0.5, 0.5))
+                    .rounded_md()
                     .child(TextElement {
                         input: cx.view().clone(),
                     }),

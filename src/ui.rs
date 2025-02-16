@@ -7,8 +7,8 @@ use crate::calc::alc_weight;
 use crate::ui::input::TextInput;
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke, SharedString, View,
-    ViewContext, WindowContext,
+    div, opaque_grey, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke,
+    SharedString, View, ViewContext, WindowContext,
 };
 use std::env::consts::OS;
 
@@ -60,16 +60,29 @@ impl Render for UI {
             .text_xl()
             .text_color(rgb(0xffffff))
             .child(if OS == "linux" { titlebar() } else { div() })
-            .child(self.text_input.clone())
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap_3()
                     .size_full()
                     .justify_center()
                     .items_center()
-                    .child(format!("alc-{} {}", &self.text, &self.num)),
+                    .gap_3()
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .size_full()
+                            .justify_center()
+                            .items_center()
+                            .gap_3()
+                            .max_w_1_2()
+                            .max_h_1_4()
+                            .bg(opaque_grey(0.2, 1.0))
+                            .rounded_lg()
+                            .child(format!("alc-{} {}", &self.text, &self.num))
+                            .child(self.text_input.clone()),
+                    ),
             )
     }
 }
