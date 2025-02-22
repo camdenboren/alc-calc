@@ -51,10 +51,11 @@ impl UI {
 }
 
 impl Render for UI {
-    fn render(&mut self, _cx: &mut ViewContext<Self>) -> impl IntoElement {
+    fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
             .font_family(".SystemUIFont")
             .bg(rgb(0x505050))
+            .track_focus(&self.focus_handle(cx))
             .size_full()
             .shadow_lg()
             .text_xl()
