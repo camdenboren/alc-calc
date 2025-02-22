@@ -16,7 +16,7 @@ pub struct UI {
     text: SharedString,
     num: u32,
     text_input: View<TextInput>,
-    recent_keystrokes: Vec<Keystroke>,
+    pub recent_keystrokes: Vec<Keystroke>,
     focus_handle: FocusHandle,
 }
 
@@ -81,7 +81,18 @@ impl Render for UI {
                             .bg(opaque_grey(0.2, 1.0))
                             .rounded_lg()
                             .child(format!("alc-{} {}", &self.text, &self.num))
-                            .child(self.text_input.clone()),
+                            .child(self.text_input.clone())
+                            .children(self.recent_keystrokes.iter().rev().map(|ks| {
+                                format!(
+                                    "{:} {}",
+                                    ks.unparse(),
+                                    if let Some(key_char) = ks.key_char.as_ref() {
+                                        format!("-> {:?}", key_char)
+                                    } else {
+                                        "".to_owned()
+                                    }
+                                )
+                            })),
                     ),
             )
     }

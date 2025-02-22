@@ -19,13 +19,24 @@ fn main() {
             items: vec![MenuItem::action("Quit", Quit)],
         }]);
 
-        cx.open_window(
-            WindowOptions {
-                focus: true,
-                ..Default::default()
-            },
-            |cx| UI::new(cx),
-        )
-        .unwrap();
+        let window = cx
+            .open_window(
+                WindowOptions {
+                    focus: true,
+                    ..Default::default()
+                },
+                |cx| UI::new(cx),
+            )
+            .unwrap();
+
+        cx.observe_keystrokes(move |ev, cx| {
+            window
+                .update(cx, |view, cx| {
+                    view.recent_keystrokes.push(ev.keystroke.clone());
+                    cx.notify();
+                })
+                .unwrap();
+        })
+        .detach();
     });
 }
