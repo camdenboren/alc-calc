@@ -83,17 +83,7 @@ impl Render for UI {
                             .rounded_lg()
                             .child(format!("alc-{} {}", &self.text, &self.num))
                             .child(self.text_input.clone())
-                            .children(self.recent_keystrokes.iter().rev().map(|ks| {
-                                format!(
-                                    "{:} {}",
-                                    ks.unparse(),
-                                    if let Some(key_char) = ks.key_char.as_ref() {
-                                        format!("-> {:?}", key_char)
-                                    } else {
-                                        "".to_owned()
-                                    }
-                                )
-                            })),
+                            .child(self.text_input.read(cx).content.clone()),
                     ),
             )
     }
