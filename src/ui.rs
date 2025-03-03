@@ -1,14 +1,16 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+pub mod card;
 pub mod input;
 pub mod titlebar;
 use crate::calc::alc_weight;
+use crate::ui::card::card;
 use crate::ui::input::TextInput;
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, opaque_grey, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke,
-    SharedString, View, ViewContext, WindowContext,
+    div, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke, SharedString, View,
+    ViewContext, WindowContext,
 };
 use std::env::consts::OS;
 
@@ -52,6 +54,12 @@ impl UI {
 
 impl Render for UI {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+        let num_ingredients = self.text_input.read(cx).content.clone();
+        let num_ingredients: i32 = match num_ingredients.trim().parse() {
+            Ok(num) => num,
+            Err(_) => 0,
+        };
+
         div()
             .font_family(".SystemUIFont")
             .bg(rgb(0x505050))
@@ -69,22 +77,16 @@ impl Render for UI {
                     .justify_center()
                     .items_center()
                     .gap_3()
-                    .child(
+                    .child(card(
                         div()
-                            .flex()
-                            .flex_col()
-                            .size_full()
-                            .justify_center()
-                            .items_center()
-                            .gap_3()
-                            .max_w_1_2()
-                            .max_h_1_4()
-                            .bg(opaque_grey(0.2, 1.0))
-                            .rounded_lg()
                             .child(format!("alc-{} {}", &self.text, &self.num))
-                            .child(self.text_input.clone())
-                            .child(self.text_input.read(cx).content.clone()),
-                    ),
+                            .child(self.text_input.clone()),
+                    ))
+                    .child(if num_ingredients > 0 {
+                        card(div().child("Conditional"))
+                    } else {
+                        div()
+                    }),
             )
     }
 }
