@@ -5,5 +5,11 @@ builds:
   exclude: []
   include:
     - "*.x86_64-linux.*"
-    - "defaultPackage.*"
-    - "devShell.*"
+    - "*.aarch64-linux.*"
+    - "*.aarch64-darwin.*"
+    - defaultPackage.x86_64-linux
+    - defaultPackage.aarch64-linux
+    - defaultPackage.aarch64-darwin
+    - devShell.x86_64-linux
+    - devShell.aarch64-linux
+    - devShell.aarch64-darwin
