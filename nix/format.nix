@@ -22,7 +22,7 @@ pkgs.writeShellScriptBin "format" ''
   ${pkgs.nodePackages.prettier}/bin/prettier \
   --plugin=${pkgs.nodePackages.prettier-plugin-toml}\
   /lib/node_modules/prettier-plugin-toml/lib/index.cjs \
-  --write **/*.md **/*.toml | box
+  --write "**/*.md" "**/*.toml" "**/*.yaml" | box
 
   echo -e "\n\033[1;32mFormat succeeded.\033[0m"
 ''
