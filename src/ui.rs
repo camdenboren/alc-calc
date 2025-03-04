@@ -9,29 +9,28 @@ use crate::ui::card::card;
 use crate::ui::input::TextInput;
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, prelude::*, rgb, AppContext, FocusHandle, FocusableView, Keystroke, SharedString, View,
-    ViewContext, WindowContext,
+    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString, Window,
 };
 use std::env::consts::OS;
 
 pub struct UI {
     text: SharedString,
     num: u32,
-    text_input: View<TextInput>,
+    text_input: Entity<TextInput>,
     pub recent_keystrokes: Vec<Keystroke>,
     focus_handle: FocusHandle,
 }
 
-impl FocusableView for UI {
-    fn focus_handle(&self, _: &AppContext) -> FocusHandle {
+impl Focusable for UI {
+    fn focus_handle(&self, _: &App) -> FocusHandle {
         self.focus_handle.clone()
     }
 }
 
 impl UI {
-    pub fn new(cx: &mut WindowContext) -> View<Self> {
+    pub fn new(cx: &mut App) -> Entity<Self> {
         let (numm, _weight) = alc_weight("Liqueur", 40.0);
-        let text_input = cx.new_view(|cx| TextInput {
+        let text_input = cx.new(|cx| TextInput {
             focus_handle: cx.focus_handle(),
             content: "".into(),
             placeholder: "Type here...".into(),
@@ -42,7 +41,7 @@ impl UI {
             last_bounds: None,
             is_selecting: false,
         });
-        cx.new_view(|cx| UI {
+        cx.new(|cx| UI {
             text: "calc".into(),
             num: numm,
             text_input,
@@ -53,7 +52,7 @@ impl UI {
 }
 
 impl Render for UI {
-    fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let num_ingredients = self.text_input.read(cx).content.clone();
         let num_ingredients: i32 = match num_ingredients.trim().parse() {
             Ok(num) => num,

@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use alc_calc::ui::UI;
-use gpui::{actions, App, AppContext, KeyBinding, Menu, MenuItem, WindowOptions};
+use gpui::{actions, App, Application, KeyBinding, Menu, MenuItem, WindowOptions};
 use std::env::consts::OS;
 
 actions!(alc_alc, [Quit]);
 
 fn main() {
-    App::new().run(|cx: &mut AppContext| {
+    Application::new().run(|cx: &mut App| {
         cx.activate(true);
         cx.on_action(|_: &Quit, cx| cx.quit());
         let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
@@ -24,7 +24,7 @@ fn main() {
                 focus: true,
                 ..Default::default()
             },
-            |cx| UI::new(cx),
+            |_, cx| UI::new(cx),
         )
         .unwrap();
     });

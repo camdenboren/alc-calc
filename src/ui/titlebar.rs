@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use gpui::{div, img, prelude::*, px, Div, SharedString, WindowContext};
+use gpui::{div, img, prelude::*, px, App, Div, SharedString, Window};
 
-fn button(text: &str, on_click: impl Fn(&mut WindowContext) + 'static) -> impl IntoElement {
+fn button(text: &str, on_click: impl Fn(&mut Window, &mut App) + 'static) -> impl IntoElement {
     let cwd = std::env::current_dir().expect("Failed to get cwd");
     let icon_path = cwd.join("img/close.svg");
 
@@ -19,7 +19,7 @@ fn button(text: &str, on_click: impl Fn(&mut WindowContext) + 'static) -> impl I
         .rounded_full()
         .cursor_pointer()
         .child(img(icon_path.clone()))
-        .on_click(move |_, cx| on_click(cx))
+        .on_click(move |_, window, cx| on_click(window, cx))
 }
 
 pub fn titlebar() -> Div {
@@ -31,7 +31,7 @@ pub fn titlebar() -> Div {
         .bg(gpui::opaque_grey(0.2, 1.0))
         .w_full()
         .child(div().flex().items_center().justify_center().size_full())
-        .child(button("", |cx| {
-            cx.remove_window();
+        .child(button("", |window, _| {
+            window.remove_window();
         }))
 }
