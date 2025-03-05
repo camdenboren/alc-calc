@@ -34,7 +34,6 @@
               ++ lib.optionals stdenv.hostPlatform.isDarwin [
                 apple-sdk_15
                 (darwinMinVersionHook "12.3")
-                libclang
               ];
           }
         );
@@ -80,6 +79,10 @@
             cargoHash = "sha256-9kfU14JiOd2cItjXwGc2OtpztDnqns4AIewWvd5M4pg=";
             useFetchCargoVendor = true;
             buildInputs = deps;
+
+            env.LIBCLANG_PATH =
+              with pkgs;
+              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
             postFixup =
               with pkgs;
