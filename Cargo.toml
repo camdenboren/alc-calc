@@ -12,3 +12,13 @@ strum_macros = "0.26.4"
 gpui = { git = "https://github.com/zed-industries/zed" }
 gpui_macros = { git = "https://github.com/zed-industries/zed" }
 unicode-segmentation = "1.9.0"
+
+[package.metadata.bundle]
+name = "alc-calc"
+identifier = "com.doe.alc-calc"
+version = "0.1.0"
+resources = ["img/*.svg"]
+category = "Utility"
+short_description = ""
+long_description = ""
+osx_url_schemes = ["com.doe.alc-calc"]

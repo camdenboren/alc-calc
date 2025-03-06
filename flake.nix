@@ -47,6 +47,7 @@
               bashInteractive
               rustc
               cargo
+              cargo-bundle
               rust-analyzer
               rustfmt
               build
@@ -79,8 +80,33 @@
             cargoHash = "sha256-9kfU14JiOd2cItjXwGc2OtpztDnqns4AIewWvd5M4pg=";
             useFetchCargoVendor = true;
             buildInputs = deps;
-            nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+            nativeBuildInputs =
+              with pkgs;
+              lib.optionals stdenv.hostPlatform.isDarwin [
+                pkg-config
+                cargo-bundle
+              ];
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
+            env.LIBCLANG_PATH =
+              with pkgs;
+              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
+
+            installPhase =
+              with pkgs;
+              ''
+                runHook preInstall
+                release_target="target/${stdenv.hostPlatform.rust.cargoShortTarget}/release"
+              ''
+              + lib.optionalString stdenv.hostPlatform.isDarwin ''
+                mv $release_target/alc-calc target/release/alc-calc
+                export CARGO_BUNDLE_SKIP_BUILD=true
+                app_path=$(cargo bundle --release | xargs)
+                mkdir -p $out/Applications $out/bin
+                mv $app_path $out/Applications/
+              ''
+              + ''
+                runHook postInstall
+              '';
 
             postFixup =
               with pkgs;
@@ -88,9 +114,6 @@
                 patchelf --add-rpath ${wayland}/lib $out/bin/*
                 patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
               '';
-            env.LIBCLANG_PATH =
-              with pkgs;
-              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
 
             meta = {
               description = "";
