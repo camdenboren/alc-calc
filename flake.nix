@@ -82,6 +82,8 @@
             nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
 
+            # darwin fails checks in ci due to missing ScreenCaptureKit - todo
+            doCheck = with pkgs; if stdenv.hostPlatform.isDarwin then false else true;
             postFixup =
               with pkgs;
               lib.optionalString stdenv.hostPlatform.isLinux ''
