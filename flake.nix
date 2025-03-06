@@ -79,7 +79,7 @@
             cargoHash = "sha256-9kfU14JiOd2cItjXwGc2OtpztDnqns4AIewWvd5M4pg=";
             useFetchCargoVendor = true;
             buildInputs = deps;
-            nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ pkg-config ];
+            nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
 
             postFixup =
