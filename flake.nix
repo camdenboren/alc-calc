@@ -34,7 +34,6 @@
               ++ lib.optionals stdenv.hostPlatform.isDarwin [
                 apple-sdk_15
                 (darwinMinVersionHook "12.3")
-                llvmPackages.libclang
               ];
           }
         );
@@ -91,6 +90,9 @@
                 patchelf --add-rpath ${wayland}/lib $out/bin/*
                 patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
               '';
+            env.LIBCLANG_PATH =
+              with pkgs;
+              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
 
             meta = {
               description = "";
