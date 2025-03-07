@@ -90,9 +90,6 @@
                 patchelf --add-rpath ${wayland}/lib $out/bin/*
                 patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
               '';
-            env.LIBCLANG_PATH =
-              with pkgs;
-              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
 
             meta = {
               description = "";
