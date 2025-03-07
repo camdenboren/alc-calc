@@ -79,13 +79,20 @@
             cargoHash = "sha256-9kfU14JiOd2cItjXwGc2OtpztDnqns4AIewWvd5M4pg=";
             useFetchCargoVendor = true;
             buildInputs = deps;
+            nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
+
+            # darwin fails checks in ci due to missing ScreenCaptureKit - todo
+            doCheck = with pkgs; if stdenv.hostPlatform.isDarwin then false else true;
             postFixup =
               with pkgs;
               lib.optionalString stdenv.hostPlatform.isLinux ''
                 patchelf --add-rpath ${wayland}/lib $out/bin/*
                 patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
               '';
+            env.LIBCLANG_PATH =
+              with pkgs;
+              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
 
             meta = {
               description = "";
