@@ -34,6 +34,7 @@
               ++ lib.optionals stdenv.hostPlatform.isDarwin [
                 apple-sdk_15
                 (darwinMinVersionHook "12.3")
+                llvmPackages.libclang
               ];
           }
         );
