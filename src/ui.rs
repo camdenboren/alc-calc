@@ -45,17 +45,18 @@ impl UI {
             last_bounds: None,
             is_selecting: false,
         });
-        let data_table = cx.new(|_| DataTable {
+        let mut data_table = DataTable {
             ingreds: (0..3).map(|_| Rc::new(Ingredient::random())).collect(),
             visible_range: 0..0,
             scroll_handle: UniformListScrollHandle::new(),
             drag_position: None,
-        });
+        };
+        data_table.generate();
         cx.new(|cx| UI {
             text: "calc".into(),
             num: numm,
             text_input,
-            data_table,
+            data_table: cx.new(|_| data_table),
             recent_keystrokes: vec![],
             focus_handle: cx.focus_handle(),
         })
