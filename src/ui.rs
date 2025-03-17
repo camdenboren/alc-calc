@@ -93,7 +93,7 @@ impl Render for UI {
                             .child(self.text_input.clone()),
                     ))
                     .child(if num_ingredients > 0 {
-                        div().child(self.data_table.clone())
+                        card(div().child(self.data_table.clone()))
                     } else {
                         div()
                     }),

@@ -23,12 +23,7 @@ pub struct Ingredient {
 impl Ingredient {
     pub fn random() -> Self {
         let symbol = String::from("ABC");
-        let name = format!(
-            "{} {} - #{}",
-            symbol,
-            50,
-            50000
-        );
+        let name = format!("{} {} - #{}", symbol, 50, 50000);
 
         Self {
             name: name.into(),
