@@ -3,20 +3,24 @@
 
 pub mod card;
 pub mod input;
+pub mod table;
 pub mod titlebar;
 use crate::calc::alc_weight;
 use crate::ui::card::card;
 use crate::ui::input::TextInput;
+use crate::ui::table::{DataTable, Ingredient};
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString, Window,
+    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString,
+    UniformListScrollHandle, Window,
 };
-use std::env::consts::OS;
+use std::{env::consts::OS, rc::Rc};
 
 pub struct UI {
     text: SharedString,
     num: u32,
     text_input: Entity<TextInput>,
+    data_table: Entity<DataTable>,
     pub recent_keystrokes: Vec<Keystroke>,
     focus_handle: FocusHandle,
 }
@@ -41,10 +45,17 @@ impl UI {
             last_bounds: None,
             is_selecting: false,
         });
+        let data_table = cx.new(|_| DataTable {
+            ingreds: (0..3).map(|_| Rc::new(Ingredient::random())).collect(),
+            visible_range: 0..0,
+            scroll_handle: UniformListScrollHandle::new(),
+            drag_position: None,
+        });
         cx.new(|cx| UI {
             text: "calc".into(),
             num: numm,
             text_input,
+            data_table,
             recent_keystrokes: vec![],
             focus_handle: cx.focus_handle(),
         })
@@ -82,7 +93,7 @@ impl Render for UI {
                             .child(self.text_input.clone()),
                     ))
                     .child(if num_ingredients > 0 {
-                        card(div().child("Conditional"))
+                        div().child(self.data_table.clone())
                     } else {
                         div()
                     }),
