@@ -8,13 +8,13 @@ pub mod titlebar;
 use crate::calc::alc_weight;
 use crate::ui::card::card;
 use crate::ui::input::TextInput;
-use crate::ui::table::{DataTable, Ingredient};
+use crate::ui::table::DataTable;
 use crate::ui::titlebar::titlebar;
 use gpui::{
     div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString,
     UniformListScrollHandle, Window,
 };
-use std::{env::consts::OS, rc::Rc};
+use std::env::consts::OS;
 
 pub struct UI {
     text: SharedString,
@@ -46,7 +46,7 @@ impl UI {
             is_selecting: false,
         });
         let mut data_table = DataTable {
-            ingreds: (0..3).map(|_| Rc::new(Ingredient::random())).collect(),
+            ingreds: Vec::new(),
             visible_range: 0..0,
             scroll_handle: UniformListScrollHandle::new(),
             drag_position: None,

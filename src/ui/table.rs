@@ -11,7 +11,7 @@ use gpui::{
     UniformListScrollHandle, Window,
 };
 
-const TOTAL_ITEMS: usize = 10000;
+const TOTAL_ITEMS: usize = 20;
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(100.);
 
