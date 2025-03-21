@@ -145,7 +145,8 @@ impl TextInput {
             ));
         }
     }
-    fn cut(&mut self, _: &Copy, window: &mut Window, cx: &mut Context<Self>) {
+
+    fn cut(&mut self, _: &Cut, window: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
                 (&self.content[self.selected_range.clone()]).to_string(),
