@@ -67,9 +67,9 @@ impl RenderOnce for TableRow {
             .border_b_1()
             .border_color(rgb(0xE0E0E0))
             .bg(if self.ix % 2 == 0 {
-                rgb(0xFFFFFF)
+                opaque_grey(0.4, 1.0)
             } else {
-                rgb(0xFAFAFA)
+                opaque_grey(0.6, 1.0)
             })
             .py_0p5()
             .px_2()
@@ -222,8 +222,8 @@ impl Render for DataTable {
                             .overflow_hidden()
                             .border_b_1()
                             .border_color(rgb(0xE0E0E0))
-                            .text_color(rgb(0x555555))
-                            .bg(rgb(0xF0F0F0))
+                            .text_color(rgb(0xffffff))
+                            .bg(opaque_grey(0.2, 1.0))
                             .py_1()
                             .px_2()
                             .text_xs()
