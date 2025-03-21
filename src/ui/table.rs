@@ -11,23 +11,29 @@ use gpui::{
     UniformListScrollHandle, Window,
 };
 
-const TOTAL_ITEMS: usize = 20;
+const TOTAL_ITEMS: usize = 30;
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(100.);
 
 pub struct Ingredient {
-    name: SharedString,
-    symbol: SharedString,
+    percentage: SharedString,
+    alc_type: SharedString,
+    parts: SharedString,
+    weight: SharedString,
 }
 
 impl Ingredient {
     pub fn random() -> Self {
-        let symbol = String::from("ABC");
-        let name = format!("{} {} - #{}", symbol, 50, 50000);
+        let alc_type = String::from("Whiskey");
+        let percentage = String::from("40");
+        let parts = String::from("1.2");
+        let weight = String::from("42.3");
 
         Self {
-            name: name.into(),
-            symbol: symbol.into(),
+            percentage: percentage.into(),
+            alc_type: alc_type.into(),
+            parts: parts.into(),
+            weight: weight.into(),
         }
     }
 }
@@ -50,14 +56,22 @@ impl TableRow {
             .px_1()
             .child(match key {
                 "id" => div().child(format!("{}", self.ix)),
-                "symbol" => div().child(self.ingred.symbol.clone()),
-                "name" => div().child(self.ingred.name.clone()),
+                "alc_type" => div().child(self.ingred.alc_type.clone()),
+                "percentage" => div().child(self.ingred.percentage.clone()),
+                "parts" => div().child(self.ingred.parts.clone()),
+                "weight" => div().child(self.ingred.weight.clone()),
                 _ => div().child("--"),
             })
     }
 }
 
-const FIELDS: [(&str, f32); 3] = [("id", 64.), ("symbol", 64.), ("name", 180.)];
+const FIELDS: [(&str, f32); 5] = [
+    ("id", 64.),
+    ("alc_type", 180.),
+    ("percentage", 180.),
+    ("parts", 64.),
+    ("weight", 64.),
+];
 
 impl RenderOnce for TableRow {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
