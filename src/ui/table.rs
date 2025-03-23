@@ -11,7 +11,6 @@ use gpui::{
     UniformListScrollHandle, Window,
 };
 
-const TOTAL_ITEMS: usize = 30;
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(100.);
 
@@ -101,8 +100,8 @@ pub struct DataTable {
 }
 
 impl DataTable {
-    pub fn generate(&mut self) {
-        self.ingreds = (0..TOTAL_ITEMS)
+    pub fn generate(&mut self, num_ingredients: i32) {
+        self.ingreds = (0..num_ingredients)
             .map(|_| Rc::new(Ingredient::random()))
             .collect();
     }

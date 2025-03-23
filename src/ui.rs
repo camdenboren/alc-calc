@@ -45,13 +45,12 @@ impl UI {
             last_bounds: None,
             is_selecting: false,
         });
-        let mut data_table = DataTable {
+        let data_table = DataTable {
             ingreds: Vec::new(),
             visible_range: 0..0,
             scroll_handle: UniformListScrollHandle::new(),
             drag_position: None,
         };
-        data_table.generate();
         cx.new(|cx| UI {
             text: "calc".into(),
             num: numm,
@@ -94,6 +93,9 @@ impl Render for UI {
                             .child(self.text_input.clone()),
                     ))
                     .child(if num_ingredients > 0 {
+                        self.data_table.update(cx, |data_table, _cx| {
+                            data_table.generate(num_ingredients);
+                        });
                         card(div().child(self.data_table.clone()))
                     } else {
                         div()
