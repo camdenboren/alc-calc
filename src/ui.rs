@@ -11,15 +11,15 @@ use crate::ui::input::TextInput;
 use crate::ui::table::DataTable;
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString,
-    UniformListScrollHandle, Window,
+    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString, Window,
 };
 use std::env::consts::OS;
 
 pub struct UI {
     text: SharedString,
     num: u32,
-    text_input: Entity<TextInput>,
+    num_ingredients_input: Entity<TextInput>,
+    num_drinks_input: Entity<TextInput>,
     data_table: Entity<DataTable>,
     pub recent_keystrokes: Vec<Keystroke>,
     focus_handle: FocusHandle,
@@ -34,27 +34,14 @@ impl Focusable for UI {
 impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
         let (numm, _weight) = alc_weight("Liqueur", 40.0);
-        let text_input = cx.new(|cx| TextInput {
-            focus_handle: cx.focus_handle(),
-            content: "".into(),
-            placeholder: "Type here...".into(),
-            selected_range: 0..0,
-            selection_reversed: false,
-            marked_range: None,
-            last_layout: None,
-            last_bounds: None,
-            is_selecting: false,
-        });
-        let data_table = DataTable {
-            ingreds: Vec::new(),
-            visible_range: 0..0,
-            scroll_handle: UniformListScrollHandle::new(),
-            drag_position: None,
-        };
+        let num_ingredients_input = cx.new(|cx| TextInput::new(cx, "Type here...".into()));
+        let num_drinks_input = cx.new(|cx| TextInput::new(cx, "Type here...".into()));
+        let data_table = DataTable::new();
         cx.new(|cx| UI {
             text: "calc".into(),
             num: numm,
-            text_input,
+            num_ingredients_input,
+            num_drinks_input,
             data_table: cx.new(|_| data_table),
             recent_keystrokes: vec![],
             focus_handle: cx.focus_handle(),
@@ -64,8 +51,13 @@ impl UI {
 
 impl Render for UI {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let num_ingredients = self.text_input.read(cx).content.clone();
+        let num_ingredients = self.num_ingredients_input.read(cx).content.clone();
+        let num_drinks = self.num_drinks_input.read(cx).content.clone();
         let num_ingredients: i32 = match num_ingredients.trim().parse() {
+            Ok(num) => num,
+            Err(_) => 0,
+        };
+        let num_drinks: i32 = match num_drinks.trim().parse() {
             Ok(num) => num,
             Err(_) => 0,
         };
@@ -90,9 +82,10 @@ impl Render for UI {
                     .child(card(
                         div()
                             .child(format!("alc-{} {}", &self.text, &self.num))
-                            .child(self.text_input.clone()),
+                            .child(self.num_ingredients_input.clone())
+                            .child(self.num_drinks_input.clone()),
                     ))
-                    .child(if num_ingredients > 0 {
+                    .child(if num_ingredients > 0 && num_drinks > 0 {
                         self.data_table.update(cx, |data_table, _cx| {
                             data_table.generate(num_ingredients);
                         });

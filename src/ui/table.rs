@@ -100,6 +100,15 @@ pub struct DataTable {
 }
 
 impl DataTable {
+    pub fn new() -> Self {
+        Self {
+            ingreds: Vec::new(),
+            visible_range: 0..0,
+            scroll_handle: UniformListScrollHandle::new(),
+            drag_position: None,
+        }
+    }
+
     pub fn generate(&mut self, num_ingredients: i32) {
         self.ingreds = (0..num_ingredients)
             .map(|_| Rc::new(Ingredient::random()))

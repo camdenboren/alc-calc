@@ -47,6 +47,20 @@ pub struct TextInput {
 }
 
 impl TextInput {
+    pub fn new(cx: &mut App, placeholder: SharedString) -> Self {
+        Self {
+            focus_handle: cx.focus_handle(),
+            content: "".into(),
+            placeholder,
+            selected_range: 0..0,
+            selection_reversed: false,
+            marked_range: None,
+            last_layout: None,
+            last_bounds: None,
+            is_selecting: false,
+        }
+    }
+
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
@@ -250,16 +264,6 @@ impl TextInput {
             .grapheme_indices(true)
             .find_map(|(idx, _)| (idx > offset).then_some(idx))
             .unwrap_or(self.content.len())
-    }
-
-    fn reset(&mut self) {
-        self.content = "".into();
-        self.selected_range = 0..0;
-        self.selection_reversed = false;
-        self.marked_range = None;
-        self.last_layout = None;
-        self.last_bounds = None;
-        self.is_selecting = false;
     }
 }
 
