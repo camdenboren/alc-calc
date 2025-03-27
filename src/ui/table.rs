@@ -3,36 +3,31 @@
 
 // Adapted from GPUI Example: data_table.rs
 
-use std::{ops::Range, rc::Rc};
-
+use crate::ui::input::TextInput;
 use gpui::{
     canvas, div, opaque_grey, point, prelude::*, px, rgb, uniform_list, App, Bounds, Context,
-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, Pixels, Point, Render, SharedString,
+    Entity, MouseDownEvent, MouseMoveEvent, MouseUpEvent, Pixels, Point, Render, SharedString,
     UniformListScrollHandle, Window,
 };
+use std::{ops::Range, rc::Rc};
 
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(100.);
 
 pub struct Ingredient {
-    percentage: SharedString,
+    percentage_input: Entity<TextInput>,
     alc_type: SharedString,
-    parts: SharedString,
+    parts_input: Entity<TextInput>,
     weight: SharedString,
 }
 
 impl Ingredient {
-    pub fn random() -> Self {
-        let alc_type = String::from("Whiskey");
-        let percentage = String::from("40");
-        let parts = String::from("1.2");
-        let weight = String::from("42.3");
-
+    pub fn new(cx: &mut App) -> Self {
         Self {
-            percentage: percentage.into(),
-            alc_type: alc_type.into(),
-            parts: parts.into(),
-            weight: weight.into(),
+            percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            alc_type: String::from("Whiskey").into(),
+            parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            weight: String::from("42.3").into(),
         }
     }
 }
@@ -56,8 +51,8 @@ impl TableRow {
             .child(match key {
                 "id" => div().child(format!("{}", self.ix)),
                 "alc_type" => div().child(self.ingred.alc_type.clone()),
-                "percentage" => div().child(self.ingred.percentage.clone()),
-                "parts" => div().child(self.ingred.parts.clone()),
+                "percentage" => div().child(self.ingred.percentage_input.clone()),
+                "parts" => div().child(self.ingred.parts_input.clone()),
                 "weight" => div().child(self.ingred.weight.clone()),
                 _ => div().child("--"),
             })
@@ -65,11 +60,11 @@ impl TableRow {
 }
 
 const FIELDS: [(&str, f32); 5] = [
-    ("id", 64.),
-    ("alc_type", 180.),
-    ("percentage", 180.),
-    ("parts", 64.),
-    ("weight", 64.),
+    ("id", 32.),
+    ("alc_type", 96.),
+    ("percentage", 128.),
+    ("parts", 128.),
+    ("weight", 128.),
 ];
 
 impl RenderOnce for TableRow {
@@ -109,9 +104,9 @@ impl DataTable {
         }
     }
 
-    pub fn generate(&mut self, num_ingredients: i32) {
+    pub fn generate(&mut self, num_ingredients: i32, cx: &mut App) {
         self.ingreds = (0..num_ingredients)
-            .map(|_| Rc::new(Ingredient::random()))
+            .map(|_| Rc::new(Ingredient::new(cx)))
             .collect();
     }
 

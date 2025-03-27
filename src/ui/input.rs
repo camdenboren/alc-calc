@@ -608,7 +608,6 @@ impl Render for TextInput {
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))
             .on_mouse_move(cx.listener(Self::on_mouse_move))
             .line_height(px(30.))
-            .text_size(px(24.))
             .child(
                 div()
                     .h(px(30. + 4. * 2.))

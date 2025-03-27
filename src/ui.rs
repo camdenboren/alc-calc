@@ -86,8 +86,8 @@ impl Render for UI {
                             .child(self.num_drinks_input.clone()),
                     ))
                     .child(if num_ingredients > 0 && num_drinks > 0 {
-                        self.data_table.update(cx, |data_table, _cx| {
-                            data_table.generate(num_ingredients);
+                        self.data_table.update(cx, |data_table, cx| {
+                            data_table.generate(num_ingredients, cx);
                         });
                         card(div().child(self.data_table.clone()))
                     } else {
