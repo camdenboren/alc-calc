@@ -4,8 +4,8 @@
 use std::str::FromStr;
 use strum_macros::EnumString;
 
-#[derive(EnumString)]
-enum Type {
+#[derive(EnumString, Clone)]
+pub enum Type {
     Hard,
     Whiskey,
     Vodka,

@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+pub mod button;
 pub mod card;
+pub mod dropdown;
 pub mod ingredient;
 pub mod input;
 pub mod titlebar;

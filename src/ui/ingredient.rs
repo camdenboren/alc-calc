@@ -1,18 +1,19 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::ui::dropdown::Dropdown;
 use crate::ui::input::TextInput;
 use gpui::{div, opaque_grey, prelude::*, px, App, Entity, Pixels, SharedString, Window};
 
 pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 96.),
+    ("alc_type", 128.),
     ("percentage", 164.),
     ("parts", 164.),
     ("weight", 128.),
 ];
 
 pub struct Ingredient {
-    alc_type: SharedString,
+    alc_type: Entity<Dropdown>,
     percentage_input: Entity<TextInput>,
     parts_input: Entity<TextInput>,
     weight: SharedString,
@@ -21,7 +22,7 @@ pub struct Ingredient {
 impl Ingredient {
     pub fn new(cx: &mut App) -> Self {
         Self {
-            alc_type: String::from("Whiskey").into(),
+            alc_type: cx.new(|_| Dropdown::new()),
             percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             weight: String::from("42.3").into(),
