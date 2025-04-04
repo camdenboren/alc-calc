@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use gpui::{div, img, prelude::*, App, SharedString, Window};
+use gpui::{div, img, prelude::*, App, ClickEvent, SharedString, Window};
 
 pub fn button(
     text: &str,
     icon: &str,
-    on_click: impl Fn(&mut Window, &mut App) + 'static,
+    on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     let cwd = std::env::current_dir().expect("Failed to get cwd");
     let icon_path = cwd.join("img/").join(icon);
@@ -23,5 +23,5 @@ pub fn button(
         .rounded_full()
         .cursor_pointer()
         .child(img(icon_path.clone()))
-        .on_click(move |_, window, cx| on_click(window, cx))
+        .on_click(move |event, window, cx| on_click(event, window, cx))
 }

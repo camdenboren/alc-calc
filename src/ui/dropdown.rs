@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::types::Type;
 use crate::ui::button::*;
 use gpui::{div, opaque_grey, prelude::*, Div, SharedString, Window};
+use strum::IntoEnumIterator;
 
 pub struct Dropdown {
     current: SharedString,
@@ -22,13 +24,10 @@ impl Dropdown {
             .flex()
             .flex_col()
             .size_full()
-            .justify_center()
-            .items_center()
-            .gap_3()
-            .max_w_1_12()
-            .max_h_1_4()
-            .bg(opaque_grey(0.2, 1.0))
+            .absolute()
+            .bg(opaque_grey(0.5, 0.5))
             .rounded_lg()
+            .children(Type::iter().map(|t| t.to_string()))
     }
 
     fn toggle(&mut self) {
@@ -41,16 +40,26 @@ impl Dropdown {
 }
 
 impl Render for Dropdown {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
-            .flex_row()
-            .items_center()
-            .gap_x_1()
-            .child(self.current.clone())
-            .child(button("", "chevron.svg", |_, _| {
-                println!("Clicked Dropdown Button");
-            }))
+            .flex_col()
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .size_full()
+                    .items_center()
+                    .gap_x_1()
+                    .child(self.current.clone())
+                    .child(button(
+                        "",
+                        "chevron.svg",
+                        cx.listener(move |this, _, _window, _cx| {
+                            this.toggle();
+                        }),
+                    )),
+            )
             .child(if self.show { self.render_list() } else { div() })
     }
 }

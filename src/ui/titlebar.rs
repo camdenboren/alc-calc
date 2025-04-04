@@ -13,7 +13,7 @@ pub fn titlebar() -> Div {
         .bg(gpui::opaque_grey(0.2, 1.0))
         .w_full()
         .child(div().flex().items_center().justify_center().size_full())
-        .child(button("", "close.svg", |window, _| {
+        .child(button("", "close.svg", |_, window, _| {
             window.remove_window();
         }))
 }
