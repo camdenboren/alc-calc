@@ -105,8 +105,6 @@ impl Render for UI {
                             div()
                                 .flex()
                                 .flex_col()
-                                .flex_1()
-                                .overflow_hidden()
                                 .rounded_sm()
                                 // header
                                 .child(
@@ -134,6 +132,8 @@ impl Render for UI {
                                 // ingreds
                                 .child(
                                     div()
+                                        .flex()
+                                        .flex_col()
                                         .border_t_1()
                                         .border_color(opaque_grey(0.5, 0.5))
                                         .children(self.ingreds.clone()),

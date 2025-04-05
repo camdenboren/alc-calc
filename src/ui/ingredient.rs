@@ -30,17 +30,13 @@ impl Ingredient {
     }
 
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
-        div()
-            .whitespace_nowrap()
-            .truncate()
-            .w(width)
-            .child(match key {
-                "alc_type" => div().child(self.alc_type.clone()),
-                "percentage" => div().child(self.percentage_input.clone()),
-                "parts" => div().child(self.parts_input.clone()),
-                "weight" => div().child(self.weight.clone()),
-                _ => div().child("--"),
-            })
+        div().w(width).child(match key {
+            "alc_type" => div().child(self.alc_type.clone()),
+            "percentage" => div().child(self.percentage_input.clone()),
+            "parts" => div().child(self.parts_input.clone()),
+            "weight" => div().child(self.weight.clone()),
+            _ => div().child("--"),
+        })
     }
 }
 
