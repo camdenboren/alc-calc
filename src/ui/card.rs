@@ -3,7 +3,7 @@
 
 use gpui::{opaque_grey, prelude::*, Div};
 
-pub fn card(content: Div) -> Div {
+pub fn card(content: Div) -> impl IntoElement {
     content
         .flex()
         .flex_col()

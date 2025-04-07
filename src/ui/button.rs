@@ -25,3 +25,16 @@ pub fn button(
         .child(img(icon_path.clone()))
         .on_click(move |event, window, cx| on_click(event, window, cx))
 }
+
+pub fn text_button(
+    text: String,
+    on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+) -> impl IntoElement {
+    div()
+        .id("")
+        .flex()
+        .active(|this| this.opacity(0.85))
+        .cursor_pointer()
+        .child(SharedString::from(text))
+        .on_click(move |event, window, cx| on_click(event, window, cx))
+}

@@ -3,7 +3,7 @@
 
 use crate::types::Type;
 use crate::ui::button::*;
-use gpui::{div, opaque_grey, prelude::*, Div, SharedString, Window};
+use gpui::{div, opaque_grey, prelude::*, SharedString, Window};
 use strum::IntoEnumIterator;
 
 pub struct Dropdown {
@@ -19,7 +19,7 @@ impl Dropdown {
         }
     }
 
-    fn render_list(&self) -> Div {
+    fn render_list(&self, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
             .flex_col()
@@ -27,7 +27,15 @@ impl Dropdown {
             .top_8()
             .bg(opaque_grey(0.5, 0.5))
             .rounded_lg()
-            .children(Type::iter().map(|t| t.to_string()))
+            .px_1()
+            .children(Type::iter().map(|t| {
+                div().child(text_button(
+                    t.to_string(),
+                    cx.listener(move |this, _, _window, _cx| {
+                        this.update(SharedString::from(t.to_string()))
+                    }),
+                ))
+            }))
     }
 
     fn toggle(&mut self) {
@@ -36,6 +44,11 @@ impl Dropdown {
         } else {
             self.show = true;
         }
+    }
+
+    fn update(&mut self, val: SharedString) {
+        self.current = val;
+        self.toggle();
     }
 }
 
@@ -50,7 +63,7 @@ impl Render for Dropdown {
                     .flex_row()
                     .size_full()
                     .items_center()
-                    .gap_x_1()
+                    .justify_between()
                     .child(self.current.clone())
                     .child(button(
                         "",
@@ -60,6 +73,6 @@ impl Render for Dropdown {
                         }),
                     )),
             )
-            .child(if self.show { self.render_list() } else { div() })
+            .when(self.show, |this| this.child(self.render_list(cx)))
     }
 }

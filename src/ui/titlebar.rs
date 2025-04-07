@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::button::*;
-use gpui::{div, prelude::*, px, Div};
+use gpui::{div, prelude::*, px};
 
-pub fn titlebar() -> Div {
+pub fn titlebar() -> impl IntoElement {
     div()
         .flex()
         .h(px(32.))

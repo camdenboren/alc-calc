@@ -6,10 +6,10 @@ use crate::ui::input::TextInput;
 use gpui::{div, opaque_grey, prelude::*, px, App, Entity, Pixels, SharedString, Window};
 
 pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 128.),
-    ("percentage", 164.),
-    ("parts", 164.),
-    ("weight", 128.),
+    ("alc_type", 132.),
+    ("percentage", 132.),
+    ("parts", 132.),
+    ("weight", 72.),
 ];
 
 pub struct Ingredient {
@@ -50,6 +50,7 @@ impl Render for Ingredient {
             .py_1()
             .items_center()
             .justify_center()
+            .gap_x_4()
             .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))
     }
 }

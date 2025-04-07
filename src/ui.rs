@@ -79,7 +79,7 @@ impl Render for UI {
             .shadow_lg()
             .text_xl()
             .text_color(rgb(0xffffff))
-            .child(if OS == "linux" { titlebar() } else { div() })
+            .when(OS == "linux", |this| this.child(titlebar()))
             .child(
                 div()
                     .flex()
@@ -96,12 +96,12 @@ impl Render for UI {
                             .child(self.num_drinks_input.clone()),
                     ))
                     // table of ingredients
-                    .child(if num_ingredients > 0 && num_drinks > 0 {
+                    .when(num_ingredients > 0 && num_drinks > 0, |this| {
                         // update ingreds vec when num_ingredients changes
                         if self.ingreds.len() as i32 != num_ingredients {
                             self.refresh(cx, num_ingredients);
                         }
-                        card(
+                        this.child(card(
                             div()
                                 .flex()
                                 .flex_col()
@@ -114,6 +114,7 @@ impl Render for UI {
                                         .items_center()
                                         .justify_center()
                                         .w_full()
+                                        .gap_x_4()
                                         .overflow_hidden()
                                         .text_color(rgb(0xffffff))
                                         .bg(opaque_grey(0.2, 1.0))
@@ -124,7 +125,6 @@ impl Render for UI {
                                                 .whitespace_nowrap()
                                                 .flex_shrink_0()
                                                 .truncate()
-                                                .px_1()
                                                 .w(px(width))
                                                 .child(key.replace("_", " ").to_uppercase())
                                         })),
@@ -138,9 +138,7 @@ impl Render for UI {
                                         .border_color(opaque_grey(0.5, 0.5))
                                         .children(self.ingreds.clone()),
                                 ),
-                        )
-                    } else {
-                        div()
+                        ))
                     }),
             )
     }
