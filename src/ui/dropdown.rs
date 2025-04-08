@@ -27,14 +27,18 @@ impl Dropdown {
             .top_8()
             .bg(opaque_grey(0.5, 0.5))
             .rounded_lg()
-            .px_1()
+            .p_1()
             .children(Type::iter().map(|t| {
-                div().child(text_button(
-                    t.to_string(),
-                    cx.listener(move |this, _, _window, _cx| {
-                        this.update(SharedString::from(t.to_string()))
-                    }),
-                ))
+                div()
+                    .rounded_md()
+                    .px_1()
+                    .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
+                    .child(text_button(
+                        t.to_string(),
+                        cx.listener(move |this, _, _window, _cx| {
+                            this.update(SharedString::from(t.to_string()))
+                        }),
+                    ))
             }))
     }
 

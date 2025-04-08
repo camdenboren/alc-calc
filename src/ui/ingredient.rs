@@ -6,7 +6,7 @@ use crate::ui::input::TextInput;
 use gpui::{div, opaque_grey, prelude::*, px, App, Entity, Pixels, SharedString, Window};
 
 pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 132.),
+    ("alc_type", 138.),
     ("percentage", 132.),
     ("parts", 132.),
     ("weight", 72.),
