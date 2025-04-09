@@ -3,8 +3,8 @@
 
 use crate::types::Type;
 use crate::ui::button::*;
-use gpui::{div, opaque_grey, prelude::*, SharedString, Window};
-use strum::IntoEnumIterator;
+use gpui::{div, opaque_grey, prelude::*, uniform_list, SharedString, Window};
+use strum::{EnumCount, IntoEnumIterator};
 
 pub struct Dropdown {
     current: SharedString,
@@ -28,18 +28,39 @@ impl Dropdown {
             .bg(opaque_grey(0.5, 0.5))
             .rounded_lg()
             .p_1()
-            .children(Type::iter().map(|t| {
-                div()
-                    .rounded_md()
-                    .px_1()
-                    .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
-                    .child(text_button(
-                        t.to_string(),
-                        cx.listener(move |this, _, _window, _cx| {
-                            this.update(SharedString::from(t.to_string()))
-                        }),
-                    ))
-            }))
+            .w_full()
+            .h_80()
+            .child(
+                uniform_list(
+                    cx.entity().clone(),
+                    "ingreds_list",
+                    Type::COUNT,
+                    |_this, range, _window, cx| {
+                        let mut items = Vec::new();
+                        let types: Vec<SharedString> = Type::iter()
+                            .map(|t| SharedString::from(t.to_string()))
+                            .collect();
+
+                        for ix in range {
+                            let item = types[ix].clone();
+                            items.push(
+                                div()
+                                    .rounded_md()
+                                    .px_1()
+                                    .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
+                                    .child(text_button(
+                                        item.clone(),
+                                        cx.listener(move |this, _, _window, _cx| {
+                                            this.update(item.clone());
+                                        }),
+                                    )),
+                            );
+                        }
+                        items
+                    },
+                )
+                .h_full(),
+            )
     }
 
     fn toggle(&mut self) {

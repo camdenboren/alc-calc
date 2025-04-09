@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::str::FromStr;
-use strum_macros::{Display, EnumIter, EnumString};
+use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-#[derive(EnumString, Clone, EnumIter, Display)]
+#[derive(EnumString, Clone, EnumCount, EnumIter, Display)]
 pub enum Type {
     Hard,
     Whiskey,
