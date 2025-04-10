@@ -4,17 +4,16 @@
 pub mod button;
 pub mod card;
 pub mod dropdown;
-pub mod ingredient;
 pub mod input;
+pub mod table;
 pub mod titlebar;
 use crate::calc::alc_weight;
 use crate::ui::card::card;
-use crate::ui::ingredient::{Ingredient, FIELDS};
 use crate::ui::input::TextInput;
+use crate::ui::table::Table;
 use crate::ui::titlebar::titlebar;
 use gpui::{
-    div, opaque_grey, prelude::*, px, rgb, App, Entity, FocusHandle, Focusable, Keystroke,
-    SharedString, Window,
+    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString, Window,
 };
 use std::env::consts::OS;
 
@@ -23,7 +22,7 @@ pub struct UI {
     num: u32,
     num_ingredients_input: Entity<TextInput>,
     num_drinks_input: Entity<TextInput>,
-    ingreds: Vec<Entity<Ingredient>>,
+    table: Entity<Table>,
     pub recent_keystrokes: Vec<Keystroke>,
     focus_handle: FocusHandle,
 }
@@ -36,25 +35,16 @@ impl Focusable for UI {
 
 impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
-        let (numm, _weight) = alc_weight("Liqueur", 40.0);
-        let num_ingredients_input = cx.new(|cx| TextInput::new(cx, "Type here...".into()));
-        let num_drinks_input = cx.new(|cx| TextInput::new(cx, "Type here...".into()));
+        let (num, _weight) = alc_weight("Liqueur", 40.0);
         cx.new(|cx| UI {
             text: "calc".into(),
-            num: numm,
-            num_ingredients_input,
-            num_drinks_input,
-            ingreds: vec![],
+            num,
+            num_ingredients_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            table: cx.new(|_| Table::new()),
             recent_keystrokes: vec![],
             focus_handle: cx.focus_handle(),
         })
-    }
-
-    fn refresh(&mut self, cx: &mut App, num_ingredients: i32) {
-        self.ingreds = vec![];
-        for _ in 0..num_ingredients {
-            self.ingreds.push(cx.new(|cx| Ingredient::new(cx)))
-        }
     }
 }
 
@@ -98,47 +88,12 @@ impl Render for UI {
                     // table of ingredients
                     .when(num_ingredients > 0 && num_drinks > 0, |this| {
                         // update ingreds vec when num_ingredients changes
-                        if self.ingreds.len() as i32 != num_ingredients {
-                            self.refresh(cx, num_ingredients);
+                        if self.table.read(cx).ingreds.len() as i32 != num_ingredients {
+                            self.table.update(cx, |table, cx| {
+                                table.refresh(cx, num_ingredients);
+                            });
                         }
-                        this.child(card(
-                            div()
-                                .flex()
-                                .flex_col()
-                                .rounded_sm()
-                                // header
-                                .child(
-                                    div()
-                                        .flex()
-                                        .flex_row()
-                                        .items_center()
-                                        .justify_center()
-                                        .w_full()
-                                        .gap_x_4()
-                                        .overflow_hidden()
-                                        .text_color(rgb(0xffffff))
-                                        .bg(opaque_grey(0.2, 1.0))
-                                        .py_1()
-                                        .text_xs()
-                                        .children(FIELDS.map(|(key, width)| {
-                                            div()
-                                                .whitespace_nowrap()
-                                                .flex_shrink_0()
-                                                .truncate()
-                                                .w(px(width))
-                                                .child(key.replace("_", " ").to_uppercase())
-                                        })),
-                                )
-                                // ingreds
-                                .child(
-                                    div()
-                                        .flex()
-                                        .flex_col()
-                                        .border_t_1()
-                                        .border_color(opaque_grey(0.5, 0.5))
-                                        .children(self.ingreds.clone()),
-                                ),
-                        ))
+                        this.child(self.table.clone())
                     }),
             )
     }
