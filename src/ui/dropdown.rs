@@ -7,7 +7,7 @@ use gpui::{div, opaque_grey, prelude::*, uniform_list, SharedString, Window};
 use strum::{EnumCount, IntoEnumIterator};
 
 pub struct Dropdown {
-    current: SharedString,
+    pub current: SharedString,
     show: bool,
 }
 

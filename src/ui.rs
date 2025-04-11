@@ -4,6 +4,7 @@
 pub mod button;
 pub mod card;
 pub mod dropdown;
+pub mod ingredient;
 pub mod input;
 pub mod table;
 pub mod titlebar;

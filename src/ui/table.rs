@@ -4,59 +4,8 @@
 // Adapted from GPUI Example: data_table.rs
 
 use crate::ui::card::card;
-use crate::ui::dropdown::Dropdown;
-use crate::ui::input::TextInput;
-use gpui::{div, opaque_grey, prelude::*, px, rgb, App, Entity, Pixels, SharedString, Window};
-
-pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 138.),
-    ("percentage", 132.),
-    ("parts", 132.),
-    ("weight", 72.),
-];
-
-pub struct Ingredient {
-    alc_type: Entity<Dropdown>,
-    percentage_input: Entity<TextInput>,
-    parts_input: Entity<TextInput>,
-    weight: SharedString,
-}
-
-impl Ingredient {
-    pub fn new(cx: &mut App) -> Self {
-        Self {
-            alc_type: cx.new(|_| Dropdown::new()),
-            percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
-            parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
-            weight: String::from("42.3").into(),
-        }
-    }
-
-    fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
-        div().w(width).child(match key {
-            "alc_type" => div().child(self.alc_type.clone()),
-            "percentage" => div().child(self.percentage_input.clone()),
-            "parts" => div().child(self.parts_input.clone()),
-            "weight" => div().child(self.weight.clone()),
-            _ => div().child("--"),
-        })
-    }
-}
-
-impl Render for Ingredient {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .flex()
-            .flex_row()
-            .border_b_1()
-            .border_color(opaque_grey(0.5, 0.5))
-            .py_1()
-            .items_center()
-            .justify_center()
-            .gap_x_4()
-            .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))
-    }
-}
+use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
+use gpui::{div, opaque_grey, prelude::*, px, rgb, App, Entity, Window};
 
 pub struct Table {
     pub ingreds: Vec<Entity<Ingredient>>,
@@ -73,10 +22,58 @@ impl Table {
             self.ingreds.push(cx.new(|cx| Ingredient::new(cx)))
         }
     }
+
+    fn ready(&mut self, cx: &mut App) -> (bool, Vec<IngredientData>) {
+        let mut ready = true;
+        let mut ingred_data: Vec<IngredientData> = Vec::new();
+
+        for ingred in &self.ingreds {
+            let percentage = ingred.read(cx).percentage_input.read(cx).content.clone();
+            let parts = ingred.read(cx).parts_input.read(cx).content.clone();
+            let percentage: f32 = match percentage.trim().parse() {
+                Ok(num) => num,
+                Err(_) => 0.,
+            };
+            let parts: f32 = match parts.trim().parse() {
+                Ok(num) => num,
+                Err(_) => 0.,
+            };
+            if percentage <= 0. || parts <= 0. {
+                ready = false;
+                return (ready, vec![]);
+            }
+            let mut data = IngredientData::new();
+            data.percentage = percentage;
+            data.parts = parts;
+            ingred_data.push(data);
+        }
+        (ready, ingred_data)
+    }
+
+    fn calc(&mut self, cx: &mut App, data: &mut Vec<IngredientData>) {
+        let mut ix = 0;
+        for ingred in &self.ingreds {
+            data[ix].alc_type = ingred.read(cx).alc_type.read(cx).current.clone();
+        }
+
+        ix = 0;
+        for ingred in &self.ingreds {
+            let weight = data[ix].weight.clone();
+            ingred.update(cx, |ingred, _| {
+                ingred.weight(weight);
+            });
+            ix += 1;
+        }
+    }
 }
 
 impl Render for Table {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let (ready, mut data) = self.ready(cx);
+        if ready {
+            self.calc(cx, &mut data);
+        }
+
         card(
             div()
                 .flex()
