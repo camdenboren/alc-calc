@@ -4,13 +4,15 @@
 ![Static Badge](https://img.shields.io/badge/Powered_by_Nix-grey?logo=nixOS&logoColor=white&logoSize=auto&style=for-the-badge)
 [![built with garnix](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2Fcamdenboren%2Falc-calc%3Fbranch%3Dmain&style=for-the-badge&color=grey&labelColor=grey)](https://garnix.io/repo/camdenboren/alc-calc)
 
-This is a VERY early stage Rust rewrite of my first side project: [Alcohol_Weight_Calculator]
+alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume
+
+This project is under active development and has not yet been released, but it's usable in its current form. **Expect behavioral changes**
 
 ## Motivation
 
 Weight-based measurement is growing in popularity for many in the kitchen, so why not apply this improved accuracy and consistency to making drinks?
 
-The original project is a dead-simple Python CLI for quickly calculating the weight of ingredients in an alcoholic beverage. It has served me well, but it has notable limitations
+The original project ([Alcohol_Weight_Calculator]) is a dead-simple Python CLI for quickly calculating the weight of ingredients in an alcoholic beverage. It has served me well, but it has notable limitations
 
 - No input validation (shameful, I know)
 - Inability to add non-alcoholic ingredients
@@ -35,11 +37,11 @@ Rust rewrite with an undocumented framework it is :moyai:
 
 - The binary crate (`main`) serves only as an entry point into the library crate, which contains the UI and calculation logic
 
-- `ui` contains the main window, with individual views and components delegated to other modules like `titlebar`
+- `ui` contains the main window, with individual views and components delegated to other modules like `dropdown`
 
 ### Build System
 
-Cargo is the underlying build system, _but_ Nix will be the official 'meta' build system for the foreseeable future
+Cargo is the underlying build system, _but_ Nix is the 'meta' build system
 
 For the uninitiated, Nix reproducibly supplies all project dependencies (including rust, Darwin SDKs, custom scripts, etc.) without the need for containers. From a practical standpoint, this means any Linux or macOS user can _reliably_ run this project with a single command
 
@@ -47,12 +49,19 @@ For the uninitiated, Nix reproducibly supplies all project dependencies (includi
 nix run github:camdenboren/alc-calc
 ```
 
-I'll need to get my head wrapped around a few things before I accept contributions, but the `build` and `format` scripts are very useful for any contributors (and are required before PRs)
+The `build` and `format` scripts are very useful for any contributors (these aren't directly used in CI, but they smooth out the PR process)
 
 You can access the development environment (including these scripts) with
 
 ```shell
 nix develop github:camdenboren/alc-calc
+```
+
+Leverage the binary cache by adding [Garnix] to your nix-config
+
+```nix
+nix.settings.substituters = [ "https://cache.garnix.io" ];
+nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
 ```
 
 ## License
@@ -61,4 +70,5 @@ nix develop github:camdenboren/alc-calc
 
 [Alcohol_Weight_Calculator]: https://github.com/camdenboren/Alcohol_Weight_Calculator
 [GPUI]: https://www.gpui.rs/
+[Garnix]: https://garnix.io/
 [GPLv3]: COPYING

@@ -66,6 +66,7 @@ pub struct IngredientData {
     pub density: f32,
     pub volume: f32,
     pub weight: f32,
+    pub intermediate_weight: f32,
 }
 
 impl IngredientData {
@@ -77,6 +78,7 @@ impl IngredientData {
             density: 0.,
             volume: 0.,
             weight: 0.,
+            intermediate_weight: 0.,
         }
     }
 }

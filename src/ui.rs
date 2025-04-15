@@ -8,19 +8,14 @@ pub mod ingredient;
 pub mod input;
 pub mod table;
 pub mod titlebar;
-use crate::calc::alc_weight;
 use crate::ui::card::card;
 use crate::ui::input::TextInput;
 use crate::ui::table::Table;
 use crate::ui::titlebar::titlebar;
-use gpui::{
-    div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, SharedString, Window,
-};
+use gpui::{div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Keystroke, Window};
 use std::env::consts::OS;
 
 pub struct UI {
-    text: SharedString,
-    num: u32,
     num_ingredients_input: Entity<TextInput>,
     num_drinks_input: Entity<TextInput>,
     table: Entity<Table>,
@@ -36,10 +31,7 @@ impl Focusable for UI {
 
 impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
-        let (num, _weight) = alc_weight("Liqueur", 40.0);
         cx.new(|cx| UI {
-            text: "calc".into(),
-            num,
             num_ingredients_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             table: cx.new(|_| Table::new()),
@@ -82,7 +74,6 @@ impl Render for UI {
                     // num_ingreds and num_parts inputs
                     .child(card(
                         div()
-                            .child(format!("alc-{} {}", &self.text, &self.num))
                             .child(self.num_ingredients_input.clone())
                             .child(self.num_drinks_input.clone()),
                     ))
@@ -94,6 +85,14 @@ impl Render for UI {
                                 table.refresh(cx, num_ingredients);
                             });
                         }
+
+                        // propagate changes to num_drinks
+                        if self.table.read(cx).num_drinks != num_drinks {
+                            self.table.update(cx, |table, _| {
+                                table.num_drinks = num_drinks;
+                            })
+                        }
+
                         this.child(self.table.clone())
                     }),
             )

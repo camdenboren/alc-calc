@@ -62,7 +62,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_alc_weight() {
+    fn test_calc_ingred_weight() {
         let cat: Category = match_category("Hard");
         assert_eq!(cat, Category::Hard);
     }

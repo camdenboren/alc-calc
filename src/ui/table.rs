@@ -3,17 +3,22 @@
 
 // Adapted from GPUI Example: data_table.rs
 
+use crate::calc::calc_weights;
 use crate::ui::card::card;
 use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
 use gpui::{div, opaque_grey, prelude::*, px, rgb, App, Entity, Window};
 
 pub struct Table {
     pub ingreds: Vec<Entity<Ingredient>>,
+    pub num_drinks: i32,
 }
 
 impl Table {
     pub fn new() -> Self {
-        Self { ingreds: vec![] }
+        Self {
+            ingreds: vec![],
+            num_drinks: 0,
+        }
     }
 
     pub fn refresh(&mut self, cx: &mut App, num_ingredients: i32) {
@@ -50,11 +55,14 @@ impl Table {
         (ready, ingred_data)
     }
 
-    fn calc(&mut self, cx: &mut App, data: &mut Vec<IngredientData>) {
+    fn calc(&mut self, cx: &mut App, data: &mut Vec<IngredientData>, num_drinks: i32) {
         let mut ix = 0;
         for ingred in &self.ingreds {
             data[ix].alc_type = ingred.read(cx).alc_type.read(cx).current.clone();
+            ix += 1;
         }
+
+        let data = calc_weights(data, num_drinks);
 
         ix = 0;
         for ingred in &self.ingreds {
@@ -71,7 +79,7 @@ impl Render for Table {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let (ready, mut data) = self.ready(cx);
         if ready {
-            self.calc(cx, &mut data);
+            self.calc(cx, &mut data, self.num_drinks);
         }
 
         card(
