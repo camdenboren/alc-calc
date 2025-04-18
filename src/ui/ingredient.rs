@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::ui::button::button;
 use crate::ui::dropdown::Dropdown;
 use crate::ui::input::TextInput;
 use gpui::{div, opaque_grey, prelude::*, px, App, Entity, Pixels, SharedString, Window};
 
 pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 138.),
+    ("alc_type", 148.),
     ("percentage", 132.),
     ("parts", 132.),
     ("weight", 72.),
@@ -17,6 +18,7 @@ pub struct Ingredient {
     pub percentage_input: Entity<TextInput>,
     pub parts_input: Entity<TextInput>,
     pub weight: SharedString,
+    pub remove: bool,
 }
 
 impl Ingredient {
@@ -25,7 +27,8 @@ impl Ingredient {
             alc_type: cx.new(|_| Dropdown::new()),
             percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
-            weight: String::from("42.3").into(),
+            weight: String::from("0").into(),
+            remove: false,
         }
     }
 
@@ -34,7 +37,11 @@ impl Ingredient {
             "alc_type" => div().child(self.alc_type.clone()),
             "percentage" => div().child(self.percentage_input.clone()),
             "parts" => div().child(self.parts_input.clone()),
-            "weight" => div().child(self.weight.clone()),
+            "weight" => div()
+                .flex()
+                .flex_row()
+                .child(self.weight.clone())
+                .when(&self.weight != "--", |this| this.child("g")),
             _ => div().child("--"),
         })
     }
@@ -42,10 +49,14 @@ impl Ingredient {
     pub fn weight(&mut self, weight: f32) {
         self.weight = SharedString::from(weight.to_string());
     }
+
+    fn remove(&mut self) {
+        self.remove = true;
+    }
 }
 
 impl Render for Ingredient {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
             .flex_row()
@@ -55,6 +66,11 @@ impl Render for Ingredient {
             .items_center()
             .justify_center()
             .gap_x_4()
+            .child(button(
+                "",
+                "minus.svg",
+                cx.listener(move |this, _, _window, _cx| this.remove()),
+            ))
             .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))
     }
 }

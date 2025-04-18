@@ -3,7 +3,7 @@
 
 use crate::types::Type;
 use crate::ui::button::*;
-use gpui::{div, opaque_grey, prelude::*, uniform_list, SharedString, Window};
+use gpui::{div, opaque_grey, prelude::*, px, uniform_list, SharedString, Window};
 use strum::{EnumCount, IntoEnumIterator};
 
 pub struct Dropdown {
@@ -24,9 +24,10 @@ impl Dropdown {
             .flex()
             .flex_col()
             .absolute()
-            .top_8()
+            .top_12()
+            .right(px(0.))
             .bg(opaque_grey(0.5, 0.5))
-            .rounded_lg()
+            .rounded_md()
             .p_1()
             .w_full()
             .h_80()
@@ -82,6 +83,10 @@ impl Render for Dropdown {
         div()
             .flex()
             .flex_col()
+            .bg(opaque_grey(0.1, 0.5))
+            .px_2()
+            .py_1()
+            .rounded_md()
             .child(
                 div()
                     .flex()

@@ -28,15 +28,15 @@ fn calc_volume(alc_type: u32, percentage: f32) -> f32 {
     }
 }
 
-fn calc_scalar(data: &mut Vec<IngredientData>, num_drinks: i32) -> f32 {
+fn calc_scalar(data: &mut Vec<IngredientData>, num_drinks: f32) -> f32 {
     let mut temp = 0.;
     for ix in 0..data.len() {
         temp += data[ix].intermediate_weight / data[ix].weight;
     }
-    num_drinks as f32 / temp
+    num_drinks / temp
 }
 
-pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: i32) -> &mut Vec<IngredientData> {
+pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec<IngredientData> {
     if data.len() > 1 {
         // factor in volume and number of parts when there's multiple ingreds
         for ix in 0..data.len() {
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_calc_scalar() {
-        let num_drinks = 2;
+        let num_drinks = 2.;
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData::new());
         data.push(IngredientData::new());
@@ -115,7 +115,7 @@ mod tests {
         data[0].alc_type = SharedString::from("Whiskey");
         data[0].percentage = 40.;
 
-        let result = calc_weights(&mut data, 1)[0].weight;
+        let result = calc_weights(&mut data, 1.)[0].weight;
         assert_eq!(result, 42.28);
     }
 
@@ -131,7 +131,7 @@ mod tests {
         data[0].parts = 1.;
         data[1].parts = 1.;
 
-        let result = calc_weights(&mut data, 2);
+        let result = calc_weights(&mut data, 2.);
         assert_eq!(result[0].weight, 42.28);
         assert_eq!(result[1].weight, 42.28);
     }
