@@ -7,6 +7,8 @@ use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
 use crate::ui::input::TextInput;
 use gpui::{div, opaque_grey, prelude::*, px, rgb, App, Entity, Window};
 
+pub const MAX_ITEMS: usize = 8;
+
 pub struct Table {
     pub ingreds: Vec<Entity<Ingredient>>,
     pub num_drinks_input: Entity<TextInput>,
@@ -23,7 +25,7 @@ impl Table {
         }
 
         Self {
-            ingreds: vec![cx.new(|cx| Ingredient::new(cx))],
+            ingreds: vec![cx.new(|cx| Ingredient::new(0, cx))],
             num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             num_drinks: 0.,
             width,
@@ -31,8 +33,9 @@ impl Table {
     }
 
     fn add(&mut self, cx: &mut App) {
-        if self.ingreds.len() < 8 {
-            self.ingreds.push(cx.new(|cx| Ingredient::new(cx)))
+        if self.ingreds.len() < MAX_ITEMS {
+            let id = self.ingreds.len();
+            self.ingreds.push(cx.new(|cx| Ingredient::new(id, cx)))
         }
     }
 

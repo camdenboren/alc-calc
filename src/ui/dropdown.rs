@@ -3,19 +3,22 @@
 
 use crate::types::Type;
 use crate::ui::button::*;
-use gpui::{div, opaque_grey, prelude::*, px, uniform_list, SharedString, Window};
+use crate::ui::table::MAX_ITEMS;
+use gpui::{deferred, div, opaque_grey, prelude::*, px, uniform_list, SharedString, Window};
 use strum::{EnumCount, IntoEnumIterator};
 
 pub struct Dropdown {
     pub current: SharedString,
     show: bool,
+    id: usize,
 }
 
 impl Dropdown {
-    pub fn new() -> Self {
+    pub fn new(id: usize) -> Self {
         Self {
             current: "Whiskey".into(),
             show: false,
+            id,
         }
     }
 
@@ -80,29 +83,32 @@ impl Dropdown {
 
 impl Render for Dropdown {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .flex()
-            .flex_col()
-            .bg(opaque_grey(0.1, 0.5))
-            .px_2()
-            .py_1()
-            .rounded_md()
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .size_full()
-                    .items_center()
-                    .justify_between()
-                    .child(self.current.clone())
-                    .child(button(
-                        "",
-                        "chevron.svg",
-                        cx.listener(move |this, _, _window, _cx| {
-                            this.toggle();
-                        }),
-                    )),
-            )
-            .when(self.show, |this| this.child(self.render_list(cx)))
+        deferred(
+            div()
+                .flex()
+                .flex_col()
+                .bg(opaque_grey(0.1, 0.5))
+                .px_2()
+                .py_1()
+                .rounded_md()
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .size_full()
+                        .items_center()
+                        .justify_between()
+                        .child(self.current.clone())
+                        .child(button(
+                            "",
+                            "chevron.svg",
+                            cx.listener(move |this, _, _window, _cx| {
+                                this.toggle();
+                            }),
+                        )),
+                )
+                .when(self.show, |this| this.child(self.render_list(cx))),
+        )
+        .with_priority(MAX_ITEMS - self.id)
     }
 }
