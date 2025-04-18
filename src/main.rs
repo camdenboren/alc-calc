@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use alc_calc::ui::UI;
-use gpui::{actions, App, Application, KeyBinding, Menu, MenuItem, WindowOptions};
+use gpui::{
+    actions, App, Application, KeyBinding, Menu, MenuItem, WindowBackgroundAppearance,
+    WindowOptions,
+};
 use std::env::consts::OS;
 
 actions!(alc_alc, [Quit]);
@@ -22,6 +25,7 @@ fn main() {
         cx.open_window(
             WindowOptions {
                 focus: true,
+                window_background: WindowBackgroundAppearance::Transparent,
                 ..Default::default()
             },
             |_, cx| UI::new(cx),

@@ -17,7 +17,7 @@ impl Titlebar {
 }
 
 impl Render for Titlebar {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .id("titlebar")
             .flex()
@@ -26,6 +26,7 @@ impl Render for Titlebar {
             .px_4()
             .bg(gpui::opaque_grey(0.2, 1.0))
             .w_full()
+            .when(!window.is_maximized(), |this| this.rounded_t_xl())
             .on_click(|event, window, _| {
                 if event.up.click_count == 2 {
                     window.zoom_window();

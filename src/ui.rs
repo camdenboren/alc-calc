@@ -35,7 +35,7 @@ impl UI {
 }
 
 impl Render for UI {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .font_family(".SystemUIFont")
             .bg(rgb(0x505050))
@@ -44,7 +44,10 @@ impl Render for UI {
             .shadow_lg()
             .text_xl()
             .text_color(rgb(0xffffff))
-            .when(OS == "linux", |this| this.child(self.titlebar.clone()))
+            .when(OS == "linux", |this| {
+                this.child(self.titlebar.clone())
+                    .when(!window.is_maximized(), |this| this.rounded_xl())
+            })
             .child(
                 div()
                     .flex()
