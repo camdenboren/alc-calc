@@ -8,12 +8,13 @@ pub mod input;
 pub mod table;
 pub mod titlebar;
 use crate::ui::table::Table;
-use crate::ui::titlebar::titlebar;
+use crate::ui::titlebar::Titlebar;
 use gpui::{div, prelude::*, rgb, App, Entity, FocusHandle, Focusable, Window};
 use std::env::consts::OS;
 
 pub struct UI {
     table: Entity<Table>,
+    titlebar: Entity<Titlebar>,
     focus_handle: FocusHandle,
 }
 
@@ -27,6 +28,7 @@ impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
         cx.new(|cx| UI {
             table: cx.new(|cx| Table::new(cx)),
+            titlebar: cx.new(|_| Titlebar::new()),
             focus_handle: cx.focus_handle(),
         })
     }
@@ -42,7 +44,7 @@ impl Render for UI {
             .shadow_lg()
             .text_xl()
             .text_color(rgb(0xffffff))
-            .when(OS == "linux", |this| this.child(titlebar()))
+            .when(OS == "linux", |this| this.child(self.titlebar.clone()))
             .child(
                 div()
                     .flex()
