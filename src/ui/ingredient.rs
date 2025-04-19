@@ -24,7 +24,7 @@ pub struct Ingredient {
 impl Ingredient {
     pub fn new(id: usize, cx: &mut App) -> Self {
         Self {
-            alc_type: cx.new(|_| Dropdown::new(id)),
+            alc_type: cx.new(|cx| Dropdown::new(id, cx)),
             percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             weight: String::from("0").into(),

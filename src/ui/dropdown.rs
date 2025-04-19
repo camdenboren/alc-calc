@@ -4,21 +4,28 @@
 use crate::types::Type;
 use crate::ui::button::*;
 use crate::ui::table::MAX_ITEMS;
-use gpui::{deferred, div, opaque_grey, prelude::*, px, uniform_list, SharedString, Window};
+use gpui::{
+    actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
+    KeyBinding, SharedString, Window,
+};
 use strum::{EnumCount, IntoEnumIterator};
+
+actions!(dropdown, [Escape,]);
 
 pub struct Dropdown {
     pub current: SharedString,
     show: bool,
     id: usize,
+    focus_handle: FocusHandle,
 }
 
 impl Dropdown {
-    pub fn new(id: usize) -> Self {
+    pub fn new(id: usize, cx: &mut App) -> Self {
         Self {
             current: "Whiskey".into(),
             show: false,
             id,
+            focus_handle: cx.focus_handle(),
         }
     }
 
@@ -63,30 +70,38 @@ impl Dropdown {
                         items
                     },
                 )
+                .on_mouse_down_out(cx.listener(|this, _, window, cx| {
+                    this.escape(&Escape, window, cx);
+                }))
                 .h_full(),
             )
     }
 
     fn toggle(&mut self) {
-        if self.show {
-            self.show = false;
-        } else {
-            self.show = true;
-        }
+        self.show = !self.show;
     }
 
     fn update(&mut self, val: SharedString) {
         self.current = val;
         self.toggle();
     }
+
+    fn escape(&mut self, _: &Escape, _window: &mut Window, _cx: &mut Context<Self>) {
+        self.show = false;
+    }
 }
 
 impl Render for Dropdown {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        cx.bind_keys([KeyBinding::new("escape", Escape, None)]);
+
         deferred(
             div()
                 .flex()
                 .flex_col()
+                .key_context("Dropdown")
+                .on_action(cx.listener(Self::escape))
+                .track_focus(&self.focus_handle)
                 .bg(opaque_grey(0.1, 0.5))
                 .px_2()
                 .py_1()
@@ -110,5 +125,11 @@ impl Render for Dropdown {
                 .when(self.show, |this| this.child(self.render_list(cx))),
         )
         .with_priority(MAX_ITEMS - self.id)
+    }
+}
+
+impl Focusable for Dropdown {
+    fn focus_handle(&self, _: &App) -> FocusHandle {
+        self.focus_handle.clone()
     }
 }
