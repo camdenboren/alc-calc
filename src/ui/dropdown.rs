@@ -10,11 +10,11 @@ use gpui::{
 };
 use strum::{EnumCount, IntoEnumIterator};
 
-actions!(dropdown, [Escape,]);
+actions!(dropdown, [Escape, Enter,]);
 
 pub struct Dropdown {
     pub current: SharedString,
-    show: bool,
+    pub show: bool,
     id: usize,
     focus_handle: FocusHandle,
 }
@@ -34,9 +34,9 @@ impl Dropdown {
             .flex()
             .flex_col()
             .absolute()
-            .top_12()
+            .top_10()
             .right(px(0.))
-            .bg(opaque_grey(0.5, 0.5))
+            .bg(opaque_grey(0.15, 1.0))
             .rounded_md()
             .p_1()
             .w_full()
@@ -61,8 +61,8 @@ impl Dropdown {
                                     .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
                                     .child(text_button(
                                         item.clone(),
-                                        cx.listener(move |this, _, _window, _cx| {
-                                            this.update(item.clone());
+                                        cx.listener(move |this, _, window, _cx| {
+                                            this.update(window, item.clone());
                                         }),
                                     )),
                             );
@@ -77,23 +77,31 @@ impl Dropdown {
             )
     }
 
-    fn toggle(&mut self) {
+    pub fn toggle(&mut self) {
         self.show = !self.show;
     }
 
-    fn update(&mut self, val: SharedString) {
+    fn update(&mut self, window: &mut Window, val: SharedString) {
         self.current = val;
         self.toggle();
+        self.focus_handle.focus(window);
     }
 
     fn escape(&mut self, _: &Escape, _window: &mut Window, _cx: &mut Context<Self>) {
         self.show = false;
     }
+
+    fn show(&mut self, _: &Enter, _window: &mut Window, _cx: &mut Context<Self>) {
+        self.show = true;
+    }
 }
 
 impl Render for Dropdown {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        cx.bind_keys([KeyBinding::new("escape", Escape, None)]);
+        cx.bind_keys([
+            KeyBinding::new("escape", Escape, None),
+            KeyBinding::new("enter", Enter, None),
+        ]);
 
         deferred(
             div()
@@ -101,8 +109,12 @@ impl Render for Dropdown {
                 .flex_col()
                 .key_context("Dropdown")
                 .on_action(cx.listener(Self::escape))
+                .on_action(cx.listener(Self::show))
                 .track_focus(&self.focus_handle)
-                .bg(opaque_grey(0.1, 0.5))
+                .bg(opaque_grey(0.15, 1.0))
+                .border_1()
+                .border_color(opaque_grey(0.15, 1.0))
+                .focus(|this| this.border_color(gpui::Hsla::blue()))
                 .px_2()
                 .py_1()
                 .rounded_md()

@@ -5,15 +5,23 @@ use crate::calc::calc_weights;
 use crate::ui::button::button;
 use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
 use crate::ui::input::TextInput;
-use gpui::{div, opaque_grey, prelude::*, px, rgb, App, Entity, Window};
+use gpui::{
+    actions, div, opaque_grey, prelude::*, px, rgb, App, Entity, FocusHandle, Focusable,
+    KeyBinding, Window,
+};
+use std::env::consts::OS;
 
-pub const MAX_ITEMS: usize = 8;
+actions!(table, [Tab, Add, Delete]);
+
+pub const MAX_ITEMS: usize = 10;
 
 pub struct Table {
     pub ingreds: Vec<Entity<Ingredient>>,
     pub num_drinks_input: Entity<TextInput>,
     pub num_drinks: f32,
     width: f32,
+    init: bool,
+    focus_handle: FocusHandle,
 }
 
 impl Table {
@@ -29,14 +37,20 @@ impl Table {
             num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             num_drinks: 0.,
             width,
+            init: true,
+            focus_handle: cx.focus_handle(),
         }
     }
 
-    fn add(&mut self, cx: &mut App) {
+    fn add(&mut self, _: &Add, _window: &mut Window, cx: &mut Context<Self>) {
         if self.ingreds.len() < MAX_ITEMS {
             let id = self.ingreds.len();
             self.ingreds.push(cx.new(|cx| Ingredient::new(id, cx)))
         }
+    }
+
+    fn delete(&mut self, _: &Delete, _window: &mut Window, _cx: &mut Context<Self>) {
+        self.ingreds.pop();
     }
 
     pub fn remove(&mut self, ix: usize) {
@@ -94,10 +108,97 @@ impl Table {
             ix += 1;
         }
     }
+
+    fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
+        // return early for base cases (e.g. entering or leaving ingreds list)
+        if self.focus_handle.is_focused(window) {
+            self.num_drinks_input.focus_handle(cx).focus(window);
+        }
+        if self.num_drinks_input.focus_handle(cx).is_focused(window) && self.ingreds.len() > 0 {
+            self.ingreds[0]
+                .read(cx)
+                .alc_type
+                .focus_handle(cx)
+                .focus(window);
+            return;
+        }
+        if self.ingreds[self.ingreds.len() - 1]
+            .read(cx)
+            .parts_input
+            .focus_handle(cx)
+            .is_focused(window)
+        {
+            self.num_drinks_input.focus_handle(cx).focus(window);
+            return;
+        }
+
+        // focus next ingred field otw
+        for ix in 0..self.ingreds.len() {
+            if self.ingreds[ix]
+                .read(cx)
+                .alc_type
+                .focus_handle(cx)
+                .is_focused(window)
+            {
+                // hide dropdown before focusing input
+                if self.ingreds[ix].read(cx).alc_type.read(cx).show {
+                    self.ingreds[ix]
+                        .read(cx)
+                        .alc_type
+                        .clone()
+                        .update(cx, |alc_type, _| alc_type.toggle())
+                }
+                self.ingreds[ix]
+                    .read(cx)
+                    .percentage_input
+                    .focus_handle(cx)
+                    .focus(window);
+                break;
+            } else if self.ingreds[ix]
+                .read(cx)
+                .percentage_input
+                .focus_handle(cx)
+                .is_focused(window)
+            {
+                self.ingreds[ix]
+                    .read(cx)
+                    .parts_input
+                    .focus_handle(cx)
+                    .focus(window);
+                break;
+            } else if self.ingreds.len() > ix + 1
+                && self.ingreds[ix]
+                    .read(cx)
+                    .parts_input
+                    .focus_handle(cx)
+                    .is_focused(window)
+            {
+                self.ingreds[ix + 1]
+                    .read(cx)
+                    .alc_type
+                    .focus_handle(cx)
+                    .focus(window);
+                break;
+            }
+        }
+    }
 }
 
 impl Render for Table {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // focus num_drinks_input on launch
+        if self.init {
+            self.num_drinks_input.focus_handle(cx).focus(window);
+            self.init = false;
+        }
+
+        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+        cx.bind_keys([
+            KeyBinding::new("tab", Tab, None),
+            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, None),
+            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, None),
+        ]);
+
         let num_drinks = self.num_drinks_input.read(cx).content.clone();
         let num_drinks: f32 = match num_drinks.trim().parse() {
             Ok(num) => num,
@@ -119,6 +220,11 @@ impl Render for Table {
         }
 
         div()
+            .key_context("Table")
+            .on_action(cx.listener(Self::focus_next))
+            .on_action(cx.listener(Self::add))
+            .on_action(cx.listener(Self::delete))
+            .track_focus(&self.focus_handle(cx))
             .flex()
             .flex_col()
             .gap_3()
@@ -194,10 +300,16 @@ impl Render for Table {
                     .child(div().py_1().w(px(self.width + 78.)).child(button(
                         "",
                         "plus.svg",
-                        cx.listener(move |this, _, _window, cx| {
-                            this.add(cx);
+                        cx.listener(move |this, _, window, cx| {
+                            this.add(&Add, window, cx);
                         }),
                     ))),
             )
+    }
+}
+
+impl Focusable for Table {
+    fn focus_handle(&self, _: &App) -> FocusHandle {
+        self.focus_handle.clone()
     }
 }
