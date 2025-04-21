@@ -49,8 +49,30 @@ impl Table {
         }
     }
 
-    fn delete(&mut self, _: &Delete, _window: &mut Window, _cx: &mut Context<Self>) {
-        self.ingreds.pop();
+    fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
+        // move focus to num_drinks_input when focused ingredient is deleted
+        let len = self.ingreds.len();
+        if len > 0 {
+            if self.ingreds[len - 1]
+                .read(cx)
+                .parts_input
+                .focus_handle(cx)
+                .is_focused(window)
+                || self.ingreds[len - 1]
+                    .read(cx)
+                    .percentage_input
+                    .focus_handle(cx)
+                    .is_focused(window)
+                || self.ingreds[len - 1]
+                    .read(cx)
+                    .alc_type
+                    .focus_handle(cx)
+                    .is_focused(window)
+            {
+                self.focus_handle(cx).focus(window);
+            }
+            self.ingreds.pop();
+        }
     }
 
     pub fn remove(&mut self, ix: usize) {
@@ -111,11 +133,12 @@ impl Table {
 
     fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         // return early for base cases (e.g. entering or leaving ingreds list)
+        let len = self.ingreds.len();
         if self.focus_handle.is_focused(window) {
             self.num_drinks_input.focus_handle(cx).focus(window);
             return;
         }
-        if self.num_drinks_input.focus_handle(cx).is_focused(window) && self.ingreds.len() > 0 {
+        if self.num_drinks_input.focus_handle(cx).is_focused(window) && len > 0 {
             self.ingreds[0]
                 .read(cx)
                 .alc_type
@@ -123,18 +146,20 @@ impl Table {
                 .focus(window);
             return;
         }
-        if self.ingreds[self.ingreds.len() - 1]
-            .read(cx)
-            .parts_input
-            .focus_handle(cx)
-            .is_focused(window)
-        {
-            self.num_drinks_input.focus_handle(cx).focus(window);
-            return;
+        if len > 0 {
+            if self.ingreds[len - 1]
+                .read(cx)
+                .parts_input
+                .focus_handle(cx)
+                .is_focused(window)
+            {
+                self.num_drinks_input.focus_handle(cx).focus(window);
+                return;
+            }
         }
 
         // focus next ingred field otw
-        for ix in 0..self.ingreds.len() {
+        for ix in 0..len {
             if self.ingreds[ix]
                 .read(cx)
                 .alc_type
@@ -167,7 +192,7 @@ impl Table {
                     .focus_handle(cx)
                     .focus(window);
                 break;
-            } else if self.ingreds.len() > ix + 1
+            } else if len > ix + 1
                 && self.ingreds[ix]
                     .read(cx)
                     .parts_input
