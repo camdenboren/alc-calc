@@ -113,6 +113,7 @@ impl Table {
         // return early for base cases (e.g. entering or leaving ingreds list)
         if self.focus_handle.is_focused(window) {
             self.num_drinks_input.focus_handle(cx).focus(window);
+            return;
         }
         if self.num_drinks_input.focus_handle(cx).is_focused(window) && self.ingreds.len() > 0 {
             self.ingreds[0]
