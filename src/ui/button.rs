@@ -22,7 +22,7 @@ pub fn button(
         .active(|this| this.opacity(0.85))
         .rounded_full()
         .cursor_pointer()
-        .child(img(icon_path.clone()))
+        .child(img(icon_path))
         .on_click(move |event, window, cx| on_click(event, window, cx))
 }
 

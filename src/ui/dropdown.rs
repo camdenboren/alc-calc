@@ -50,7 +50,7 @@ impl Dropdown {
             .h_80()
             .child(
                 uniform_list(
-                    cx.entity().clone(),
+                    cx.entity(),
                     "ingreds_list",
                     Type::COUNT,
                     |this, range, _window, cx| {

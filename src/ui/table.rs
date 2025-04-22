@@ -230,7 +230,7 @@ impl Render for Table {
             KeyBinding::new(format!("escape").as_str(), Escape, None),
         ]);
 
-        let num_drinks = self.num_drinks_input.read(cx).content.clone();
+        let num_drinks = &self.num_drinks_input.read(cx).content;
         let num_drinks: f32 = match num_drinks.trim().parse() {
             Ok(num) => num,
             Err(_) => 0.,
