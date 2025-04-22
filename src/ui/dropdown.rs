@@ -8,23 +8,30 @@ use gpui::{
     actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
     KeyBinding, SharedString, Window,
 };
+use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};
 
-actions!(dropdown, [Escape, Enter,]);
+actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
 pub struct Dropdown {
+    types: Vec<SharedString>,
     pub current: SharedString,
     pub show: bool,
     id: usize,
+    focused_item: isize,
     focus_handle: FocusHandle,
 }
 
 impl Dropdown {
     pub fn new(id: usize, cx: &mut App) -> Self {
         Self {
+            types: Type::iter()
+                .map(|t| SharedString::from(t.to_string()))
+                .collect(),
             current: "Whiskey".into(),
             show: false,
             id,
+            focused_item: -1,
             focus_handle: cx.focus_handle(),
         }
     }
@@ -46,19 +53,19 @@ impl Dropdown {
                     cx.entity().clone(),
                     "ingreds_list",
                     Type::COUNT,
-                    |_this, range, _window, cx| {
+                    |this, range, _window, cx| {
                         let mut items = Vec::new();
-                        let types: Vec<SharedString> = Type::iter()
-                            .map(|t| SharedString::from(t.to_string()))
-                            .collect();
 
                         for ix in range {
-                            let item = types[ix].clone();
+                            let item = this.types[ix].clone();
                             items.push(
                                 div()
                                     .rounded_md()
                                     .px_1()
                                     .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
+                                    .when(this.focused_item == ix as isize, |this| {
+                                        this.bg(opaque_grey(0.7, 0.5))
+                                    })
                                     .child(text_button(
                                         item.clone(),
                                         cx.listener(move |this, _, window, _cx| {
@@ -82,6 +89,7 @@ impl Dropdown {
     }
 
     fn update(&mut self, window: &mut Window, val: SharedString) {
+        self.focused_item = self.types.iter().position(|t| *t == val).unwrap() as isize;
         self.current = val;
         self.toggle();
         self.focus_handle.focus(window);
@@ -94,6 +102,29 @@ impl Dropdown {
     fn show(&mut self, _: &Enter, _window: &mut Window, _cx: &mut Context<Self>) {
         self.show = true;
     }
+
+    fn select(&mut self, _: &Select, window: &mut Window, _cx: &mut Context<Self>) {
+        self.update(
+            window,
+            self.types[max(self.focused_item, 0) as usize].clone(),
+        )
+    }
+
+    fn next(&mut self, _: &Next, _window: &mut Window, _cx: &mut Context<Self>) {
+        if self.focused_item < (Type::COUNT - 1) as isize {
+            self.focused_item += 1;
+        } else {
+            self.focused_item = 0;
+        }
+    }
+
+    fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
+        if self.focused_item <= 0 {
+            self.focused_item = (Type::COUNT - 1) as isize;
+        } else {
+            self.focused_item -= 1;
+        }
+    }
 }
 
 impl Render for Dropdown {
@@ -101,6 +132,11 @@ impl Render for Dropdown {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, None),
             KeyBinding::new("enter", Enter, None),
+            KeyBinding::new("up", Prev, None),
+            KeyBinding::new("k", Prev, None),
+            KeyBinding::new("down", Next, None),
+            KeyBinding::new("j", Next, None),
+            KeyBinding::new("enter", Select, None),
         ]);
 
         deferred(
@@ -108,8 +144,13 @@ impl Render for Dropdown {
                 .flex()
                 .flex_col()
                 .key_context("Dropdown")
-                .on_action(cx.listener(Self::escape))
-                .on_action(cx.listener(Self::show))
+                .when(self.show, |this| {
+                    this.on_action(cx.listener(Self::escape))
+                        .on_action(cx.listener(Self::select))
+                        .on_action(cx.listener(Self::next))
+                        .on_action(cx.listener(Self::prev))
+                })
+                .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
                 .track_focus(&self.focus_handle)
                 .bg(opaque_grey(0.15, 1.0))
                 .border_1()

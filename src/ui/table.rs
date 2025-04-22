@@ -11,7 +11,7 @@ use gpui::{
 };
 use std::env::consts::OS;
 
-actions!(table, [Tab, Add, Delete]);
+actions!(table, [Tab, Add, Delete, Escape]);
 
 pub const MAX_ITEMS: usize = 10;
 
@@ -131,6 +131,10 @@ impl Table {
         }
     }
 
+    fn focus_self(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
+        self.focus_handle.focus(window);
+    }
+
     fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         // return early for base cases (e.g. entering or leaving ingreds list)
         let len = self.ingreds.len();
@@ -223,6 +227,7 @@ impl Render for Table {
             KeyBinding::new("tab", Tab, None),
             KeyBinding::new(format!("{ctrl}-i").as_str(), Add, None),
             KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, None),
+            KeyBinding::new(format!("escape").as_str(), Escape, None),
         ]);
 
         let num_drinks = self.num_drinks_input.read(cx).content.clone();
@@ -248,6 +253,7 @@ impl Render for Table {
         div()
             .key_context("Table")
             .on_action(cx.listener(Self::focus_next))
+            .on_action(cx.listener(Self::focus_self))
             .on_action(cx.listener(Self::add))
             .on_action(cx.listener(Self::delete))
             .track_focus(&self.focus_handle(cx))
