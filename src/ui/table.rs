@@ -79,14 +79,13 @@ impl Table {
         self.ingreds.remove(ix);
     }
 
-    fn ready(&mut self, cx: &mut App) -> (bool, Vec<IngredientData>) {
+    fn ready(&mut self, cx: &mut App) -> bool {
         let mut ready = true;
-        let mut ingred_data: Vec<IngredientData> = Vec::new();
 
         // calc_weights requires non-zero vec
         if self.ingreds.len() < 1 {
             ready = false;
-            return (ready, vec![]);
+            return ready;
         }
 
         for ingred in &self.ingreds {
@@ -102,28 +101,40 @@ impl Table {
             };
             if percentage <= 0. || (self.ingreds.len() > 1 && parts <= 0.) {
                 ready = false;
-                return (ready, vec![]);
+                return ready;
             }
-            let mut data = IngredientData::new();
-            data.percentage = percentage;
-            data.parts = parts;
-            ingred_data.push(data);
         }
-        (ready, ingred_data)
+        ready
     }
 
-    fn calc(&mut self, cx: &mut App, data: &mut Vec<IngredientData>, num_drinks: f32) {
+    fn calc(&mut self, cx: &mut App, num_drinks: f32) {
+        let mut ingred_data: Vec<IngredientData> = Vec::new();
         let mut ix = 0;
         for ingred in &self.ingreds {
-            data[ix].alc_type = ingred.read(cx).alc_type.read(cx).current.clone();
+            let mut data = IngredientData::new();
+            let percentage = ingred.read(cx).percentage_input.read(cx).content.clone();
+            let parts = ingred.read(cx).parts_input.read(cx).content.clone();
+            let percentage: f32 = match percentage.trim().parse() {
+                Ok(num) => num,
+                Err(_) => 0.,
+            };
+            let parts: f32 = match parts.trim().parse() {
+                Ok(num) => num,
+                Err(_) => 0.,
+            };
+
+            data.percentage = percentage;
+            data.parts = parts;
+            data.alc_type = ingred.read(cx).alc_type.read(cx).current.clone();
+            ingred_data.push(data);
             ix += 1;
         }
 
-        let data = calc_weights(data, num_drinks);
+        let ingred_data = calc_weights(&mut ingred_data, num_drinks);
 
         ix = 0;
         for ingred in &self.ingreds {
-            let weight = data[ix].weight.clone();
+            let weight = ingred_data[ix].weight.clone();
             ingred.update(cx, |ingred, _| {
                 ingred.weight(weight);
             });
@@ -245,9 +256,9 @@ impl Render for Table {
             ix += 1;
         }
 
-        let (ready, mut data) = self.ready(cx);
+        let ready = self.ready(cx);
         if ready {
-            self.calc(cx, &mut data, self.num_drinks);
+            self.calc(cx, self.num_drinks);
         }
 
         div()
