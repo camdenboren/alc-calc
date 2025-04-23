@@ -7,7 +7,7 @@ use crate::ui::ingredient::IngredientData;
 fn round_to_place(raw: f32, place: f32) -> f32 {
     let base: f32 = 10.0;
     let scaler: f32 = base.powf(place);
-    return (raw * scaler).round() / scaler;
+    (raw * scaler).round() / scaler
 }
 
 fn calc_ingred_weight(alc_type: &str, percentage: f32) -> (u32, f32) {
@@ -28,44 +28,34 @@ fn calc_volume(alc_type: u32, percentage: f32) -> f32 {
     }
 }
 
-fn calc_scalar(data: &mut Vec<IngredientData>, num_drinks: f32) -> f32 {
+fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> f32 {
     let mut temp = 0.;
-    for ix in 0..data.len() {
-        temp += data[ix].intermediate_weight / data[ix].weight;
+    for item in data {
+        temp += item.intermediate_weight / item.weight;
     }
     num_drinks / temp
 }
 
 pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec<IngredientData> {
-    if data.len() > 1 {
-        // factor in volume and number of parts when there's multiple ingreds
-        for ix in 0..data.len() {
-            let alc_type;
-            let weight;
-            (alc_type, weight) = calc_ingred_weight(&data[ix].alc_type, data[ix].percentage);
-            data[ix].weight = weight;
-            data[ix].volume = calc_volume(alc_type, data[ix].percentage);
-            data[ix].density = weight / data[ix].volume;
+    let mut first = data[0].clone();
+    data.iter_mut().enumerate().for_each(|(ix, item)| {
+        let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage);
+        item.weight = weight;
+        item.volume = calc_volume(alc_type, item.percentage);
+        item.density = weight / item.volume;
 
-            // use the first ingredient as the relative value for parts
-            if ix == 0 {
-                data[ix].intermediate_weight = weight;
-            } else {
-                data[ix].intermediate_weight =
-                    ((data[0].volume * data[ix].parts) / data[0].parts) * data[ix].density;
-            }
+        if ix == 0 {
+            item.intermediate_weight = weight;
+            first = item.clone();
+        } else {
+            item.intermediate_weight = ((first.volume * item.parts) / first.parts) * item.density;
         }
+    });
 
-        let scalar = calc_scalar(data, num_drinks);
-        for ix in 0..data.len() {
-            data[ix].weight = round_to_place(scalar * data[ix].intermediate_weight, 2.0);
-        }
-    } else {
-        // use alc_weight directly if there's only one ingredient
-        let weight;
-        (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage);
-        data[0].weight = round_to_place(weight * num_drinks as f32, 2.0);
-    }
+    let scalar = calc_scalar(data, num_drinks);
+    data.iter_mut().for_each(|item| {
+        item.weight = round_to_place(scalar * item.intermediate_weight, 2.0);
+    });
 
     data
 }
@@ -97,8 +87,8 @@ mod tests {
     fn test_calc_scalar() {
         let num_drinks = 2.;
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::new());
-        data.push(IngredientData::new());
+        data.push(IngredientData::default());
+        data.push(IngredientData::default());
         data[0].weight = 50.;
         data[1].weight = 50.;
         data[0].intermediate_weight = 50.;
@@ -111,7 +101,7 @@ mod tests {
     #[test]
     fn test_calc_weights_single_ingred() {
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::new());
+        data.push(IngredientData::default());
         data[0].alc_type = SharedString::from("Whiskey");
         data[0].percentage = 40.;
 
@@ -122,8 +112,8 @@ mod tests {
     #[test]
     fn test_calc_weights_multiple_ingreds() {
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::new());
-        data.push(IngredientData::new());
+        data.push(IngredientData::default());
+        data.push(IngredientData::default());
         data[0].alc_type = SharedString::from("Whiskey");
         data[1].alc_type = SharedString::from("Whiskey");
         data[0].percentage = 40.;

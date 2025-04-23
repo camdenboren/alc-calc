@@ -50,6 +50,7 @@
               cargo
               rust-analyzer
               rustfmt
+              clippy
               build
               format
             ];

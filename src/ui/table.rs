@@ -3,6 +3,7 @@
 
 use crate::calc::calc_weights;
 use crate::ui::button::button;
+use crate::ui::dropdown::Dropdown;
 use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
 use crate::ui::input::TextInput;
 use gpui::{
@@ -53,21 +54,9 @@ impl Table {
         // move focus to num_drinks_input when focused ingredient is deleted
         let len = self.ingreds.len();
         if len > 0 {
-            if self.ingreds[len - 1]
-                .read(cx)
-                .parts_input
-                .focus_handle(cx)
-                .is_focused(window)
-                || self.ingreds[len - 1]
-                    .read(cx)
-                    .percentage_input
-                    .focus_handle(cx)
-                    .is_focused(window)
-                || self.ingreds[len - 1]
-                    .read(cx)
-                    .alc_type
-                    .focus_handle(cx)
-                    .is_focused(window)
+            if self.parts(len - 1, cx).is_focused(window)
+                || self.percentage(len - 1, cx).is_focused(window)
+                || self.alc_type(len - 1, cx).is_focused(window)
             {
                 self.focus_handle(cx).focus(window);
             }
@@ -79,146 +68,102 @@ impl Table {
         self.ingreds.remove(ix);
     }
 
-    fn ready(&mut self, cx: &mut App) -> bool {
-        let mut ready = true;
-
+    fn ready(&mut self, cx: &mut Context<Self>) -> bool {
         // calc_weights requires non-zero vec
-        if self.ingreds.len() < 1 {
-            ready = false;
-            return ready;
+        if self.ingreds.is_empty() {
+            return false;
         }
 
-        for ingred in &self.ingreds {
-            let percentage = ingred.read(cx).percentage_input.read(cx).content.clone();
-            let parts = ingred.read(cx).parts_input.read(cx).content.clone();
-            let percentage: f32 = match percentage.trim().parse() {
-                Ok(num) => num,
-                Err(_) => 0.,
-            };
-            let parts: f32 = match parts.trim().parse() {
-                Ok(num) => num,
-                Err(_) => 0.,
-            };
-            if percentage <= 0. || (self.ingreds.len() > 1 && parts <= 0.) {
-                ready = false;
-                return ready;
-            }
-        }
-        ready
+        (0..self.ingreds.len()).all(|ix| {
+            let percentage = self.percentage(ix, cx).content.clone();
+            let parts = self.parts(ix, cx).content.clone();
+            let percentage: f32 = percentage.trim().parse().unwrap_or(0.);
+            let parts: f32 = parts.trim().parse().unwrap_or(0.);
+            percentage > 0. && (self.ingreds.len() <= 1 || parts > 0.)
+        })
     }
 
-    fn calc(&mut self, cx: &mut App, num_drinks: f32) {
-        let mut ingred_data: Vec<IngredientData> = Vec::new();
-        let mut ix = 0;
-        for ingred in &self.ingreds {
-            let mut data = IngredientData::new();
-            let percentage = ingred.read(cx).percentage_input.read(cx).content.clone();
-            let parts = ingred.read(cx).parts_input.read(cx).content.clone();
-            let percentage: f32 = match percentage.trim().parse() {
-                Ok(num) => num,
-                Err(_) => 0.,
-            };
-            let parts: f32 = match parts.trim().parse() {
-                Ok(num) => num,
-                Err(_) => 0.,
-            };
+    fn calc(&mut self, cx: &mut Context<Self>, num_drinks: f32) {
+        let mut ingred_data: Vec<IngredientData> = (0..self.ingreds.len())
+            .map(|ix| {
+                let alc_type = self.alc_type(ix, cx).current.clone();
+                let percentage = self.percentage(ix, cx).content.clone();
+                let parts = self.parts(ix, cx).content.clone();
+                let percentage: f32 = percentage.trim().parse().unwrap_or(0.);
+                let parts: f32 = parts.trim().parse().unwrap_or(0.);
 
-            data.percentage = percentage;
-            data.parts = parts;
-            data.alc_type = ingred.read(cx).alc_type.read(cx).current.clone();
-            ingred_data.push(data);
-            ix += 1;
-        }
+                IngredientData {
+                    percentage,
+                    parts,
+                    alc_type,
+                    ..Default::default()
+                }
+            })
+            .collect();
 
         let ingred_data = calc_weights(&mut ingred_data, num_drinks);
 
-        ix = 0;
-        for ingred in &self.ingreds {
-            let weight = ingred_data[ix].weight.clone();
+        self.ingreds.iter().enumerate().for_each(|(ix, ingred)| {
             ingred.update(cx, |ingred, _| {
-                ingred.weight(weight);
+                ingred.weight(ingred_data[ix].weight);
             });
-            ix += 1;
-        }
+        })
     }
 
-    fn focus_self(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
+    fn alc_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {
+        self.ingreds[ix].read(cx).alc_type.read(cx)
+    }
+
+    fn parts<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a TextInput {
+        self.ingreds[ix].read(cx).parts_input.read(cx)
+    }
+
+    fn percentage<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a TextInput {
+        self.ingreds[ix].read(cx).percentage_input.read(cx)
+    }
+
+    fn focus(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
         self.focus_handle.focus(window);
+    }
+
+    fn is_focused(&self, window: &mut Window) -> bool {
+        self.focus_handle.is_focused(window)
     }
 
     fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         // return early for base cases (e.g. entering or leaving ingreds list)
         let len = self.ingreds.len();
-        if self.focus_handle.is_focused(window) {
-            self.num_drinks_input.focus_handle(cx).focus(window);
+        if self.is_focused(window) {
+            self.num_drinks_input.read(cx).focus(window);
             return;
         }
-        if self.num_drinks_input.focus_handle(cx).is_focused(window) && len > 0 {
-            self.ingreds[0]
-                .read(cx)
-                .alc_type
-                .focus_handle(cx)
-                .focus(window);
+        if self.num_drinks_input.read(cx).is_focused(window) && len > 0 {
+            self.alc_type(0, cx).focus(window);
             return;
         }
-        if len > 0 {
-            if self.ingreds[len - 1]
-                .read(cx)
-                .parts_input
-                .focus_handle(cx)
-                .is_focused(window)
-            {
-                self.num_drinks_input.focus_handle(cx).focus(window);
-                return;
-            }
+        if len > 0 && self.parts(len - 1, cx).is_focused(window) {
+            self.num_drinks_input.read(cx).focus(window);
+            return;
         }
 
         // focus next ingred field otw
         for ix in 0..len {
-            if self.ingreds[ix]
-                .read(cx)
-                .alc_type
-                .focus_handle(cx)
-                .is_focused(window)
-            {
+            if self.alc_type(ix, cx).is_focused(window) {
                 // hide dropdown before focusing input
-                if self.ingreds[ix].read(cx).alc_type.read(cx).show {
+                if self.alc_type(ix, cx).show {
                     self.ingreds[ix]
                         .read(cx)
                         .alc_type
                         .clone()
                         .update(cx, |alc_type, _| alc_type.toggle())
                 }
-                self.ingreds[ix]
-                    .read(cx)
-                    .percentage_input
-                    .focus_handle(cx)
-                    .focus(window);
+                self.percentage(ix, cx).focus(window);
                 break;
-            } else if self.ingreds[ix]
-                .read(cx)
-                .percentage_input
-                .focus_handle(cx)
-                .is_focused(window)
-            {
-                self.ingreds[ix]
-                    .read(cx)
-                    .parts_input
-                    .focus_handle(cx)
-                    .focus(window);
+            } else if self.percentage(ix, cx).is_focused(window) {
+                self.parts(ix, cx).focus(window);
                 break;
-            } else if len > ix + 1
-                && self.ingreds[ix]
-                    .read(cx)
-                    .parts_input
-                    .focus_handle(cx)
-                    .is_focused(window)
-            {
-                self.ingreds[ix + 1]
-                    .read(cx)
-                    .alc_type
-                    .focus_handle(cx)
-                    .focus(window);
+            } else if len > ix + 1 && self.parts(ix, cx).is_focused(window) {
+                self.alc_type(ix + 1, cx).focus(window);
                 break;
             }
         }
@@ -238,23 +183,22 @@ impl Render for Table {
             KeyBinding::new("tab", Tab, None),
             KeyBinding::new(format!("{ctrl}-i").as_str(), Add, None),
             KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, None),
-            KeyBinding::new(format!("escape").as_str(), Escape, None),
+            KeyBinding::new("escape", Escape, None),
         ]);
 
         let num_drinks = &self.num_drinks_input.read(cx).content;
-        let num_drinks: f32 = match num_drinks.trim().parse() {
-            Ok(num) => num,
-            Err(_) => 0.,
-        };
+        let num_drinks: f32 = num_drinks.trim().parse().unwrap_or(0.);
         self.num_drinks = num_drinks;
 
-        let mut ix = 0;
-        for ingred in &self.ingreds.clone() {
-            if ingred.read(cx).remove {
-                self.remove(ix)
-            }
-            ix += 1;
-        }
+        self.ingreds
+            .clone()
+            .iter()
+            .enumerate()
+            .for_each(|(ix, item)| {
+                if item.read(cx).remove {
+                    self.remove(ix)
+                }
+            });
 
         let ready = self.ready(cx);
         if ready {
@@ -264,7 +208,7 @@ impl Render for Table {
         div()
             .key_context("Table")
             .on_action(cx.listener(Self::focus_next))
-            .on_action(cx.listener(Self::focus_self))
+            .on_action(cx.listener(Self::focus))
             .on_action(cx.listener(Self::add))
             .on_action(cx.listener(Self::delete))
             .track_focus(&self.focus_handle(cx))

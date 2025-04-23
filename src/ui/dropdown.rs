@@ -36,6 +36,14 @@ impl Dropdown {
         }
     }
 
+    pub fn focus(&self, window: &mut Window) {
+        self.focus_handle.focus(window)
+    }
+
+    pub fn is_focused(&self, window: &mut Window) -> bool {
+        self.focus_handle.is_focused(window)
+    }
+
     fn render_list(&self, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
@@ -54,11 +62,9 @@ impl Dropdown {
                     "ingreds_list",
                     Type::COUNT,
                     |this, range, _window, cx| {
-                        let mut items = Vec::new();
-
-                        for ix in range {
-                            let item = this.types[ix].clone();
-                            items.push(
+                        range
+                            .map(|ix| {
+                                let item = this.types[ix].clone();
                                 div()
                                     .rounded_md()
                                     .px_1()
@@ -71,10 +77,9 @@ impl Dropdown {
                                         cx.listener(move |this, _, window, _cx| {
                                             this.update(window, item.clone());
                                         }),
-                                    )),
-                            );
-                        }
-                        items
+                                    ))
+                            })
+                            .collect()
                     },
                 )
                 .on_mouse_down_out(cx.listener(|this, _, window, cx| {

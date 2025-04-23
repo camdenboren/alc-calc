@@ -75,6 +75,7 @@ impl Render for Ingredient {
     }
 }
 
+#[derive(Clone)]
 pub struct IngredientData {
     pub alc_type: SharedString,
     pub percentage: f32,
@@ -86,7 +87,7 @@ pub struct IngredientData {
 }
 
 impl IngredientData {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             alc_type: "".into(),
             percentage: 0.,
@@ -96,5 +97,11 @@ impl IngredientData {
             weight: 0.,
             intermediate_weight: 0.,
         }
+    }
+}
+
+impl Default for IngredientData {
+    fn default() -> Self {
+        Self::new()
     }
 }

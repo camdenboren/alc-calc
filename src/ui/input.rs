@@ -61,6 +61,14 @@ impl TextInput {
         }
     }
 
+    pub fn focus(&self, window: &mut Window) {
+        self.focus_handle.focus(window)
+    }
+
+    pub fn is_focused(&self, window: &mut Window) -> bool {
+        self.focus_handle.is_focused(window)
+    }
+
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
@@ -155,7 +163,7 @@ impl TextInput {
     fn copy(&mut self, _: &Copy, _: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
-                (&self.content[self.selected_range.clone()]).to_string(),
+                self.content[self.selected_range.clone()].to_string(),
             ));
         }
     }
@@ -163,7 +171,7 @@ impl TextInput {
     fn cut(&mut self, _: &Cut, window: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
-                (&self.content[self.selected_range.clone()]).to_string(),
+                self.content[self.selected_range.clone()].to_string(),
             ));
             self.replace_text_in_range(None, "", window, cx)
         }

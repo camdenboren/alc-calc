@@ -21,7 +21,7 @@ impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
         cx.new(|cx| UI {
             table: cx.new(|cx| Table::new(cx)),
-            titlebar: cx.new(|_| Titlebar::new()),
+            titlebar: cx.new(|_| Titlebar::default()),
         })
     }
 }
