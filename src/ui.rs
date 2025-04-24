@@ -1,14 +1,13 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pub mod button;
-pub mod dropdown;
+mod button;
+mod dropdown;
 pub mod ingredient;
-pub mod input;
-pub mod table;
-pub mod titlebar;
-use crate::ui::table::Table;
-use crate::ui::titlebar::Titlebar;
+mod input;
+mod table;
+mod titlebar;
+use crate::ui::{table::Table, titlebar::Titlebar};
 use gpui::{div, prelude::*, rgb, App, Entity, Window};
 use std::env::consts::OS;
 

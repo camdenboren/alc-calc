@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::types::Type;
-use crate::ui::button::*;
-use crate::ui::table::MAX_ITEMS;
+use crate::{
+    types::Type,
+    ui::{button::button, button::text_button, table::MAX_ITEMS},
+};
 use gpui::{
     actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
     KeyBinding, SharedString, Window,
@@ -17,6 +18,7 @@ pub struct Dropdown {
     types: Vec<SharedString>,
     pub current: SharedString,
     pub show: bool,
+    count: usize,
     id: usize,
     focused_item: isize,
     focus_handle: FocusHandle,
@@ -30,6 +32,7 @@ impl Dropdown {
                 .collect(),
             current: "Whiskey".into(),
             show: false,
+            count: Type::COUNT,
             id,
             focused_item: -1,
             focus_handle: cx.focus_handle(),
@@ -60,7 +63,7 @@ impl Dropdown {
                 uniform_list(
                     cx.entity(),
                     "ingreds_list",
-                    Type::COUNT,
+                    self.count,
                     |this, range, _window, cx| {
                         range
                             .map(|ix| {
@@ -116,7 +119,7 @@ impl Dropdown {
     }
 
     fn next(&mut self, _: &Next, _window: &mut Window, _cx: &mut Context<Self>) {
-        if self.focused_item < (Type::COUNT - 1) as isize {
+        if self.focused_item < (self.count - 1) as isize {
             self.focused_item += 1;
         } else {
             self.focused_item = 0;
@@ -125,7 +128,7 @@ impl Dropdown {
 
     fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
         if self.focused_item <= 0 {
-            self.focused_item = (Type::COUNT - 1) as isize;
+            self.focused_item = (self.count - 1) as isize;
         } else {
             self.focused_item -= 1;
         }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::str::FromStr;
-use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use strum::{Display, EnumCount, EnumIter, EnumString};
 
 #[derive(EnumString, Clone, EnumCount, EnumIter, Display)]
 pub enum Type {

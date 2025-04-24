@@ -1,20 +1,22 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::types::{match_category, Category};
-use crate::ui::ingredient::IngredientData;
+use crate::{
+    types::{match_category, Category},
+    ui::ingredient::IngredientData,
+};
 
 fn round_to_place(raw: f32, place: f32) -> f32 {
-    let base: f32 = 10.0;
-    let scaler: f32 = base.powf(place);
-    (raw * scaler).round() / scaler
+    let base: f32 = 10.;
+    let scalar: f32 = base.powf(place);
+    (raw * scalar).round() / scalar
 }
 
 fn calc_ingred_weight(alc_type: &str, percentage: f32) -> (u32, f32) {
     let cat: Category = match_category(alc_type);
     match cat {
         Category::Carbonated => (1, 1772.6 * percentage.powf(-0.996)),
-        Category::Liqueur => (2, 235.94 * (percentage * -1.161).exp()),
+        Category::Liqueur => (2, 235.94 * (percentage * -0.044).exp()),
         Category::Hard => (3, 3062.9 * percentage.powf(-1.161)),
     }
 }
@@ -29,33 +31,41 @@ fn calc_volume(alc_type: u32, percentage: f32) -> f32 {
 }
 
 fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> f32 {
-    let mut temp = 0.;
-    for item in data {
-        temp += item.intermediate_weight / item.weight;
-    }
-    num_drinks / temp
+    num_drinks
+        / data
+            .iter()
+            .fold(0., |sum, item| sum + item.intermediate_weight / item.weight)
 }
 
 pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec<IngredientData> {
-    let mut first = data[0].clone();
-    data.iter_mut().enumerate().for_each(|(ix, item)| {
-        let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage);
-        item.weight = weight;
-        item.volume = calc_volume(alc_type, item.percentage);
-        item.density = weight / item.volume;
+    if data.len() > 1 {
+        // factor in volume and number of parts when there's multiple ingreds
+        let mut first = data[0].clone();
+        data.iter_mut().enumerate().for_each(|(ix, item)| {
+            let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage);
+            item.weight = weight;
+            item.volume = calc_volume(alc_type, item.percentage);
+            item.density = weight / item.volume;
 
-        if ix == 0 {
-            item.intermediate_weight = weight;
-            first = item.clone();
-        } else {
-            item.intermediate_weight = ((first.volume * item.parts) / first.parts) * item.density;
-        }
-    });
+            if ix == 0 {
+                item.intermediate_weight = weight;
+                first = item.clone();
+            } else {
+                item.intermediate_weight =
+                    ((first.volume * item.parts) / first.parts) * item.density;
+            }
+        });
 
-    let scalar = calc_scalar(data, num_drinks);
-    data.iter_mut().for_each(|item| {
-        item.weight = round_to_place(scalar * item.intermediate_weight, 2.0);
-    });
+        let scalar = calc_scalar(data, num_drinks);
+        data.iter_mut().for_each(|item| {
+            item.weight = round_to_place(scalar * item.intermediate_weight, 1.0);
+        });
+    } else {
+        // use calc_ingred_weight directly if there's only one ingredient
+        let weight;
+        (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage);
+        data[0].weight = round_to_place(weight * num_drinks, 1.0);
+    }
 
     data
 }
@@ -67,8 +77,8 @@ mod tests {
 
     #[test]
     fn test_round_to_place() {
-        let num = round_to_place(42.281, 2.0);
-        assert_eq!(num, 42.28);
+        let num = round_to_place(42.281, 1.0);
+        assert_eq!(num, 42.3);
     }
 
     #[test]
@@ -102,11 +112,11 @@ mod tests {
     fn test_calc_weights_single_ingred() {
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData::default());
-        data[0].alc_type = SharedString::from("Whiskey");
-        data[0].percentage = 40.;
+        data[0].alc_type = SharedString::from("Kahlua");
+        data[0].percentage = 20.;
 
         let result = calc_weights(&mut data, 1.)[0].weight;
-        assert_eq!(result, 42.28);
+        assert_eq!(result, 97.9);
     }
 
     #[test]
@@ -115,14 +125,14 @@ mod tests {
         data.push(IngredientData::default());
         data.push(IngredientData::default());
         data[0].alc_type = SharedString::from("Whiskey");
-        data[1].alc_type = SharedString::from("Whiskey");
+        data[1].alc_type = SharedString::from("Wine");
         data[0].percentage = 40.;
-        data[1].percentage = 40.;
-        data[0].parts = 1.;
+        data[1].percentage = 16.5;
+        data[0].parts = 1.5;
         data[1].parts = 1.;
 
         let result = calc_weights(&mut data, 2.);
-        assert_eq!(result[0].weight, 42.28);
-        assert_eq!(result[1].weight, 42.28);
+        assert_eq!(result[0].weight, 66.3);
+        assert_eq!(result[1].weight, 46.9);
     }
 }

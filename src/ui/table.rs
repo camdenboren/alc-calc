@@ -1,14 +1,18 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::calc::calc_weights;
-use crate::ui::button::button;
-use crate::ui::dropdown::Dropdown;
-use crate::ui::ingredient::{Ingredient, IngredientData, FIELDS};
-use crate::ui::input::TextInput;
+use crate::{
+    calc::calc_weights,
+    ui::{
+        button::button,
+        dropdown::Dropdown,
+        ingredient::{Ingredient, IngredientData, FIELDS},
+        input::TextInput,
+    },
+};
 use gpui::{
     actions, div, opaque_grey, prelude::*, px, rgb, App, Entity, FocusHandle, Focusable,
-    KeyBinding, Window,
+    KeyBinding, SharedString, Window,
 };
 use std::env::consts::OS;
 
@@ -17,9 +21,10 @@ actions!(table, [Tab, Add, Delete, Escape]);
 pub const MAX_ITEMS: usize = 10;
 
 pub struct Table {
-    pub ingreds: Vec<Entity<Ingredient>>,
-    pub num_drinks_input: Entity<TextInput>,
-    pub num_drinks: f32,
+    ingreds: Vec<Entity<Ingredient>>,
+    num_drinks_input: Entity<TextInput>,
+    num_drinks: f32,
+    count: usize,
     width: f32,
     init: bool,
     focus_handle: FocusHandle,
@@ -37,6 +42,7 @@ impl Table {
             ingreds: vec![cx.new(|cx| Ingredient::new(0, cx))],
             num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             num_drinks: 0.,
+            count: 1,
             width,
             init: true,
             focus_handle: cx.focus_handle(),
@@ -44,28 +50,30 @@ impl Table {
     }
 
     fn add(&mut self, _: &Add, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.ingreds.len() < MAX_ITEMS {
-            let id = self.ingreds.len();
-            self.ingreds.push(cx.new(|cx| Ingredient::new(id, cx)))
+        if self.count < MAX_ITEMS {
+            let id = self.count;
+            self.ingreds.push(cx.new(|cx| Ingredient::new(id, cx)));
+            self.count += 1;
         }
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
         // move focus to num_drinks_input when focused ingredient is deleted
-        let len = self.ingreds.len();
-        if len > 0 {
-            if self.parts(len - 1, cx).is_focused(window)
-                || self.percentage(len - 1, cx).is_focused(window)
-                || self.alc_type(len - 1, cx).is_focused(window)
+        if self.count > 0 {
+            if self.parts(self.count - 1, cx).is_focused(window)
+                || self.percentage(self.count - 1, cx).is_focused(window)
+                || self.alc_type(self.count - 1, cx).is_focused(window)
             {
                 self.focus_handle(cx).focus(window);
             }
             self.ingreds.pop();
+            self.count -= 1;
         }
     }
 
-    pub fn remove(&mut self, ix: usize) {
+    fn remove(&mut self, ix: usize) {
         self.ingreds.remove(ix);
+        self.count -= 1;
     }
 
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
@@ -74,30 +82,20 @@ impl Table {
             return false;
         }
 
-        (0..self.ingreds.len()).all(|ix| {
-            let percentage = self.percentage(ix, cx).content.clone();
-            let parts = self.parts(ix, cx).content.clone();
-            let percentage: f32 = percentage.trim().parse().unwrap_or(0.);
-            let parts: f32 = parts.trim().parse().unwrap_or(0.);
-            percentage > 0. && (self.ingreds.len() <= 1 || parts > 0.)
+        (0..self.count).all(|ix| {
+            let percentage = self.parse_or_zero(self.percentage(ix, cx).content.clone());
+            let parts = self.parse_or_zero(self.parts(ix, cx).content.clone());
+            percentage > 0. && (self.count <= 1 || parts > 0.)
         })
     }
 
     fn calc(&mut self, cx: &mut Context<Self>, num_drinks: f32) {
-        let mut ingred_data: Vec<IngredientData> = (0..self.ingreds.len())
-            .map(|ix| {
-                let alc_type = self.alc_type(ix, cx).current.clone();
-                let percentage = self.percentage(ix, cx).content.clone();
-                let parts = self.parts(ix, cx).content.clone();
-                let percentage: f32 = percentage.trim().parse().unwrap_or(0.);
-                let parts: f32 = parts.trim().parse().unwrap_or(0.);
-
-                IngredientData {
-                    percentage,
-                    parts,
-                    alc_type,
-                    ..Default::default()
-                }
+        let mut ingred_data: Vec<IngredientData> = (0..self.count)
+            .map(|ix| IngredientData {
+                alc_type: self.alc_type(ix, cx).current.clone(),
+                percentage: self.parse_or_zero(self.percentage(ix, cx).content.clone()),
+                parts: self.parse_or_zero(self.parts(ix, cx).content.clone()),
+                ..Default::default()
             })
             .collect();
 
@@ -108,6 +106,10 @@ impl Table {
                 ingred.weight(ingred_data[ix].weight);
             });
         })
+    }
+
+    fn num_drinks<'a>(&'a self, cx: &'a Context<Self>) -> &'a TextInput {
+        self.num_drinks_input.read(cx)
     }
 
     fn alc_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {
@@ -122,6 +124,10 @@ impl Table {
         self.ingreds[ix].read(cx).percentage_input.read(cx)
     }
 
+    fn parse_or_zero(&mut self, content: SharedString) -> f32 {
+        content.trim().parse().unwrap_or(0.)
+    }
+
     fn focus(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
         self.focus_handle.focus(window);
     }
@@ -132,22 +138,21 @@ impl Table {
 
     fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         // return early for base cases (e.g. entering or leaving ingreds list)
-        let len = self.ingreds.len();
         if self.is_focused(window) {
-            self.num_drinks_input.read(cx).focus(window);
+            self.num_drinks(cx).focus(window);
             return;
         }
-        if self.num_drinks_input.read(cx).is_focused(window) && len > 0 {
+        if self.num_drinks(cx).is_focused(window) && self.count > 0 {
             self.alc_type(0, cx).focus(window);
             return;
         }
-        if len > 0 && self.parts(len - 1, cx).is_focused(window) {
-            self.num_drinks_input.read(cx).focus(window);
+        if self.count > 0 && self.parts(self.count - 1, cx).is_focused(window) {
+            self.num_drinks(cx).focus(window);
             return;
         }
 
         // focus next ingred field otw
-        for ix in 0..len {
+        for ix in 0..self.count {
             if self.alc_type(ix, cx).is_focused(window) {
                 // hide dropdown before focusing input
                 if self.alc_type(ix, cx).show {
@@ -162,7 +167,7 @@ impl Table {
             } else if self.percentage(ix, cx).is_focused(window) {
                 self.parts(ix, cx).focus(window);
                 break;
-            } else if len > ix + 1 && self.parts(ix, cx).is_focused(window) {
+            } else if self.count > ix + 1 && self.parts(ix, cx).is_focused(window) {
                 self.alc_type(ix + 1, cx).focus(window);
                 break;
             }
@@ -174,7 +179,7 @@ impl Render for Table {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         // focus num_drinks_input on launch
         if self.init {
-            self.num_drinks_input.focus_handle(cx).focus(window);
+            self.num_drinks(cx).focus(window);
             self.init = false;
         }
 
@@ -186,9 +191,7 @@ impl Render for Table {
             KeyBinding::new("escape", Escape, None),
         ]);
 
-        let num_drinks = &self.num_drinks_input.read(cx).content;
-        let num_drinks: f32 = num_drinks.trim().parse().unwrap_or(0.);
-        self.num_drinks = num_drinks;
+        self.num_drinks = self.parse_or_zero(self.num_drinks(cx).content.clone());
 
         self.ingreds
             .clone()
@@ -200,8 +203,7 @@ impl Render for Table {
                 }
             });
 
-        let ready = self.ready(cx);
-        if ready {
+        if self.ready(cx) {
             self.calc(cx, self.num_drinks);
         }
 

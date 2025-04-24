@@ -3,9 +3,6 @@
 
 // Adapted from GPUI Example: input.rs
 
-use std::env::consts::OS;
-use std::ops::Range;
-
 use gpui::{
     actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgba, size, App,
     Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
@@ -13,7 +10,9 @@ use gpui::{
     MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine,
     SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window,
 };
-use unicode_segmentation::*;
+use std::env::consts::OS;
+use std::ops::Range;
+use unicode_segmentation::UnicodeSegmentation;
 
 actions!(
     text_input,
@@ -35,15 +34,15 @@ actions!(
 );
 
 pub struct TextInput {
-    pub focus_handle: FocusHandle,
+    focus_handle: FocusHandle,
     pub content: SharedString,
-    pub placeholder: SharedString,
-    pub selected_range: Range<usize>,
-    pub selection_reversed: bool,
-    pub marked_range: Option<Range<usize>>,
-    pub last_layout: Option<ShapedLine>,
-    pub last_bounds: Option<Bounds<Pixels>>,
-    pub is_selecting: bool,
+    placeholder: SharedString,
+    selected_range: Range<usize>,
+    selection_reversed: bool,
+    marked_range: Option<Range<usize>>,
+    last_layout: Option<ShapedLine>,
+    last_bounds: Option<Bounds<Pixels>>,
+    is_selecting: bool,
 }
 
 impl TextInput {

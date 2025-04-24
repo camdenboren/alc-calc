@@ -1,9 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::ui::button::button;
-use crate::ui::dropdown::Dropdown;
-use crate::ui::input::TextInput;
+use crate::ui::{button::button, dropdown::Dropdown, input::TextInput};
 use gpui::{div, opaque_grey, prelude::*, px, App, Entity, Pixels, SharedString, Window};
 
 pub const FIELDS: [(&str, f32); 4] = [
@@ -17,7 +15,7 @@ pub struct Ingredient {
     pub alc_type: Entity<Dropdown>,
     pub percentage_input: Entity<TextInput>,
     pub parts_input: Entity<TextInput>,
-    pub weight: SharedString,
+    weight: SharedString,
     pub remove: bool,
 }
 

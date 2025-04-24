@@ -3,7 +3,7 @@
 
 // move-by-mouse from zed's titlebar: title_bar/src/title_bar.rs
 
-use crate::ui::button::*;
+use crate::ui::button::button;
 use gpui::{div, prelude::*, px, Window};
 
 pub struct Titlebar {
