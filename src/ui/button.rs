@@ -12,7 +12,7 @@ pub fn button(
     let icon_path = cwd.join("img/").join(icon);
 
     div()
-        .id(SharedString::from(text.to_string()))
+        .id(text.to_string().into_element())
         .flex()
         .h_4()
         .w_4()

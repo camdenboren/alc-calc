@@ -19,7 +19,7 @@ pub struct Dropdown {
     pub current: SharedString,
     pub show: bool,
     count: usize,
-    id: usize,
+    pub id: usize,
     focused_item: isize,
     focus_handle: FocusHandle,
 }

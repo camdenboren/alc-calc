@@ -3,7 +3,7 @@
 
 use crate::{
     types::{match_category, Category},
-    ui::ingredient::IngredientData,
+    ui::table::IngredientData,
 };
 
 fn round_to_place(raw: f32, place: f32) -> f32 {
@@ -73,7 +73,6 @@ pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec
 #[cfg(test)]
 mod tests {
     use super::*;
-    use gpui::SharedString;
 
     #[test]
     fn test_round_to_place() {
@@ -112,7 +111,7 @@ mod tests {
     fn test_calc_weights_single_ingred() {
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData::default());
-        data[0].alc_type = SharedString::from("Kahlua");
+        data[0].alc_type = "Kahlua".into();
         data[0].percentage = 20.;
 
         let result = calc_weights(&mut data, 1.)[0].weight;
@@ -124,8 +123,8 @@ mod tests {
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData::default());
         data.push(IngredientData::default());
-        data[0].alc_type = SharedString::from("Whiskey");
-        data[1].alc_type = SharedString::from("Wine");
+        data[0].alc_type = "Whiskey".into();
+        data[1].alc_type = "Wine".into();
         data[0].percentage = 40.;
         data[1].percentage = 16.5;
         data[0].parts = 1.5;

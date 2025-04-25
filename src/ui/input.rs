@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Adapted from GPUI Example: input.rs
+// Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
 use gpui::{
     actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgba, size, App,

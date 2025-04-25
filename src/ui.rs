@@ -3,9 +3,8 @@
 
 mod button;
 mod dropdown;
-pub mod ingredient;
 mod input;
-mod table;
+pub mod table;
 mod titlebar;
 use crate::ui::{table::Table, titlebar::Titlebar};
 use gpui::{div, prelude::*, rgb, App, Entity, Window};

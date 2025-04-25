@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// move-by-mouse from zed's titlebar: title_bar/src/title_bar.rs
+// Move-by-mouse from: https://github.com/zed-industries/zed/blob/main/crates/title_bar/src/title_bar.rs
 
 use crate::ui::button::button;
 use gpui::{div, prelude::*, px, Window};
