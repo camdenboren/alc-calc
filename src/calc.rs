@@ -96,12 +96,13 @@ mod tests {
     fn test_calc_scalar() {
         let num_drinks = 2.;
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::default());
-        data.push(IngredientData::default());
-        data[0].weight = 50.;
-        data[1].weight = 50.;
-        data[0].intermediate_weight = 50.;
-        data[1].intermediate_weight = 50.;
+        (0..2).for_each(|_| {
+            data.push(IngredientData {
+                weight: 50.,
+                intermediate_weight: 50.,
+                ..Default::default()
+            })
+        });
 
         let result = calc_scalar(&mut data, num_drinks);
         assert_eq!(result, 1.0);
@@ -110,9 +111,11 @@ mod tests {
     #[test]
     fn test_calc_weights_single_ingred() {
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::default());
-        data[0].alc_type = "Kahlua".into();
-        data[0].percentage = 20.;
+        data.push(IngredientData {
+            alc_type: "Kahlua".into(),
+            percentage: 20.,
+            ..Default::default()
+        });
 
         let result = calc_weights(&mut data, 1.)[0].weight;
         assert_eq!(result, 97.9);
@@ -121,14 +124,18 @@ mod tests {
     #[test]
     fn test_calc_weights_multiple_ingreds() {
         let mut data: Vec<IngredientData> = Vec::new();
-        data.push(IngredientData::default());
-        data.push(IngredientData::default());
-        data[0].alc_type = "Whiskey".into();
-        data[1].alc_type = "Wine".into();
-        data[0].percentage = 40.;
-        data[1].percentage = 16.5;
-        data[0].parts = 1.5;
-        data[1].parts = 1.;
+        data.push(IngredientData {
+            alc_type: "Whiskey".into(),
+            parts: 1.5,
+            percentage: 40.,
+            ..Default::default()
+        });
+        data.push(IngredientData {
+            alc_type: "Wine".into(),
+            parts: 1.,
+            percentage: 16.5,
+            ..Default::default()
+        });
 
         let result = calc_weights(&mut data, 2.);
         assert_eq!(result[0].weight, 66.3);

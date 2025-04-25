@@ -10,15 +10,9 @@ pub struct Titlebar {
     should_move: bool,
 }
 
-impl Titlebar {
-    fn new() -> Self {
-        Self { should_move: false }
-    }
-}
-
 impl Default for Titlebar {
     fn default() -> Self {
-        Self::new()
+        Self { should_move: false }
     }
 }
 

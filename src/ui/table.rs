@@ -100,8 +100,8 @@ pub struct IngredientData {
     pub intermediate_weight: f32,
 }
 
-impl IngredientData {
-    fn new() -> Self {
+impl Default for IngredientData {
+    fn default() -> Self {
         Self {
             alc_type: "".into(),
             percentage: 0.,
@@ -111,12 +111,6 @@ impl IngredientData {
             weight: 0.,
             intermediate_weight: 0.,
         }
-    }
-}
-
-impl Default for IngredientData {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
