@@ -291,7 +291,7 @@ impl Table {
                         .read(cx)
                         .alc_type
                         .clone()
-                        .update(cx, |alc_type, _| alc_type.toggle())
+                        .update(cx, |alc_type, cx| alc_type.toggle(cx))
                 }
                 self.percentage(ix, cx).focus(window);
                 break;

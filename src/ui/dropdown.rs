@@ -7,12 +7,22 @@ use crate::{
 };
 use gpui::{
     actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
-    KeyBinding, SharedString, Window,
+    Global, KeyBinding, SharedString, Window,
 };
 use std::cmp::max;
+use std::time::Duration;
 use strum::{EnumCount, IntoEnumIterator};
 
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
+
+#[derive(Default)]
+pub struct DropdownState {
+    pub just_clicked: bool,
+    pub delayed: bool,
+    pub count: usize,
+}
+
+impl Global for DropdownState {}
 
 pub struct Dropdown {
     types: Vec<SharedString>,
@@ -26,6 +36,40 @@ pub struct Dropdown {
 
 impl Dropdown {
     pub fn new(id: usize, cx: &mut App) -> Self {
+        // hack to allow hiding dropdown when clicking toggle by preventing
+        // on_mouse_down_out and toggle from executing together
+        //
+        // todo: mv state to dropdown to avoid unneeded global scope and allow
+        // toggling another dropdown on_mouse_down_out
+        if id == 0 {
+            cx.set_global::<DropdownState>(DropdownState::default());
+            cx.spawn(|cx| async move {
+                loop {
+                    cx.update_global::<DropdownState, _>(|state, _cx| {
+                        if state.delayed {
+                            state.count += 1;
+                            if state.count >= 2 {
+                                state.delayed = false;
+                            }
+                        } else {
+                            state.count = 0;
+                        }
+
+                        if state.just_clicked {
+                            state.delayed = true;
+                            state.just_clicked = false;
+                        }
+                    })
+                    .expect("Unexpectedly failed to update global dropdown state");
+
+                    cx.background_executor()
+                        .timer(Duration::from_millis(50))
+                        .await;
+                }
+            })
+            .detach();
+        }
+
         Self {
             types: Type::iter()
                 .map(|t| SharedString::from(t.to_string()))
@@ -77,8 +121,8 @@ impl Dropdown {
                                     })
                                     .child(text_button(
                                         item.clone(),
-                                        cx.listener(move |this, _, window, _cx| {
-                                            this.update(window, item.clone());
+                                        cx.listener(move |this, _, window, cx| {
+                                            this.update(window, cx, item.clone());
                                         }),
                                     ))
                             })
@@ -86,20 +130,23 @@ impl Dropdown {
                     },
                 )
                 .on_mouse_down_out(cx.listener(|this, _, window, cx| {
+                    cx.global_mut::<DropdownState>().just_clicked = true;
                     this.escape(&Escape, window, cx);
                 }))
                 .h_full(),
             )
     }
 
-    pub fn toggle(&mut self) {
-        self.show = !self.show;
+    pub fn toggle(&mut self, cx: &mut Context<Self>) {
+        if !cx.global_mut::<DropdownState>().delayed {
+            self.show = !self.show;
+        }
     }
 
-    fn update(&mut self, window: &mut Window, val: SharedString) {
+    fn update(&mut self, window: &mut Window, cx: &mut Context<Self>, val: SharedString) {
         self.focused_item = self.types.iter().position(|t| *t == val).unwrap() as isize;
         self.current = val;
-        self.toggle();
+        self.toggle(cx);
         self.focus_handle.focus(window);
     }
 
@@ -111,9 +158,10 @@ impl Dropdown {
         self.show = true;
     }
 
-    fn select(&mut self, _: &Select, window: &mut Window, _cx: &mut Context<Self>) {
+    fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {
         self.update(
             window,
+            cx,
             self.types[max(self.focused_item, 0) as usize].clone(),
         )
     }
@@ -178,8 +226,8 @@ impl Render for Dropdown {
                         .child(button(
                             "",
                             "chevron.svg",
-                            cx.listener(move |this, _, _window, _cx| {
-                                this.toggle();
+                            cx.listener(move |this, _, _window, cx| {
+                                this.toggle(cx);
                             }),
                         )),
                 )

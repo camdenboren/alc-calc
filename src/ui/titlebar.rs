@@ -6,14 +6,9 @@
 use crate::ui::button::button;
 use gpui::{div, prelude::*, px, Window};
 
+#[derive(Default)]
 pub struct Titlebar {
     should_move: bool,
-}
-
-impl Default for Titlebar {
-    fn default() -> Self {
-        Self { should_move: false }
-    }
 }
 
 impl Render for Titlebar {
