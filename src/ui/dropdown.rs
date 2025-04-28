@@ -7,7 +7,7 @@ use crate::{
 };
 use gpui::{
     actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
-    Global, KeyBinding, SharedString, Window,
+    Global, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle, Window,
 };
 use std::cmp::max;
 use std::time::Duration;
@@ -32,6 +32,7 @@ pub struct Dropdown {
     pub id: usize,
     focused_item: isize,
     focus_handle: FocusHandle,
+    scroll_handle: UniformListScrollHandle,
 }
 
 impl Dropdown {
@@ -80,6 +81,7 @@ impl Dropdown {
             id,
             focused_item: -1,
             focus_handle: cx.focus_handle(),
+            scroll_handle: UniformListScrollHandle::new(),
         }
     }
 
@@ -129,6 +131,7 @@ impl Dropdown {
                             .collect()
                     },
                 )
+                .track_scroll(self.scroll_handle.clone())
                 .on_mouse_down_out(cx.listener(|this, _, window, cx| {
                     cx.global_mut::<DropdownState>().just_clicked = true;
                     this.escape(&Escape, window, cx);
@@ -172,6 +175,7 @@ impl Dropdown {
         } else {
             self.focused_item = 0;
         }
+        self.scroll();
     }
 
     fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
@@ -180,6 +184,12 @@ impl Dropdown {
         } else {
             self.focused_item -= 1;
         }
+        self.scroll();
+    }
+
+    fn scroll(&mut self) {
+        self.scroll_handle
+            .scroll_to_item(self.focused_item as usize, ScrollStrategy::Top);
     }
 }
 
