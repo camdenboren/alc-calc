@@ -182,11 +182,11 @@ impl Table {
         self.ingreds[ix..]
             .iter()
             .enumerate()
-            .for_each(|(ix, ingred)| {
+            .for_each(|(jx, ingred)| {
                 ingred.update(cx, |ingred, cx| {
-                    ingred.id = ix;
+                    ingred.id = jx + ix;
                     ingred.alc_type.update(cx, |alc_type, _cx| {
-                        alc_type.id = ix;
+                        alc_type.id = jx + ix;
                     });
                 })
             });
@@ -357,13 +357,14 @@ impl Render for Table {
                     .child(
                         div()
                             .flex()
-                            .py_2()
+                            .bottom(px(0.5))
+                            .pb_2()
                             .text_xs()
                             .border_b_1()
                             .justify_start()
                             .w(px(120. + 4. * 2.))
                             .border_color(opaque_grey(0.5, 0.5))
-                            .child("Units".to_uppercase()),
+                            .child(div().child("Units".to_uppercase()).bottom(px(1.5))),
                     )
                     .child(self.num_drinks_input.clone()),
             )
@@ -373,7 +374,6 @@ impl Render for Table {
                     .flex_col()
                     .flex_1()
                     .p_4()
-                    .justify_center()
                     .items_center()
                     .gap_2()
                     .bg(opaque_grey(0.2, 1.0))
@@ -383,13 +383,13 @@ impl Render for Table {
                         div()
                             .flex()
                             .flex_row()
-                            .items_center()
-                            .justify_center()
+                            .h_5()
                             .gap_x_4()
                             .overflow_hidden()
                             .text_color(rgb(0xffffff))
                             .bg(opaque_grey(0.2, 1.0))
                             .left_4()
+                            .bottom(px(2.))
                             .text_xs()
                             .children(FIELDS.map(|(key, width)| {
                                 div()
@@ -410,7 +410,7 @@ impl Render for Table {
                             .children(self.ingreds.clone()),
                     )
                     // + button
-                    .child(div().py_1().w(px(self.width + 78.)).child(button(
+                    .child(div().pt_2().h_6().w(px(self.width + 78.)).child(button(
                         "",
                         "plus.svg",
                         cx.listener(move |this, _, window, cx| {

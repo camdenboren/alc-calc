@@ -98,7 +98,7 @@ impl Dropdown {
             .flex()
             .flex_col()
             .absolute()
-            .top_10()
+            .top_9()
             .right(px(0.))
             .bg(opaque_grey(0.15, 1.0))
             .rounded_md()
@@ -142,6 +142,7 @@ impl Dropdown {
 
     pub fn toggle(&mut self, cx: &mut Context<Self>) {
         if !cx.global_mut::<DropdownState>().delayed {
+            cx.stop_propagation();
             self.show = !self.show;
         }
     }
@@ -232,6 +233,7 @@ impl Render for Dropdown {
                         .size_full()
                         .items_center()
                         .justify_between()
+                        .h(px(20. + 4. * 2.))
                         .child(self.current.clone())
                         .child(button(
                             "",
