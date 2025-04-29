@@ -3,12 +3,13 @@
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
+use crate::ui::theme::Theme;
 use gpui::{
-    actions, div, fill, hsla, opaque_grey, point, prelude::*, px, relative, rgba, size, App,
-    Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
-    EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyBinding, LayoutId, MouseButton,
-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine,
-    SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window,
+    actions, div, fill, point, prelude::*, px, relative, size, App, Bounds, ClipboardItem, Context,
+    CursorStyle, ElementId, ElementInputHandler, Entity, EntityInputHandler, FocusHandle,
+    Focusable, GlobalElementId, KeyBinding, LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent,
+    MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine, SharedString, Style, TextRun,
+    UTF16Selection, UnderlineStyle, Window,
 };
 use std::env::consts::OS;
 use std::ops::Range;
@@ -451,9 +452,9 @@ impl Element for TextElement {
         let style = window.text_style();
 
         let (display_text, text_color) = if content.is_empty() {
-            (input.placeholder.clone(), hsla(0., 0., 0., 0.2))
+            (input.placeholder.clone(), cx.global::<Theme>().subtext)
         } else {
-            (content, style.color)
+            (content, cx.global::<Theme>().text)
         };
 
         let run = TextRun {
@@ -506,7 +507,7 @@ impl Element for TextElement {
                         point(bounds.left() + cursor_pos, bounds.top()),
                         size(px(2.), bounds.bottom() - bounds.top()),
                     ),
-                    gpui::blue(),
+                    cx.global::<Theme>().cursor,
                 )),
             )
         } else {
@@ -522,7 +523,7 @@ impl Element for TextElement {
                             bounds.bottom(),
                         ),
                     ),
-                    rgba(0x3311ff30),
+                    cx.global::<Theme>().highlight,
                 )),
                 None,
             )
@@ -620,7 +621,7 @@ impl Render for TextInput {
                     .h(px(30. + 4. * 2.))
                     .w(px(120. + 4. * 2.))
                     .p(px(4.))
-                    .bg(opaque_grey(0.5, 0.5))
+                    .bg(cx.global::<Theme>().surface0)
                     .rounded_md()
                     .child(TextElement { input: cx.entity() }),
             )

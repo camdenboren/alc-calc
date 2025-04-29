@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::ui::theme::Theme;
 use crate::{
     types::Type,
     ui::{button::button, button::text_button, table::MAX_ITEMS},
 };
 use gpui::{
-    actions, deferred, div, opaque_grey, prelude::*, px, uniform_list, App, FocusHandle, Focusable,
-    Global, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle, Window,
+    actions, deferred, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, Global,
+    KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle, Window,
 };
 use std::cmp::max;
 use std::time::Duration;
@@ -100,7 +101,7 @@ impl Dropdown {
             .absolute()
             .top_9()
             .right(px(0.))
-            .bg(opaque_grey(0.15, 1.0))
+            .bg(cx.global::<Theme>().surface2)
             .rounded_md()
             .p_1()
             .w_full()
@@ -117,9 +118,9 @@ impl Dropdown {
                                 div()
                                     .rounded_md()
                                     .px_1()
-                                    .hover(|this| this.bg(opaque_grey(0.7, 0.5)))
+                                    .hover(|this| this.bg(cx.global::<Theme>().surface0))
                                     .when(this.focused_item == ix as isize, |this| {
-                                        this.bg(opaque_grey(0.7, 0.5))
+                                        this.bg(cx.global::<Theme>().surface0)
                                     })
                                     .child(text_button(
                                         item.clone(),
@@ -219,10 +220,10 @@ impl Render for Dropdown {
                 })
                 .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
                 .track_focus(&self.focus_handle)
-                .bg(opaque_grey(0.15, 1.0))
+                .bg(cx.global::<Theme>().surface2)
                 .border_1()
-                .border_color(opaque_grey(0.15, 1.0))
-                .focus(|this| this.border_color(gpui::Hsla::blue()))
+                .border_color(cx.global::<Theme>().surface2)
+                .focus(|this| this.border_color(cx.global::<Theme>().cursor))
                 .px_2()
                 .py_1()
                 .rounded_md()
@@ -238,6 +239,7 @@ impl Render for Dropdown {
                         .child(button(
                             "",
                             "chevron.svg",
+                            cx,
                             cx.listener(move |this, _, _window, cx| {
                                 this.toggle(cx);
                             }),

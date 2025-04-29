@@ -5,11 +5,11 @@
 
 use crate::{
     calc::calc_weights,
-    ui::{button::button, dropdown::Dropdown, input::TextInput},
+    ui::{button::button, dropdown::Dropdown, input::TextInput, theme::Theme},
 };
 use gpui::{
-    actions, div, opaque_grey, prelude::*, px, rgb, App, Entity, EventEmitter, FocusHandle,
-    Focusable, KeyBinding, Pixels, SharedString, Window,
+    actions, div, prelude::*, px, App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding,
+    Pixels, SharedString, Window,
 };
 use std::env::consts::OS;
 
@@ -71,7 +71,7 @@ impl Render for Ingredient {
             .flex()
             .flex_row()
             .border_b_1()
-            .border_color(opaque_grey(0.5, 0.5))
+            .border_color(cx.global::<Theme>().surface0)
             .py_1()
             .items_center()
             .justify_center()
@@ -79,6 +79,7 @@ impl Render for Ingredient {
             .child(button(
                 "",
                 "minus.svg",
+                cx,
                 cx.listener(move |this, _, _window, cx| this.remove(cx)),
             ))
             .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))
@@ -352,7 +353,7 @@ impl Render for Table {
                     .justify_center()
                     .items_center()
                     .rounded_lg()
-                    .bg(opaque_grey(0.2, 1.0))
+                    .bg(cx.global::<Theme>().surface1)
                     .gap_1()
                     .child(
                         div()
@@ -363,7 +364,7 @@ impl Render for Table {
                             .border_b_1()
                             .justify_start()
                             .w(px(120. + 4. * 2.))
-                            .border_color(opaque_grey(0.5, 0.5))
+                            .border_color(cx.global::<Theme>().surface0)
                             .child(div().child("Units".to_uppercase()).bottom(px(1.5))),
                     )
                     .child(self.num_drinks_input.clone()),
@@ -376,7 +377,7 @@ impl Render for Table {
                     .p_4()
                     .items_center()
                     .gap_2()
-                    .bg(opaque_grey(0.2, 1.0))
+                    .bg(cx.global::<Theme>().surface1)
                     .rounded_lg()
                     // header
                     .child(
@@ -386,8 +387,8 @@ impl Render for Table {
                             .h_5()
                             .gap_x_4()
                             .overflow_hidden()
-                            .text_color(rgb(0xffffff))
-                            .bg(opaque_grey(0.2, 1.0))
+                            .text_color(cx.global::<Theme>().text)
+                            .bg(cx.global::<Theme>().surface1)
                             .left_4()
                             .bottom(px(2.))
                             .text_xs()
@@ -406,13 +407,14 @@ impl Render for Table {
                             .flex()
                             .flex_col()
                             .border_t_1()
-                            .border_color(opaque_grey(0.5, 0.5))
+                            .border_color(cx.global::<Theme>().surface0)
                             .children(self.ingreds.clone()),
                     )
                     // + button
                     .child(div().pt_2().h_6().w(px(self.width + 78.)).child(button(
                         "",
                         "plus.svg",
+                        cx,
                         cx.listener(move |this, _, window, cx| {
                             this.add(&Add, window, cx);
                         }),

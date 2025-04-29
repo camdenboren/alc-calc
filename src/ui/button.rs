@@ -1,11 +1,13 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::ui::theme::Theme;
 use gpui::{div, img, prelude::*, App, ClickEvent, SharedString, Window};
 
 pub fn button(
     text: &str,
     icon: &str,
+    cx: &App,
     on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     let cwd = std::env::current_dir().expect("Failed to get cwd");
@@ -16,7 +18,7 @@ pub fn button(
         .flex()
         .h_4()
         .w_4()
-        .bg(gpui::opaque_grey(0.25, 1.0))
+        .bg(cx.global::<Theme>().button)
         .justify_center()
         .items_center()
         .active(|this| this.opacity(0.85))

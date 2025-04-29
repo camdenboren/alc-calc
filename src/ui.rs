@@ -5,9 +5,10 @@ mod button;
 mod dropdown;
 mod input;
 pub mod table;
+mod theme;
 mod titlebar;
-use crate::ui::{table::Table, titlebar::Titlebar};
-use gpui::{div, prelude::*, rgb, App, Entity, Window};
+use crate::ui::{table::Table, theme::Theme, titlebar::Titlebar};
+use gpui::{div, prelude::*, App, Entity, Window};
 use std::env::consts::OS;
 
 pub struct UI {
@@ -17,6 +18,7 @@ pub struct UI {
 
 impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
+        Theme::new(cx);
         cx.new(|cx| UI {
             table: cx.new(|cx| Table::new(cx)),
             titlebar: cx.new(|_| Titlebar::default()),
@@ -25,14 +27,14 @@ impl UI {
 }
 
 impl Render for UI {
-    fn render(&mut self, window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .font_family(".SystemUIFont")
-            .bg(rgb(0x505050))
+            .bg(cx.global::<Theme>().surface0)
             .size_full()
             .shadow_lg()
             .text_xl()
-            .text_color(rgb(0xffffff))
+            .text_color(cx.global::<Theme>().text)
             .when(OS == "linux", |this| {
                 this.child(self.titlebar.clone())
                     .when(!window.is_maximized(), |this| this.rounded_xl())
