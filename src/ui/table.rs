@@ -71,7 +71,7 @@ impl Render for Ingredient {
             .flex()
             .flex_row()
             .border_b_1()
-            .border_color(cx.global::<Theme>().surface0)
+            .border_color(cx.global::<Theme>().background)
             .py_1()
             .items_center()
             .justify_center()
@@ -353,7 +353,7 @@ impl Render for Table {
                     .justify_center()
                     .items_center()
                     .rounded_lg()
-                    .bg(cx.global::<Theme>().surface1)
+                    .bg(cx.global::<Theme>().foreground)
                     .gap_1()
                     .child(
                         div()
@@ -364,7 +364,7 @@ impl Render for Table {
                             .border_b_1()
                             .justify_start()
                             .w(px(120. + 4. * 2.))
-                            .border_color(cx.global::<Theme>().surface0)
+                            .border_color(cx.global::<Theme>().background)
                             .child(div().child("Units".to_uppercase()).bottom(px(1.5))),
                     )
                     .child(self.num_drinks_input.clone()),
@@ -377,7 +377,7 @@ impl Render for Table {
                     .p_4()
                     .items_center()
                     .gap_2()
-                    .bg(cx.global::<Theme>().surface1)
+                    .bg(cx.global::<Theme>().foreground)
                     .rounded_lg()
                     // header
                     .child(
@@ -388,7 +388,7 @@ impl Render for Table {
                             .gap_x_4()
                             .overflow_hidden()
                             .text_color(cx.global::<Theme>().text)
-                            .bg(cx.global::<Theme>().surface1)
+                            .bg(cx.global::<Theme>().foreground)
                             .left_4()
                             .bottom(px(2.))
                             .text_xs()
@@ -407,7 +407,7 @@ impl Render for Table {
                             .flex()
                             .flex_col()
                             .border_t_1()
-                            .border_color(cx.global::<Theme>().surface0)
+                            .border_color(cx.global::<Theme>().background)
                             .children(self.ingreds.clone()),
                     )
                     // + button

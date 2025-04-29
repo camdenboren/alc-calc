@@ -19,7 +19,7 @@ impl Render for Titlebar {
             .h(px(32.))
             .items_center()
             .px_4()
-            .bg(cx.global::<Theme>().surface1)
+            .bg(cx.global::<Theme>().foreground)
             .w_full()
             .when(!window.is_maximized(), |this| this.rounded_t_xl())
             .on_click(|event, window, _| {

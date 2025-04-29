@@ -30,7 +30,7 @@ impl Render for UI {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .font_family(".SystemUIFont")
-            .bg(cx.global::<Theme>().surface0)
+            .bg(cx.global::<Theme>().background)
             .size_full()
             .shadow_lg()
             .text_xl()

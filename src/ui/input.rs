@@ -621,7 +621,7 @@ impl Render for TextInput {
                     .h(px(30. + 4. * 2.))
                     .w(px(120. + 4. * 2.))
                     .p(px(4.))
-                    .bg(cx.global::<Theme>().surface0)
+                    .bg(cx.global::<Theme>().background)
                     .rounded_md()
                     .child(TextElement { input: cx.entity() }),
             )

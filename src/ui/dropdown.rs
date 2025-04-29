@@ -101,7 +101,7 @@ impl Dropdown {
             .absolute()
             .top_9()
             .right(px(0.))
-            .bg(cx.global::<Theme>().surface2)
+            .bg(cx.global::<Theme>().field)
             .rounded_md()
             .p_1()
             .w_full()
@@ -118,9 +118,9 @@ impl Dropdown {
                                 div()
                                     .rounded_md()
                                     .px_1()
-                                    .hover(|this| this.bg(cx.global::<Theme>().surface0))
+                                    .hover(|this| this.bg(cx.global::<Theme>().background))
                                     .when(this.focused_item == ix as isize, |this| {
-                                        this.bg(cx.global::<Theme>().surface0)
+                                        this.bg(cx.global::<Theme>().background)
                                     })
                                     .child(text_button(
                                         item.clone(),
@@ -220,9 +220,9 @@ impl Render for Dropdown {
                 })
                 .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
                 .track_focus(&self.focus_handle)
-                .bg(cx.global::<Theme>().surface2)
+                .bg(cx.global::<Theme>().field)
                 .border_1()
-                .border_color(cx.global::<Theme>().surface2)
+                .border_color(cx.global::<Theme>().field)
                 .focus(|this| this.border_color(cx.global::<Theme>().cursor))
                 .px_2()
                 .py_1()
