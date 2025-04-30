@@ -15,3 +15,4 @@ unicode-segmentation = "1.9.0"
 whoami = { version = "1.4.1", default-features = false }
 toml = "0.8.10"
 serde = "1.0.195"
+anyhow = "1"

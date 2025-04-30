@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::theme::Theme;
-use gpui::{div, img, prelude::*, App, ClickEvent, SharedString, Window};
+use gpui::{div, prelude::*, svg, App, ClickEvent, SharedString, Window};
 
 pub fn button(
     text: &str,
@@ -10,9 +10,6 @@ pub fn button(
     cx: &App,
     on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
-    let cwd = std::env::current_dir().expect("Failed to get cwd");
-    let icon_path = cwd.join("img/").join(icon);
-
     div()
         .id(text.to_string().into_element())
         .flex()
@@ -24,7 +21,12 @@ pub fn button(
         .active(|this| this.opacity(0.85))
         .rounded_full()
         .cursor_pointer()
-        .child(img(icon_path))
+        .child(
+            svg()
+                .path(String::from(icon))
+                .size_full()
+                .text_color(cx.global::<Theme>().text),
+        )
         .on_click(move |event, window, cx| on_click(event, window, cx))
 }
 

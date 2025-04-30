@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // todo
-// - icons
 // - match instead of expect
 // - handle init
 
