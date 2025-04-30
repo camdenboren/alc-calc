@@ -78,7 +78,7 @@
             version = "0.1.0";
             src = ./.;
 
-            cargoHash = "sha256-cbyPyQGnVVeUbdXvCpJ3A6odBoZFgE8+5A7JNczhkhY=";
+            cargoHash = "sha256-LI4alfPA7huTYG86bU2QMJUG4D2PCHurp20TxhEejSk=";
             useFetchCargoVendor = true;
             buildInputs = deps;
             nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
