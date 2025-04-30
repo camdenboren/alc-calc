@@ -18,7 +18,7 @@ pub struct UI {
 
 impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
-        Theme::new(cx);
+        Theme::set(cx);
         cx.new(|cx| UI {
             table: cx.new(|cx| Table::new(cx)),
             titlebar: cx.new(|_| Titlebar::default()),
