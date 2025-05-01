@@ -4,7 +4,12 @@
 use crate::ui::theme::Theme;
 use crate::{
     types::Type,
-    ui::{button::button, button::text_button, table::MAX_ITEMS},
+    ui::{
+        button::button,
+        button::text_button,
+        icon::{Icon, IconSize, IconVariant},
+        table::MAX_ITEMS,
+    },
 };
 use gpui::{
     actions, deferred, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, Global,
@@ -123,6 +128,7 @@ impl Dropdown {
                                         this.bg(cx.global::<Theme>().background)
                                     })
                                     .child(text_button(
+                                        "dropdown_item",
                                         item.clone(),
                                         cx.listener(move |this, _, window, cx| {
                                             this.update(window, cx, item.clone());
@@ -237,8 +243,8 @@ impl Render for Dropdown {
                         .h(px(20. + 4. * 2.))
                         .child(self.current.clone())
                         .child(button(
-                            "",
-                            "chevron.svg",
+                            "dropdown",
+                            Icon::new(IconVariant::Chevron, IconSize::Small),
                             cx,
                             cx.listener(move |this, _, _window, cx| {
                                 this.toggle(cx);

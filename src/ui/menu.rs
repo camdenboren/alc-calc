@@ -1,0 +1,170 @@
+// SPDX-FileCopyrightText: 2025 Camden Boren
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+use crate::ui::{
+    button::{button, text_button},
+    icon::{Icon, IconSize, IconVariant},
+    theme::{Theme, ThemeVariant},
+};
+use gpui::{
+    actions, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, KeyBinding,
+    SharedString, Window,
+};
+use std::cmp::max;
+use strum::{EnumCount, IntoEnumIterator};
+
+actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
+
+pub struct Menu {
+    variants: Vec<SharedString>,
+    show: bool,
+    count: usize,
+    focused_item: isize,
+    focus_handle: FocusHandle,
+}
+
+impl Menu {
+    pub fn new(cx: &mut App) -> Self {
+        Self {
+            variants: ThemeVariant::iter()
+                .map(|t| SharedString::from(t.to_string()))
+                .collect(),
+            show: false,
+            count: ThemeVariant::COUNT,
+            focused_item: -1,
+            focus_handle: cx.focus_handle(),
+        }
+    }
+
+    fn update(&mut self, val: SharedString, cx: &mut Context<Self>) {
+        self.focused_item = self.variants.iter().position(|t| *t == val).unwrap() as isize;
+        Theme::update(&val, cx);
+        self.toggle();
+    }
+
+    fn toggle(&mut self) {
+        self.show = !self.show;
+    }
+
+    fn escape(&mut self, _: &Escape, _window: &mut Window, _cx: &mut Context<Self>) {
+        self.show = false;
+    }
+
+    fn show(&mut self, _: &Enter, _window: &mut Window, _cx: &mut Context<Self>) {
+        self.show = true;
+    }
+
+    fn select(&mut self, _: &Select, _window: &mut Window, cx: &mut Context<Self>) {
+        self.update(
+            self.variants[max(self.focused_item, 0) as usize].clone(),
+            cx,
+        );
+    }
+
+    fn next(&mut self, _: &Next, _window: &mut Window, _cx: &mut Context<Self>) {
+        if self.focused_item < (self.count - 1) as isize {
+            self.focused_item += 1;
+        } else {
+            self.focused_item = 0;
+        }
+    }
+
+    fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
+        if self.focused_item <= 0 {
+            self.focused_item = (self.count - 1) as isize;
+        } else {
+            self.focused_item -= 1;
+        }
+    }
+}
+
+impl Render for Menu {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        cx.bind_keys([
+            KeyBinding::new("escape", Escape, None),
+            KeyBinding::new("enter", Enter, None),
+            KeyBinding::new("up", Prev, None),
+            KeyBinding::new("k", Prev, None),
+            KeyBinding::new("down", Next, None),
+            KeyBinding::new("j", Next, None),
+            KeyBinding::new("enter", Select, None),
+        ]);
+
+        div()
+            .flex()
+            .flex_col()
+            .key_context("Menu")
+            .when(self.show, |this| {
+                this.on_action(cx.listener(Self::escape))
+                    .on_action(cx.listener(Self::select))
+                    .on_action(cx.listener(Self::next))
+                    .on_action(cx.listener(Self::prev))
+            })
+            .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
+            .track_focus(&self.focus_handle)
+            .justify_start()
+            .items_end()
+            .p_2()
+            .child(button(
+                "menu",
+                Icon::new(IconVariant::Theme, IconSize::Medium),
+                cx,
+                cx.listener(move |this, _, _, _| this.toggle()),
+            ))
+            .when(self.show, |this| {
+                this.child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .absolute()
+                        .top_10()
+                        .w_40()
+                        .h(px(168.))
+                        .bg(cx.global::<Theme>().field)
+                        .rounded_md()
+                        .p_1()
+                        .child(
+                            uniform_list(
+                                cx.entity(),
+                                "themes_list",
+                                self.count,
+                                |this, range, _window, cx| {
+                                    range
+                                        .map(|ix| {
+                                            let item = this.variants[ix].clone();
+                                            div()
+                                                .rounded_md()
+                                                .px_1()
+                                                .hover(|this| {
+                                                    this.bg(cx.global::<Theme>().background)
+                                                })
+                                                .when(this.focused_item == ix as isize, |this| {
+                                                    this.bg(cx.global::<Theme>().background)
+                                                })
+                                                .child(text_button(
+                                                    "theme_item",
+                                                    item.clone(),
+                                                    cx.listener(move |this, _, _window, cx| {
+                                                        this.update(item.clone(), cx);
+                                                    }),
+                                                ))
+                                        })
+                                        .collect()
+                                },
+                            )
+                            .on_mouse_down_out(cx.listener(|this, _, _window, cx| {
+                                cx.stop_propagation();
+                                this.toggle();
+                            }))
+                            .h_full(),
+                        ),
+                )
+            })
+    }
+}
+
+impl Focusable for Menu {
+    fn focus_handle(&self, _: &App) -> FocusHandle {
+        self.focus_handle.clone()
+    }
+}

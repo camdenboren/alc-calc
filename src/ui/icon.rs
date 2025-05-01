@@ -1,0 +1,68 @@
+// SPDX-FileCopyrightText: 2025 Camden Boren
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+use crate::ui::theme::Theme;
+use gpui::{prelude::*, svg, App, Div, SharedString, Stateful, Window};
+
+#[derive(PartialEq)]
+pub enum IconVariant {
+    Chevron,
+    Close,
+    Minus,
+    Plus,
+    Theme,
+}
+
+impl IconVariant {
+    fn path(variant: &IconVariant) -> SharedString {
+        match variant {
+            IconVariant::Chevron => String::from("chevron.svg"),
+            IconVariant::Close => String::from("close.svg"),
+            IconVariant::Minus => String::from("minus.svg"),
+            IconVariant::Plus => String::from("plus.svg"),
+            IconVariant::Theme => String::from("image.svg"),
+        }
+        .into()
+    }
+}
+
+pub enum IconSize {
+    Small,
+    Medium,
+}
+
+impl IconSize {
+    pub fn size(div: Stateful<Div>, size: &IconSize) -> Stateful<Div> {
+        div.map(|this| match size {
+            IconSize::Small => this.size_4(),
+            IconSize::Medium => this.size_6(),
+        })
+    }
+}
+
+#[derive(IntoElement)]
+pub struct Icon {
+    pub variant: IconVariant,
+    pub size: IconSize,
+    path: SharedString,
+}
+
+impl Icon {
+    pub fn new(variant: IconVariant, size: IconSize) -> Self {
+        let path = IconVariant::path(&variant);
+        Self {
+            variant,
+            size,
+            path,
+        }
+    }
+}
+
+impl RenderOnce for Icon {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+        svg()
+            .path(self.path)
+            .size_full()
+            .text_color(cx.global::<Theme>().text)
+    }
+}

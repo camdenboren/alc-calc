@@ -5,7 +5,13 @@
 
 use crate::{
     calc::calc_weights,
-    ui::{button::button, dropdown::Dropdown, input::TextInput, theme::Theme},
+    ui::{
+        button::button,
+        dropdown::Dropdown,
+        icon::{Icon, IconSize, IconVariant},
+        input::TextInput,
+        theme::Theme,
+    },
 };
 use gpui::{
     actions, div, prelude::*, px, App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding,
@@ -77,8 +83,8 @@ impl Render for Ingredient {
             .justify_center()
             .gap_x_4()
             .child(button(
-                "",
-                "minus.svg",
+                "remove",
+                Icon::new(IconVariant::Minus, IconSize::Small),
                 cx,
                 cx.listener(move |this, _, _window, cx| this.remove(cx)),
             ))
@@ -341,6 +347,7 @@ impl Render for Table {
             .track_focus(&self.focus_handle(cx))
             .flex()
             .flex_col()
+            .bottom_10()
             .gap_3()
             .items_center()
             // num_drinks input
@@ -412,8 +419,8 @@ impl Render for Table {
                     )
                     // + button
                     .child(div().pt_2().h_6().w(px(self.width + 78.)).child(button(
-                        "",
-                        "plus.svg",
+                        "add",
+                        Icon::new(IconVariant::Plus, IconSize::Small),
                         cx,
                         cx.listener(move |this, _, window, cx| {
                             this.add(&Add, window, cx);

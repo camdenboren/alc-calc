@@ -3,7 +3,11 @@
 
 // Move-by-mouse from: https://github.com/zed-industries/zed/blob/main/crates/title_bar/src/title_bar.rs
 
-use crate::ui::{button::button, theme::Theme};
+use crate::ui::{
+    button::button,
+    icon::{Icon, IconSize, IconVariant},
+    theme::Theme,
+};
 use gpui::{div, prelude::*, px, Window};
 
 #[derive(Default)]
@@ -49,8 +53,13 @@ impl Render for Titlebar {
                 }),
             )
             .child(div().flex().items_center().justify_center().size_full())
-            .child(button("", "close.svg", cx, |_, window, _| {
-                window.remove_window();
-            }))
+            .child(button(
+                "quit",
+                Icon::new(IconVariant::Close, IconSize::Small),
+                cx,
+                |_, window, _| {
+                    window.remove_window();
+                },
+            ))
     }
 }

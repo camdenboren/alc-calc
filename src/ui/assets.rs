@@ -3,11 +3,10 @@
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/svg/svg.rs
 
-use std::fs;
-use std::path::PathBuf;
-
 use anyhow::Result;
 use gpui::{AssetSource, SharedString};
+use std::fs;
+use std::path::PathBuf;
 
 pub struct Assets {
     pub base: PathBuf,

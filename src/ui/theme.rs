@@ -6,16 +6,23 @@
 // - handle init
 
 use gpui::{hsla, rgb, rgba, App, Global, Hsla, Rgba};
-use serde::Deserialize;
-use std::{fs::File, io::Read, path::PathBuf};
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::{write, File},
+    io::Read,
+    path::PathBuf,
+    str::FromStr,
+};
+use strum::{Display, EnumCount, EnumString};
+use strum_macros::EnumIter;
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Config {
     theme: ThemeVariant,
 }
 
-#[derive(Deserialize, PartialEq)]
-enum ThemeVariant {
+#[derive(Serialize, Deserialize, PartialEq, EnumCount, EnumString, EnumIter, Display)]
+pub enum ThemeVariant {
     Dark,
     Light,
     RedDark,
@@ -140,6 +147,15 @@ impl Theme {
     fn read(config_content: String) -> ThemeVariant {
         let config: Config = toml::from_str(&config_content).expect("Failed to parse config file");
         config.theme
+    }
+
+    pub fn update(theme_str: &str, cx: &mut App) {
+        let theme: ThemeVariant = ThemeVariant::from_str(theme_str).unwrap();
+        let config = Config { theme };
+        let config_content = toml::to_string(&config).unwrap();
+        write(Theme::path(whoami::username()), config_content)
+            .expect("Failed to write to config file");
+        Theme::set(cx);
     }
 }
 

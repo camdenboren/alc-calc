@@ -1,41 +1,42 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::ui::theme::Theme;
-use gpui::{div, prelude::*, svg, App, ClickEvent, SharedString, Window};
+use crate::ui::{
+    icon::{Icon, IconSize},
+    theme::Theme,
+};
+use gpui::{div, prelude::*, App, ClickEvent, SharedString, Window};
+
+use super::icon::IconVariant;
 
 pub fn button(
-    text: &str,
-    icon: &str,
+    id: &str,
+    icon: Icon,
     cx: &App,
     on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     div()
-        .id(text.to_string().into_element())
+        .id(id.to_string().into_element())
         .flex()
-        .h_4()
-        .w_4()
+        .map(|this| IconSize::size(this, &icon.size))
         .bg(cx.global::<Theme>().button)
         .justify_center()
         .items_center()
         .active(|this| this.opacity(0.85))
         .rounded_full()
+        .when(icon.variant == IconVariant::Theme, |this| this.rounded_md())
         .cursor_pointer()
-        .child(
-            svg()
-                .path(String::from(icon))
-                .size_full()
-                .text_color(cx.global::<Theme>().text),
-        )
+        .child(icon)
         .on_click(move |event, window, cx| on_click(event, window, cx))
 }
 
 pub fn text_button(
+    id: &str,
     text: SharedString,
     on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     div()
-        .id("")
+        .id(id.to_string().into_element())
         .flex()
         .active(|this| this.opacity(0.85))
         .cursor_pointer()

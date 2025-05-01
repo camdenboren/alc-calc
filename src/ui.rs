@@ -4,15 +4,18 @@
 pub mod assets;
 mod button;
 mod dropdown;
+mod icon;
 mod input;
+mod menu;
 pub mod table;
 mod theme;
 mod titlebar;
-use crate::ui::{table::Table, theme::Theme, titlebar::Titlebar};
+use crate::ui::{menu::Menu, table::Table, theme::Theme, titlebar::Titlebar};
 use gpui::{div, prelude::*, App, Entity, Window};
 use std::env::consts::OS;
 
 pub struct UI {
+    menu: Entity<Menu>,
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
 }
@@ -21,6 +24,7 @@ impl UI {
     pub fn new(cx: &mut App) -> Entity<Self> {
         Theme::set(cx);
         cx.new(|cx| UI {
+            menu: cx.new(|cx| Menu::new(cx)),
             table: cx.new(|cx| Table::new(cx)),
             titlebar: cx.new(|_| Titlebar::default()),
         })
@@ -40,6 +44,7 @@ impl Render for UI {
                 this.child(self.titlebar.clone())
                     .when(!window.is_maximized(), |this| this.rounded_xl())
             })
+            .child(self.menu.clone())
             .child(
                 div()
                     .flex()
