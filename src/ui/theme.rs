@@ -178,15 +178,9 @@ mod tests {
         let username = String::from("abc");
         let path = Theme::path(username);
         #[cfg(target_os = "macos")]
-        assert_eq!(
-            path,
-            PathBuf::from("/Users/abc/.config/alc-calc/config.toml")
-        );
+        assert_eq!(path, PathBuf::from("/Users/abc/.config/alc-calc"));
         #[cfg(target_os = "linux")]
-        assert_eq!(
-            path,
-            PathBuf::from("/home/abc/.config/alc-calc/config.toml")
-        );
+        assert_eq!(path, PathBuf::from("/home/abc/.config/alc-calc"));
     }
 
     #[test]
