@@ -3,7 +3,6 @@
 
 // todo
 // - match instead of expect
-// - handle init
 
 use gpui::{hsla, rgb, rgba, App, Global, Hsla, Rgba};
 use serde::{Deserialize, Serialize};
@@ -91,7 +90,7 @@ impl Theme {
             background: rgb(0x600000),
             foreground: rgb(0x490000),
             field: rgb(0x390000),
-            button: rgb(0x404040),
+            button: rgb(0x6a0000),
             cursor: rgb(0xd12727),
             highlight: rgba(0xd1272730),
         }
@@ -104,7 +103,7 @@ impl Theme {
             background: rgb(0x393552),
             foreground: rgb(0x2a273f),
             field: rgb(0x1e1c31),
-            button: rgb(0x404040),
+            button: rgb(0x3b3754),
             cursor: rgb(0x9bced6),
             highlight: rgba(0x9bced630),
         }
@@ -117,7 +116,7 @@ impl Theme {
             background: rgb(0x0a404c),
             foreground: rgb(0x002b36),
             field: rgb(0x00212c),
-            button: rgb(0x404040),
+            button: rgb(0x0b434f),
             cursor: rgb(0x278ad1),
             highlight: rgba(0x278ad130),
         }
@@ -128,14 +127,18 @@ impl Theme {
         let user_dir = PathBuf::from("/Users").join(username.clone());
         #[cfg(target_os = "linux")]
         let user_dir = PathBuf::from("/home").join(username.clone());
-        user_dir
-            .clone()
-            .join(".config")
-            .join("alc-calc")
-            .join("config.toml")
+        user_dir.clone().join(".config").join("alc-calc")
     }
 
     fn load(path: PathBuf) -> String {
+        let dir_path = path.clone();
+        let path = path.join("config.toml");
+        if std::fs::metadata(&dir_path).is_err() {
+            std::fs::create_dir(&dir_path).expect("Failed to create config directory");
+        }
+        if std::fs::metadata(&path).is_err() {
+            Theme::write("Dark");
+        }
         let mut config_file = File::open(path).expect("Failed to open config file");
         let mut config_content = String::new();
         config_file
@@ -149,12 +152,19 @@ impl Theme {
         config.theme
     }
 
-    pub fn update(theme_str: &str, cx: &mut App) {
+    fn write(theme_str: &str) {
         let theme: ThemeVariant = ThemeVariant::from_str(theme_str).unwrap();
         let config = Config { theme };
         let config_content = toml::to_string(&config).unwrap();
-        write(Theme::path(whoami::username()), config_content)
-            .expect("Failed to write to config file");
+        write(
+            Theme::path(whoami::username()).join("config.toml"),
+            config_content,
+        )
+        .expect("Failed to write to config file");
+    }
+
+    pub fn update(theme_str: &str, cx: &mut App) {
+        Theme::write(theme_str);
         Theme::set(cx);
     }
 }
