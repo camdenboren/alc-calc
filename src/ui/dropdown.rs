@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::ui::theme::Theme;
 use crate::{
     types::Type,
     ui::{
@@ -9,6 +8,7 @@ use crate::{
         button::text_button,
         icon::{Icon, IconSize, IconVariant},
         table::MAX_ITEMS,
+        theme::Theme,
     },
 };
 use gpui::{

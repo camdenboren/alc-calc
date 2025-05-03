@@ -16,11 +16,11 @@ pub enum IconVariant {
 impl IconVariant {
     fn path(variant: &IconVariant) -> SharedString {
         match variant {
-            IconVariant::Chevron => String::from("chevron.svg"),
-            IconVariant::Close => String::from("close.svg"),
-            IconVariant::Minus => String::from("minus.svg"),
-            IconVariant::Plus => String::from("plus.svg"),
-            IconVariant::Theme => String::from("image.svg"),
+            IconVariant::Chevron => "chevron.svg",
+            IconVariant::Close => "close.svg",
+            IconVariant::Minus => "minus.svg",
+            IconVariant::Plus => "plus.svg",
+            IconVariant::Theme => "image.svg",
         }
         .into()
     }
