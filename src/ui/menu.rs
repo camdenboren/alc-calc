@@ -161,6 +161,7 @@ impl Render for Menu {
                             )
                             .on_mouse_down_out(cx.listener(|this, _, _window, cx| {
                                 cx.stop_propagation();
+                                cx.notify();
                                 this.toggle();
                             }))
                             .h_full(),

@@ -12,25 +12,15 @@ use crate::{
     },
 };
 use gpui::{
-    actions, deferred, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, Global,
-    KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle, Window,
+    actions, deferred, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, KeyBinding,
+    ScrollStrategy, SharedString, UniformListScrollHandle, Window,
 };
 use std::cmp::max;
-use std::time::Duration;
 use strum::{EnumCount, IntoEnumIterator};
 
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "Dropdown";
-
-#[derive(Default)]
-pub struct DropdownState {
-    pub just_clicked: bool,
-    pub delayed: bool,
-    pub count: usize,
-}
-
-impl Global for DropdownState {}
 
 pub struct Dropdown {
     types: Vec<SharedString>,
@@ -54,40 +44,6 @@ impl Dropdown {
             KeyBinding::new("j", Next, Some(CONTEXT)),
             KeyBinding::new("enter", Select, Some(CONTEXT)),
         ]);
-
-        // hack to allow hiding dropdown when clicking toggle by preventing
-        // on_mouse_down_out and toggle from executing together
-        //
-        // todo: mv state to dropdown to avoid unneeded global scope and allow
-        // toggling another dropdown on_mouse_down_out
-        if id == 0 {
-            cx.set_global::<DropdownState>(DropdownState::default());
-            cx.spawn(|cx| async move {
-                loop {
-                    cx.update_global::<DropdownState, _>(|state, _cx| {
-                        if state.delayed {
-                            state.count += 1;
-                            if state.count >= 2 {
-                                state.delayed = false;
-                            }
-                        } else {
-                            state.count = 0;
-                        }
-
-                        if state.just_clicked {
-                            state.delayed = true;
-                            state.just_clicked = false;
-                        }
-                    })
-                    .expect("Unexpectedly failed to update global dropdown state");
-
-                    cx.background_executor()
-                        .timer(Duration::from_millis(50))
-                        .await;
-                }
-            })
-            .detach();
-        }
 
         Self {
             types: Type::iter()
@@ -153,7 +109,7 @@ impl Dropdown {
                 )
                 .track_scroll(self.scroll_handle.clone())
                 .on_mouse_down_out(cx.listener(|this, _, window, cx| {
-                    cx.global_mut::<DropdownState>().just_clicked = true;
+                    cx.stop_propagation();
                     this.escape(&Escape, window, cx);
                 }))
                 .h_full(),
@@ -161,10 +117,8 @@ impl Dropdown {
     }
 
     pub fn toggle(&mut self, cx: &mut Context<Self>) {
-        if !cx.global_mut::<DropdownState>().delayed {
-            cx.stop_propagation();
-            self.show = !self.show;
-        }
+        cx.stop_propagation();
+        self.show = !self.show;
     }
 
     fn update(&mut self, window: &mut Window, cx: &mut Context<Self>, val: SharedString) {
