@@ -60,7 +60,7 @@ impl Theme {
     fn dark() -> Self {
         Self {
             text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0., 0.5),
+            subtext: hsla(0., 0., 0.5, 0.1),
             background: rgb(0x3c3c3c),
             foreground: rgb(0x282828),
             field: rgb(0x1d1d1d),
@@ -72,8 +72,8 @@ impl Theme {
 
     fn light() -> Self {
         Self {
-            text: hsla(0., 0., 0., 0.5),
-            subtext: hsla(0., 0., 0.1, 0.1),
+            text: hsla(0., 0., 0.1, 0.9),
+            subtext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0xe0e0e0),
             foreground: rgb(0xc0c0c0),
             field: rgb(0xb0b0b0),
@@ -85,8 +85,8 @@ impl Theme {
 
     fn red_dark() -> Self {
         Self {
-            text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0., 0.5),
+            text: hsla(0., 0.5, 0.9, 0.9),
+            subtext: hsla(0., 0.1, 0.5, 0.1),
             background: rgb(0x600000),
             foreground: rgb(0x490000),
             field: rgb(0x390000),
@@ -98,8 +98,8 @@ impl Theme {
 
     fn rose_pine_moon() -> Self {
         Self {
-            text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0., 0.5),
+            text: hsla(0.7, 0.5, 0.9, 0.9),
+            subtext: hsla(0.7, 0.1, 0.5, 0.1),
             background: rgb(0x393552),
             foreground: rgb(0x2a273f),
             field: rgb(0x1e1c31),
@@ -111,8 +111,8 @@ impl Theme {
 
     fn solarized_dark() -> Self {
         Self {
-            text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0., 0.5),
+            text: hsla(0.5, 0.5, 0.9, 0.9),
+            subtext: hsla(0.5, 0.1, 0.5, 0.1),
             background: rgb(0x0a404c),
             foreground: rgb(0x002b36),
             field: rgb(0x00212c),
