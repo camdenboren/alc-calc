@@ -21,10 +21,11 @@ impl Render for Titlebar {
             .id("titlebar")
             .flex()
             .h(px(32.))
-            .items_center()
-            .px_4()
-            .bg(cx.global::<Theme>().foreground)
             .w_full()
+            .items_center()
+            .justify_end()
+            .px_2()
+            .bg(cx.global::<Theme>().foreground)
             .when(!window.is_maximized(), |this| this.rounded_t_xl())
             .on_click(|event, window, _| {
                 if event.up.click_count == 2 {
@@ -52,7 +53,6 @@ impl Render for Titlebar {
                     this.should_move = true;
                 }),
             )
-            .child(div().flex().items_center().justify_center().size_full())
             .child(button(
                 "quit",
                 Icon::new(IconVariant::Close, IconSize::Small),
