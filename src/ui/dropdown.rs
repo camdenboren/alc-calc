@@ -21,6 +21,8 @@ use strum::{EnumCount, IntoEnumIterator};
 
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
+const CONTEXT: &str = "Dropdown";
+
 #[derive(Default)]
 pub struct DropdownState {
     pub just_clicked: bool,
@@ -43,6 +45,16 @@ pub struct Dropdown {
 
 impl Dropdown {
     pub fn new(id: usize, cx: &mut App) -> Self {
+        cx.bind_keys([
+            KeyBinding::new("escape", Escape, Some(CONTEXT)),
+            KeyBinding::new("enter", Enter, Some(CONTEXT)),
+            KeyBinding::new("up", Prev, Some(CONTEXT)),
+            KeyBinding::new("k", Prev, Some(CONTEXT)),
+            KeyBinding::new("down", Next, Some(CONTEXT)),
+            KeyBinding::new("j", Next, Some(CONTEXT)),
+            KeyBinding::new("enter", Select, Some(CONTEXT)),
+        ]);
+
         // hack to allow hiding dropdown when clicking toggle by preventing
         // on_mouse_down_out and toggle from executing together
         //
@@ -101,6 +113,7 @@ impl Dropdown {
 
     fn render_list(&self, cx: &mut Context<Self>) -> impl IntoElement {
         div()
+            .key_context(CONTEXT)
             .flex()
             .flex_col()
             .absolute()
@@ -161,12 +174,14 @@ impl Dropdown {
         self.focus_handle.focus(window);
     }
 
-    fn escape(&mut self, _: &Escape, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
+        cx.notify();
     }
 
-    fn show(&mut self, _: &Enter, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn show(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
+        cx.notify();
     }
 
     fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {
@@ -174,25 +189,28 @@ impl Dropdown {
             window,
             cx,
             self.types[max(self.focused_item, 0) as usize].clone(),
-        )
+        );
+        cx.notify();
     }
 
-    fn next(&mut self, _: &Next, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn next(&mut self, _: &Next, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item < (self.count - 1) as isize {
             self.focused_item += 1;
         } else {
             self.focused_item = 0;
         }
         self.scroll();
+        cx.notify();
     }
 
-    fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn prev(&mut self, _: &Prev, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item <= 0 {
             self.focused_item = (self.count - 1) as isize;
         } else {
             self.focused_item -= 1;
         }
         self.scroll();
+        cx.notify();
     }
 
     fn scroll(&mut self) {
@@ -203,21 +221,11 @@ impl Dropdown {
 
 impl Render for Dropdown {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        cx.bind_keys([
-            KeyBinding::new("escape", Escape, None),
-            KeyBinding::new("enter", Enter, None),
-            KeyBinding::new("up", Prev, None),
-            KeyBinding::new("k", Prev, None),
-            KeyBinding::new("down", Next, None),
-            KeyBinding::new("j", Next, None),
-            KeyBinding::new("enter", Select, None),
-        ]);
-
         deferred(
             div()
                 .flex()
                 .flex_col()
-                .key_context("Dropdown")
+                .key_context(CONTEXT)
                 .when(self.show, |this| {
                     this.on_action(cx.listener(Self::escape))
                         .on_action(cx.listener(Self::select))

@@ -15,6 +15,8 @@ use strum::{EnumCount, IntoEnumIterator};
 
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
+const CONTEXT: &str = "Menu";
+
 pub struct Menu {
     variants: Vec<SharedString>,
     show: bool,
@@ -25,6 +27,16 @@ pub struct Menu {
 
 impl Menu {
     pub fn new(cx: &mut App) -> Self {
+        cx.bind_keys([
+            KeyBinding::new("escape", Escape, Some(CONTEXT)),
+            KeyBinding::new("enter", Enter, Some(CONTEXT)),
+            KeyBinding::new("up", Prev, Some(CONTEXT)),
+            KeyBinding::new("k", Prev, Some(CONTEXT)),
+            KeyBinding::new("down", Next, Some(CONTEXT)),
+            KeyBinding::new("j", Next, Some(CONTEXT)),
+            KeyBinding::new("enter", Select, Some(CONTEXT)),
+        ]);
+
         Self {
             variants: ThemeVariant::iter()
                 .map(|t| SharedString::from(t.to_string()))
@@ -46,12 +58,14 @@ impl Menu {
         self.show = !self.show;
     }
 
-    fn escape(&mut self, _: &Escape, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
+        cx.notify();
     }
 
-    fn show(&mut self, _: &Enter, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn show(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
+        cx.notify();
     }
 
     fn select(&mut self, _: &Select, _window: &mut Window, cx: &mut Context<Self>) {
@@ -59,41 +73,34 @@ impl Menu {
             self.variants[max(self.focused_item, 0) as usize].clone(),
             cx,
         );
+        cx.notify();
     }
 
-    fn next(&mut self, _: &Next, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn next(&mut self, _: &Next, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item < (self.count - 1) as isize {
             self.focused_item += 1;
         } else {
             self.focused_item = 0;
         }
+        cx.notify();
     }
 
-    fn prev(&mut self, _: &Prev, _window: &mut Window, _cx: &mut Context<Self>) {
+    fn prev(&mut self, _: &Prev, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item <= 0 {
             self.focused_item = (self.count - 1) as isize;
         } else {
             self.focused_item -= 1;
         }
+        cx.notify();
     }
 }
 
 impl Render for Menu {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        cx.bind_keys([
-            KeyBinding::new("escape", Escape, None),
-            KeyBinding::new("enter", Enter, None),
-            KeyBinding::new("up", Prev, None),
-            KeyBinding::new("k", Prev, None),
-            KeyBinding::new("down", Next, None),
-            KeyBinding::new("j", Next, None),
-            KeyBinding::new("enter", Select, None),
-        ]);
-
         div()
             .flex()
             .flex_col()
-            .key_context("Menu")
+            .key_context(CONTEXT)
             .when(self.show, |this| {
                 this.on_action(cx.listener(Self::escape))
                     .on_action(cx.listener(Self::select))

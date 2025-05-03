@@ -21,6 +21,7 @@ use std::env::consts::OS;
 
 actions!(table, [Tab, Add, Delete, Escape, RemoveKey]);
 
+const CONTEXT: &str = "Table";
 pub const MAX_ITEMS: usize = 10;
 const FIELDS: [(&str, f32); 4] = [
     ("alc_type", 148.),
@@ -39,6 +40,15 @@ struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, cx: &mut App) -> Self {
+        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+        cx.bind_keys([
+            KeyBinding::new("tab", Tab, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-r").as_str(), RemoveKey, Some(CONTEXT)),
+            KeyBinding::new("escape", Escape, Some(CONTEXT)),
+        ]);
+
         Self {
             alc_type: cx.new(|cx| Dropdown::new(id, cx)),
             percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
@@ -166,6 +176,7 @@ impl Table {
             )
             .detach();
         }
+        cx.notify();
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
@@ -179,6 +190,7 @@ impl Table {
             self.ingreds.pop();
             self.count -= 1;
         }
+        cx.notify();
     }
 
     fn remove(&mut self, ix: usize, cx: &mut Context<Self>) {
@@ -212,6 +224,7 @@ impl Table {
                 }
             }
         }
+        cx.notify();
     }
 
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
@@ -322,15 +335,6 @@ impl Render for Table {
             self.init = false;
         }
 
-        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
-        cx.bind_keys([
-            KeyBinding::new("tab", Tab, None),
-            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, None),
-            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, None),
-            KeyBinding::new(format!("{ctrl}-r").as_str(), RemoveKey, None),
-            KeyBinding::new("escape", Escape, None),
-        ]);
-
         self.num_drinks = self.parse_or_zero(self.num_drinks(cx).content.clone());
 
         if self.ready(cx) {
@@ -338,7 +342,7 @@ impl Render for Table {
         }
 
         div()
-            .key_context("Table")
+            .key_context(CONTEXT)
             .on_action(cx.listener(Self::focus_next))
             .on_action(cx.listener(Self::focus))
             .on_action(cx.listener(Self::add))

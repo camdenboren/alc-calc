@@ -34,6 +34,8 @@ actions!(
     ]
 );
 
+const CONTEXT: &str = "TextInput";
+
 pub struct TextInput {
     focus_handle: FocusHandle,
     pub content: SharedString,
@@ -48,6 +50,27 @@ pub struct TextInput {
 
 impl TextInput {
     pub fn new(cx: &mut App, placeholder: SharedString) -> Self {
+        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+        cx.bind_keys([
+            KeyBinding::new("backspace", Backspace, Some(CONTEXT)),
+            KeyBinding::new("delete", Delete, Some(CONTEXT)),
+            KeyBinding::new("left", Left, Some(CONTEXT)),
+            KeyBinding::new("right", Right, Some(CONTEXT)),
+            KeyBinding::new("shift-left", SelectLeft, Some(CONTEXT)),
+            KeyBinding::new("shift-right", SelectRight, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-a").as_str(), SelectAll, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-v").as_str(), Paste, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-c").as_str(), Copy, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-x").as_str(), Cut, Some(CONTEXT)),
+            KeyBinding::new("home", Home, Some(CONTEXT)),
+            KeyBinding::new("end", End, Some(CONTEXT)),
+            KeyBinding::new(
+                format!("{ctrl}-shift-space").as_str(),
+                ShowCharacterPalette,
+                Some(CONTEXT),
+            ),
+        ]);
+
         Self {
             focus_handle: cx.focus_handle(),
             content: "".into(),
@@ -572,30 +595,9 @@ impl Element for TextElement {
 
 impl Render for TextInput {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
-        cx.bind_keys([
-            KeyBinding::new("backspace", Backspace, None),
-            KeyBinding::new("delete", Delete, None),
-            KeyBinding::new("left", Left, None),
-            KeyBinding::new("right", Right, None),
-            KeyBinding::new("shift-left", SelectLeft, None),
-            KeyBinding::new("shift-right", SelectRight, None),
-            KeyBinding::new(format!("{ctrl}-a").as_str(), SelectAll, None),
-            KeyBinding::new(format!("{ctrl}-v").as_str(), Paste, None),
-            KeyBinding::new(format!("{ctrl}-c").as_str(), Copy, None),
-            KeyBinding::new(format!("{ctrl}-x").as_str(), Cut, None),
-            KeyBinding::new("home", Home, None),
-            KeyBinding::new("end", End, None),
-            KeyBinding::new(
-                format!("{ctrl}-shift-space").as_str(),
-                ShowCharacterPalette,
-                None,
-            ),
-        ]);
-
         div()
             .flex()
-            .key_context("TextInput")
+            .key_context(CONTEXT)
             .track_focus(&self.focus_handle(cx))
             .cursor(CursorStyle::IBeam)
             .on_action(cx.listener(Self::backspace))
