@@ -13,7 +13,7 @@ use gpui::{
 use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};
 
-actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
+actions!(menu, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "Menu";
 
