@@ -1,12 +1,10 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// todo
-// - match instead of expect
-
 use gpui::{hsla, rgb, rgba, App, Global, Hsla, Rgba};
 use serde::{Deserialize, Serialize};
 use std::{
+    error::Error,
     fs::{write, File},
     io::Read,
     path::PathBuf,
@@ -14,6 +12,8 @@ use std::{
 };
 use strum::{Display, EnumCount, EnumString};
 use strum_macros::EnumIter;
+
+const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -46,8 +46,8 @@ impl Theme {
     pub fn set(cx: &mut App) {
         let username = whoami::username();
         let path = Theme::path(username);
-        let config_content = Theme::load(path);
-        let theme = match Theme::read(config_content) {
+        let config_content = Theme::read(path).unwrap_or(String::from(DEFAULT_THEME));
+        let theme = match Theme::deserialize(config_content) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
@@ -60,7 +60,7 @@ impl Theme {
     fn dark() -> Self {
         Self {
             text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0.5, 0.1),
+            subtext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0x3c3c3c),
             foreground: rgb(0x282828),
             field: rgb(0x1d1d1d),
@@ -86,7 +86,7 @@ impl Theme {
     fn red_dark() -> Self {
         Self {
             text: hsla(0., 0.5, 0.9, 0.9),
-            subtext: hsla(0., 0.1, 0.5, 0.1),
+            subtext: hsla(0., 0.1, 0.5, 0.2),
             background: rgb(0x600000),
             foreground: rgb(0x490000),
             field: rgb(0x390000),
@@ -99,7 +99,7 @@ impl Theme {
     fn rose_pine_moon() -> Self {
         Self {
             text: hsla(0.7, 0.5, 0.9, 0.9),
-            subtext: hsla(0.7, 0.1, 0.5, 0.1),
+            subtext: hsla(0.7, 0.1, 0.5, 0.2),
             background: rgb(0x393552),
             foreground: rgb(0x2a273f),
             field: rgb(0x1e1c31),
@@ -112,7 +112,7 @@ impl Theme {
     fn solarized_dark() -> Self {
         Self {
             text: hsla(0.5, 0.5, 0.9, 0.9),
-            subtext: hsla(0.5, 0.1, 0.5, 0.1),
+            subtext: hsla(0.5, 0.1, 0.5, 0.2),
             background: rgb(0x0a404c),
             foreground: rgb(0x002b36),
             field: rgb(0x00212c),
@@ -130,37 +130,63 @@ impl Theme {
         user_dir.clone().join(".config").join("alc-calc")
     }
 
-    fn load(path: PathBuf) -> String {
-        let dir_path = path.clone();
-        let path = path.join("config.toml");
-        if std::fs::metadata(&dir_path).is_err() {
-            std::fs::create_dir(&dir_path).expect("Failed to create config directory");
+    fn deserialize(config_content: String) -> ThemeVariant {
+        match toml::from_str(&config_content) {
+            Ok(config) => config,
+            Err(_) => {
+                println!("Failed to deserialize config. Defaulting to Dark theme");
+                Config {
+                    theme: ThemeVariant::Dark,
+                }
+            }
         }
-        if std::fs::metadata(&path).is_err() {
-            Theme::write("Dark");
-        }
-        let mut config_file = File::open(path).expect("Failed to open config file");
-        let mut config_content = String::new();
-        config_file
-            .read_to_string(&mut config_content)
-            .expect("Failed to read config file");
-        config_content
+        .theme
     }
 
-    fn read(config_content: String) -> ThemeVariant {
-        let config: Config = toml::from_str(&config_content).expect("Failed to parse config file");
-        config.theme
+    fn serialize(theme_str: &str) -> String {
+        let theme: ThemeVariant = ThemeVariant::from_str(theme_str).unwrap_or(ThemeVariant::Dark);
+        let config = Config { theme };
+        match toml::to_string(&config) {
+            Ok(config_content) => config_content,
+            Err(_) => {
+                println!("Failed to serialize config. Defaulting to Dark theme");
+                String::from(DEFAULT_THEME)
+            }
+        }
+    }
+
+    fn read(path: PathBuf) -> Result<String, Box<dyn Error>> {
+        let file_path = path.join("config.toml");
+        if std::fs::metadata(&file_path).is_err() {
+            Theme::write("Dark");
+        }
+
+        let mut config_file = File::open(file_path)?;
+        let mut config_content = String::new();
+        match config_file.read_to_string(&mut config_content) {
+            Ok(_) => (),
+            Err(_) => {
+                config_content = String::from(DEFAULT_THEME);
+                println!("Failed to read config file. Defaulting to Dark theme");
+            }
+        }
+
+        Ok(config_content)
     }
 
     fn write(theme_str: &str) {
-        let theme: ThemeVariant = ThemeVariant::from_str(theme_str).unwrap();
-        let config = Config { theme };
-        let config_content = toml::to_string(&config).unwrap();
-        write(
-            Theme::path(whoami::username()).join("config.toml"),
-            config_content,
-        )
-        .expect("Failed to write to config file");
+        let config_content = Theme::serialize(theme_str);
+        let path = Theme::path(whoami::username());
+        if std::fs::metadata(&path).is_err() {
+            match std::fs::create_dir(&path) {
+                Ok(_) => (),
+                Err(_) => println!("Failed to create config directory"),
+            }
+        }
+        match write(path.join("config.toml"), &config_content) {
+            Ok(_) => (),
+            Err(_) => println!("Failed to write to config file"),
+        }
     }
 
     pub fn update(theme_str: &str, cx: &mut App) {
@@ -184,13 +210,17 @@ mod tests {
     }
 
     #[test]
-    fn test_read() {
-        let config_content = String::from(
-            r#"
-            theme = 'SolarizedDark'
-            "#,
-        );
-        let theme = Theme::read(config_content);
+    fn test_deserialize() {
+        let config_content = String::from("theme = \"SolarizedDark\"\n");
+        let theme = Theme::deserialize(config_content);
         assert!(theme == ThemeVariant::SolarizedDark);
+    }
+
+    #[test]
+    fn test_serialize() {
+        let theme_str = "RosePineMoon";
+        let expected = String::from("theme = \"RosePineMoon\"\n");
+        let config_content = Theme::serialize(theme_str);
+        assert_eq!(config_content, expected);
     }
 }
