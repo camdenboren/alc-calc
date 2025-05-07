@@ -44,9 +44,10 @@ impl Render for UI {
             .shadow_lg()
             .text_xl()
             .text_color(cx.theme().text)
-            .when(cfg!(target_os = "linux"), |this| {
-                this.border(px(0.5)).border_color(cx.theme().border)
-            })
+            .when(
+                cfg!(target_os = "linux") && !window.is_maximized(),
+                |this| this.border(px(0.5)).border_color(cx.theme().border),
+            )
             .child(self.titlebar.clone())
             .when(!window.is_maximized(), |this| this.rounded_xl())
             .child(self.menu.clone())
