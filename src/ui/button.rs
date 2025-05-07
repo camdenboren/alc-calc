@@ -3,7 +3,7 @@
 
 use crate::ui::{
     icon::{Icon, IconSize},
-    theme::Theme,
+    theme::ActiveTheme,
 };
 use gpui::{div, prelude::*, App, ClickEvent, SharedString, Window};
 
@@ -19,7 +19,7 @@ pub fn button(
         .id(id.to_string().into_element())
         .flex()
         .map(|this| IconSize::size(this, &icon.size))
-        .bg(cx.global::<Theme>().button)
+        .bg(cx.theme().button)
         .justify_center()
         .items_center()
         .active(|this| this.opacity(0.85))

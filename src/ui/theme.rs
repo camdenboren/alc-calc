@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// ActiveTheme adapted from https://github.com/zed-industries/zed/blob/main/crates/theme/src/theme.rs
+
 use gpui::{hsla, rgb, rgba, App, Global, Hsla, Rgba};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -38,9 +40,21 @@ pub struct Theme {
     pub button: Rgba,
     pub cursor: Rgba,
     pub highlight: Rgba,
+    pub border: Rgba,
+    pub separator: Rgba,
 }
 
 impl Global for Theme {}
+
+pub trait ActiveTheme {
+    fn theme(&self) -> &Theme;
+}
+
+impl ActiveTheme for App {
+    fn theme(&self) -> &Theme {
+        Theme::global(self)
+    }
+}
 
 impl Theme {
     pub fn set(cx: &mut App) {
@@ -54,7 +68,11 @@ impl Theme {
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
         };
-        cx.set_global::<Theme>(theme);
+        cx.set_global(theme);
+    }
+
+    pub fn global(cx: &App) -> &Theme {
+        cx.global::<Theme>()
     }
 
     fn dark() -> Self {
@@ -67,6 +85,8 @@ impl Theme {
             button: rgb(0x404040),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
+            border: rgba(0x646464ff),
+            separator: rgba(0x000000ff),
         }
     }
 
@@ -80,6 +100,8 @@ impl Theme {
             button: rgb(0xd0d0d0),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
+            border: rgba(0x969696ff),
+            separator: rgba(0x969696ff),
         }
     }
 
@@ -93,6 +115,8 @@ impl Theme {
             button: rgb(0x6a0000),
             cursor: rgb(0xd12727),
             highlight: rgba(0xd1272730),
+            border: rgba(0x6e2c2fff),
+            separator: rgba(0x000000ff),
         }
     }
 
@@ -106,6 +130,8 @@ impl Theme {
             button: rgb(0x3b3754),
             cursor: rgb(0x9bced6),
             highlight: rgba(0x9bced630),
+            border: rgba(0x504c68ff),
+            separator: rgba(0x000000ff),
         }
     }
 
@@ -119,6 +145,8 @@ impl Theme {
             button: rgb(0x0b434f),
             cursor: rgb(0x278ad1),
             highlight: rgba(0x278ad130),
+            border: rgba(0x2b4e58ff),
+            separator: rgba(0x000000ff),
         }
     }
 

@@ -6,9 +6,14 @@
 use crate::ui::{
     button::button,
     icon::{Icon, IconSize, IconVariant},
-    theme::Theme,
+    theme::ActiveTheme,
 };
 use gpui::{div, prelude::*, px, Window};
+
+#[cfg(target_os = "linux")]
+const HEIGHT: f32 = 32.;
+#[cfg(not(target_os = "linux"))]
+const HEIGHT: f32 = 28.;
 
 #[derive(Default)]
 pub struct Titlebar {
@@ -20,12 +25,14 @@ impl Render for Titlebar {
         div()
             .id("titlebar")
             .flex()
-            .h(px(32.))
+            .h(px(HEIGHT))
             .w_full()
+            .border_b(px(0.5))
+            .border_color(cx.theme().separator)
             .items_center()
             .justify_end()
             .px_2()
-            .bg(cx.global::<Theme>().foreground)
+            .bg(cx.theme().foreground)
             .when(!window.is_maximized(), |this| this.rounded_t_xl())
             .on_click(|event, window, _| {
                 if event.up.click_count == 2 {
@@ -53,13 +60,15 @@ impl Render for Titlebar {
                     this.should_move = true;
                 }),
             )
-            .child(button(
-                "quit",
-                Icon::new(IconVariant::Close, IconSize::Small),
-                cx,
-                |_, window, _| {
-                    window.remove_window();
-                },
-            ))
+            .when(cfg!(target_os = "linux"), |this| {
+                this.child(button(
+                    "quit",
+                    Icon::new(IconVariant::Close, IconSize::Small),
+                    cx,
+                    |_, window, _| {
+                        window.remove_window();
+                    },
+                ))
+            })
     }
 }

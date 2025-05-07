@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#![allow(unused_imports)]
 use alc_calc::ui::{assets::Assets, UI};
 use gpui::{
-    actions, App, Application, KeyBinding, Menu, MenuItem, WindowBackgroundAppearance,
-    WindowOptions,
+    actions, App, Application, KeyBinding, Menu, MenuItem, TitlebarOptions,
+    WindowBackgroundAppearance, WindowOptions,
 };
-use std::{env::consts::OS, path::PathBuf};
+use std::path::PathBuf;
 
 actions!(alc_alc, [Quit]);
 
@@ -18,7 +19,11 @@ fn main() {
         .run(|cx: &mut App| {
             cx.activate(true);
             cx.on_action(|_: &Quit, cx| cx.quit());
-            let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+            let ctrl = if cfg!(target_os = "linux") {
+                "ctrl"
+            } else {
+                "cmd"
+            };
             cx.bind_keys([KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, None)]);
 
             cx.set_menus(vec![Menu {
@@ -29,6 +34,12 @@ fn main() {
             cx.open_window(
                 WindowOptions {
                     focus: true,
+                    #[cfg(target_os = "macos")]
+                    titlebar: Some(TitlebarOptions {
+                        appears_transparent: true,
+                        ..Default::default()
+                    }),
+                    #[cfg(target_os = "linux")]
                     window_background: WindowBackgroundAppearance::Transparent,
                     ..Default::default()
                 },

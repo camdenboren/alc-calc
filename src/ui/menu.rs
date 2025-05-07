@@ -4,7 +4,7 @@
 use crate::ui::{
     button::{button, text_button},
     icon::{Icon, IconSize, IconVariant},
-    theme::{Theme, ThemeVariant},
+    theme::{ActiveTheme, Theme, ThemeVariant},
 };
 use gpui::{
     actions, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, KeyBinding,
@@ -127,7 +127,7 @@ impl Render for Menu {
                         .top_10()
                         .w_40()
                         .h(px(168.))
-                        .bg(cx.global::<Theme>().field)
+                        .bg(cx.theme().field)
                         .rounded_md()
                         .p_1()
                         .child(
@@ -142,11 +142,9 @@ impl Render for Menu {
                                             div()
                                                 .rounded_md()
                                                 .px_1()
-                                                .hover(|this| {
-                                                    this.bg(cx.global::<Theme>().background)
-                                                })
+                                                .hover(|this| this.bg(cx.theme().background))
                                                 .when(this.focused_item == ix as isize, |this| {
-                                                    this.bg(cx.global::<Theme>().background)
+                                                    this.bg(cx.theme().background)
                                                 })
                                                 .child(text_button(
                                                     "theme_item",

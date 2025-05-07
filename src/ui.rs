@@ -10,9 +10,13 @@ mod menu;
 pub mod table;
 mod theme;
 mod titlebar;
-use crate::ui::{menu::Menu, table::Table, theme::Theme, titlebar::Titlebar};
-use gpui::{div, prelude::*, App, Entity, Window};
-use std::env::consts::OS;
+use crate::ui::{
+    menu::Menu,
+    table::Table,
+    theme::{ActiveTheme, Theme},
+    titlebar::Titlebar,
+};
+use gpui::{div, prelude::*, px, App, Entity, Window};
 
 pub struct UI {
     menu: Entity<Menu>,
@@ -35,15 +39,16 @@ impl Render for UI {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .font_family(".SystemUIFont")
-            .bg(cx.global::<Theme>().background)
+            .bg(cx.theme().background)
             .size_full()
             .shadow_lg()
             .text_xl()
-            .text_color(cx.global::<Theme>().text)
-            .when(OS == "linux", |this| {
-                this.child(self.titlebar.clone())
-                    .when(!window.is_maximized(), |this| this.rounded_xl())
+            .text_color(cx.theme().text)
+            .when(cfg!(target_os = "linux"), |this| {
+                this.border(px(0.5)).border_color(cx.theme().border)
             })
+            .child(self.titlebar.clone())
+            .when(!window.is_maximized(), |this| this.rounded_xl())
             .child(self.menu.clone())
             .child(
                 div()

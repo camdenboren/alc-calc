@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::ui::theme::Theme;
+use crate::ui::theme::ActiveTheme;
 use gpui::{prelude::*, svg, App, Div, SharedString, Stateful, Window};
 
 #[derive(PartialEq)]
@@ -63,6 +63,6 @@ impl RenderOnce for Icon {
         svg()
             .path(self.path)
             .size_full()
-            .text_color(cx.global::<Theme>().text)
+            .text_color(cx.theme().text)
     }
 }

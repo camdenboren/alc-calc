@@ -10,14 +10,13 @@ use crate::{
         dropdown::Dropdown,
         icon::{Icon, IconSize, IconVariant},
         input::TextInput,
-        theme::Theme,
+        theme::ActiveTheme,
     },
 };
 use gpui::{
     actions, div, prelude::*, px, App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding,
     Pixels, SharedString, Window,
 };
-use std::env::consts::OS;
 
 actions!(table, [Tab, Add, Delete, Escape, RemoveKey]);
 
@@ -40,7 +39,11 @@ struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, cx: &mut App) -> Self {
-        let ctrl = if OS == "linux" { "ctrl" } else { "cmd" };
+        let ctrl = if cfg!(target_os = "linux") {
+            "ctrl"
+        } else {
+            "cmd"
+        };
         cx.bind_keys([
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
             KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
@@ -87,7 +90,7 @@ impl Render for Ingredient {
             .flex()
             .flex_row()
             .border_b_1()
-            .border_color(cx.global::<Theme>().background)
+            .border_color(cx.theme().background)
             .py_1()
             .items_center()
             .justify_center()
@@ -364,7 +367,7 @@ impl Render for Table {
                     .justify_center()
                     .items_center()
                     .rounded_lg()
-                    .bg(cx.global::<Theme>().foreground)
+                    .bg(cx.theme().foreground)
                     .gap_1()
                     .child(
                         div()
@@ -375,7 +378,7 @@ impl Render for Table {
                             .border_b_1()
                             .justify_start()
                             .w(px(120. + 4. * 2.))
-                            .border_color(cx.global::<Theme>().background)
+                            .border_color(cx.theme().background)
                             .child(div().child("Units".to_uppercase()).bottom(px(1.5))),
                     )
                     .child(self.num_drinks_input.clone()),
@@ -388,7 +391,7 @@ impl Render for Table {
                     .p_4()
                     .items_center()
                     .gap_2()
-                    .bg(cx.global::<Theme>().foreground)
+                    .bg(cx.theme().foreground)
                     .rounded_lg()
                     // header
                     .child(
@@ -398,8 +401,8 @@ impl Render for Table {
                             .h_5()
                             .gap_x_4()
                             .overflow_hidden()
-                            .text_color(cx.global::<Theme>().text)
-                            .bg(cx.global::<Theme>().foreground)
+                            .text_color(cx.theme().text)
+                            .bg(cx.theme().foreground)
                             .left_4()
                             .bottom(px(2.))
                             .text_xs()
@@ -418,7 +421,7 @@ impl Render for Table {
                             .flex()
                             .flex_col()
                             .border_t_1()
-                            .border_color(cx.global::<Theme>().background)
+                            .border_color(cx.theme().background)
                             .children(self.ingreds.clone()),
                     )
                     // + button
