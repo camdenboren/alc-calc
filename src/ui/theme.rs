@@ -12,8 +12,7 @@ use std::{
     path::PathBuf,
     str::FromStr,
 };
-use strum::{Display, EnumCount, EnumString};
-use strum_macros::EnumIter;
+use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
 

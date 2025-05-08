@@ -29,6 +29,7 @@
               lib.optionals stdenv.hostPlatform.isLinux [
                 libxkbcommon
                 xorg.libxcb
+                xorg.libX11
                 wayland
               ]
               ++ lib.optionals stdenv.hostPlatform.isDarwin [
@@ -78,10 +79,12 @@
             version = "0.1.0";
             src = ./.;
 
-            cargoHash = "sha256-LI4alfPA7huTYG86bU2QMJUG4D2PCHurp20TxhEejSk=";
+            cargoHash = "sha256-sks7rQn8mTRnL2bcofn7nFoQFPnvGzJRjzAF5rYnDIg=";
             useFetchCargoVendor = true;
             buildInputs = deps;
-            nativeBuildInputs = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+            nativeBuildInputs =
+              with pkgs;
+              [ pkg-config ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
             buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
 
             # darwin ci checks are flaky due to missing ScreenCaptureKit

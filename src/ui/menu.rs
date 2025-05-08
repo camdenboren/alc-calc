@@ -147,7 +147,7 @@ impl Render for Menu {
                                                     this.bg(cx.theme().background)
                                                 })
                                                 .child(text_button(
-                                                    "theme_item",
+                                                    format!("theme_item_{ix}").as_str(),
                                                     item.clone(),
                                                     cx.listener(move |this, _, _window, cx| {
                                                         this.update(item.clone(), cx);

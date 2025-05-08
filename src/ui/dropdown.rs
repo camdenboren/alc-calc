@@ -97,7 +97,7 @@ impl Dropdown {
                                         this.bg(cx.theme().background)
                                     })
                                     .child(text_button(
-                                        "dropdown_item",
+                                        format!("dropdown_item_{ix}").as_str(),
                                         item.clone(),
                                         cx.listener(move |this, _, window, cx| {
                                             this.update(window, cx, item.clone());
