@@ -8,7 +8,7 @@ use crate::ui::{
     icon::{Icon, IconSize, IconVariant},
     theme::ActiveTheme,
 };
-use gpui::{div, prelude::*, px, Window};
+use gpui::{Window, div, prelude::*, px};
 
 #[cfg(target_os = "linux")]
 const HEIGHT: f32 = 32.;

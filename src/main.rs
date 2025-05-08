@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(unused_imports)]
-use alc_calc::ui::{assets::Assets, UI};
+use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
-    actions, App, Application, KeyBinding, Menu, MenuItem, TitlebarOptions,
-    WindowBackgroundAppearance, WindowOptions,
+    App, Application, KeyBinding, Menu, MenuItem, TitlebarOptions, WindowBackgroundAppearance,
+    WindowOptions, actions,
 };
 use std::path::PathBuf;
 

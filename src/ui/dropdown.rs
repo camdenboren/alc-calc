@@ -12,8 +12,8 @@ use crate::{
     },
 };
 use gpui::{
-    actions, deferred, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, KeyBinding,
-    ScrollStrategy, SharedString, UniformListScrollHandle, Window,
+    App, FocusHandle, Focusable, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle,
+    Window, actions, deferred, div, prelude::*, px, uniform_list,
 };
 use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};

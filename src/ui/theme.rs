@@ -3,11 +3,11 @@
 
 // ActiveTheme adapted from https://github.com/zed-industries/zed/blob/main/crates/theme/src/theme.rs
 
-use gpui::{hsla, rgb, rgba, App, Global, Hsla, Rgba};
+use gpui::{App, Global, Hsla, Rgba, hsla, rgb, rgba};
 use serde::{Deserialize, Serialize};
 use std::{
     error::Error,
-    fs::{write, File},
+    fs::{File, write},
     io::Read,
     path::PathBuf,
     str::FromStr,

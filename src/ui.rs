@@ -16,7 +16,7 @@ use crate::ui::{
     theme::{ActiveTheme, Theme},
     titlebar::Titlebar,
 };
-use gpui::{div, prelude::*, px, App, Entity, Window};
+use gpui::{App, Entity, Window, div, prelude::*, px};
 
 pub struct UI {
     menu: Entity<Menu>,

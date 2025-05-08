@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::{
-    types::{match_category, Category},
+    types::{Category, match_category},
     ui::table::IngredientData,
 };
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::theme::ActiveTheme;
-use gpui::{prelude::*, svg, App, Div, SharedString, Stateful, Window};
+use gpui::{App, Div, SharedString, Stateful, Window, prelude::*, svg};
 
 #[derive(PartialEq)]
 pub enum IconVariant {

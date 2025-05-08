@@ -5,7 +5,7 @@ use crate::ui::{
     icon::{Icon, IconSize},
     theme::ActiveTheme,
 };
-use gpui::{div, prelude::*, App, ClickEvent, SharedString, Window};
+use gpui::{App, ClickEvent, SharedString, Window, div, prelude::*};
 
 use super::icon::IconVariant;
 

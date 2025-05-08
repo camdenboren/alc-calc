@@ -14,8 +14,8 @@ use crate::{
     },
 };
 use gpui::{
-    actions, div, prelude::*, px, App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding,
-    Pixels, SharedString, Window,
+    App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, Pixels, SharedString, Window,
+    actions, div, prelude::*, px,
 };
 
 actions!(table, [Tab, Add, Delete, Escape, RemoveKey]);

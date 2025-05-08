@@ -7,8 +7,8 @@ use crate::ui::{
     theme::{ActiveTheme, Theme, ThemeVariant},
 };
 use gpui::{
-    actions, div, prelude::*, px, uniform_list, App, FocusHandle, Focusable, KeyBinding,
-    SharedString, Window,
+    App, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div, prelude::*, px,
+    uniform_list,
 };
 use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};
