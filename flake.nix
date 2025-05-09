@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 {
-  description = "alc-calc Development Environment via Nix Flake";
+  description = "alc-calc DevShell and Package via Nix Flake";
+
+  nixConfig.bash-prompt = ''\n\[\033[1;31m\][devShell:\w]\$\[\033[0m\] '';
 
   inputs = {
     nixpkgs = {
@@ -24,87 +26,12 @@
           system:
           function rec {
             pkgs = nixpkgs.legacyPackages.${system}.extend (import ./nix/overlay.nix { inherit pkgs; });
-            deps =
-              with pkgs;
-              lib.optionals stdenv.hostPlatform.isLinux [
-                libxkbcommon
-                xorg.libxcb
-                xorg.libX11
-                wayland
-              ]
-              ++ lib.optionals stdenv.hostPlatform.isDarwin [
-                apple-sdk_15
-                (darwinMinVersionHook "12.3")
-              ];
+            deps = (import ./nix/deps.nix { inherit pkgs; });
           }
         );
     in
     {
-      devShells = forEachSupportedSystem (
-        { pkgs, deps }:
-        {
-          default = pkgs.mkShell {
-            packages = with pkgs; [
-              bashInteractive
-              rustc
-              cargo
-              rust-analyzer
-              rustfmt
-              taplo
-              clippy
-              build
-              format
-            ];
-
-            buildInputs = deps;
-            LD_LIBRARY_PATH =
-              with pkgs;
-              lib.optionals stdenv.hostPlatform.isLinux (
-                lib.makeLibraryPath [
-                  wayland
-                  vulkan-loader
-                ]
-              );
-
-            shellHook = import ./nix/shellHook.nix;
-          };
-        }
-      );
-
-      packages = forEachSupportedSystem (
-        { pkgs, deps }:
-        {
-          default = pkgs.rustPlatform.buildRustPackage {
-            pname = "alc-calc";
-            version = "0.1.0";
-            src = ./.;
-
-            cargoHash = "sha256-sks7rQn8mTRnL2bcofn7nFoQFPnvGzJRjzAF5rYnDIg=";
-            useFetchCargoVendor = true;
-            buildInputs = deps;
-            nativeBuildInputs =
-              with pkgs;
-              [ pkg-config ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
-            buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
-
-            # darwin ci checks are flaky due to missing ScreenCaptureKit
-            doCheck = (!pkgs.stdenv.hostPlatform.isDarwin);
-            postFixup =
-              with pkgs;
-              lib.optionalString stdenv.hostPlatform.isLinux ''
-                patchelf --add-rpath ${wayland}/lib $out/bin/*
-                patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
-              '';
-            env.LIBCLANG_PATH =
-              with pkgs;
-              lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
-
-            meta = {
-              description = "";
-              maintainers = [ "camdenboren" ];
-            };
-          };
-        }
-      );
+      devShells = forEachSupportedSystem (import ./nix/shell.nix);
+      packages = forEachSupportedSystem (import ./nix/package.nix);
     };
 }
