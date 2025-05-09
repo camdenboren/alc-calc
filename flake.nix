@@ -34,7 +34,6 @@
               ]
               ++ lib.optionals stdenv.hostPlatform.isDarwin [
                 apple-sdk_15
-                darwin.apple_sdk.frameworks.System
                 (darwinMinVersionHook "12.3")
               ];
           }
@@ -51,6 +50,7 @@
               cargo
               rust-analyzer
               rustfmt
+              taplo
               clippy
               build
               format

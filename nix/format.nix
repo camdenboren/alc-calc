@@ -15,6 +15,9 @@ pkgs.writeShellScriptBin "format" ''
   echo -e "\033[1;33mrustfmt...\033[0m"
   rustfmt src/*.rs | box
 
+  echo -e "\n\033[1;33mtaplo...\033[0m"
+  taplo fmt 2> /dev/null | box
+
   echo -e "\n\033[1;33mnix...\033[0m"
   ${pkgs.nixfmt-rfc-style}/bin/nixfmt flake.nix **/*.nix | box
 
