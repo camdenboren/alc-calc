@@ -1,36 +1,32 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/svg/svg.rs
+// Adapted from: https://github.com/lumehq/coop/blob/master/crates/coop/src/asset.rs
 
-use anyhow::Result;
-use gpui::{AssetSource, SharedString};
-use std::fs;
-use std::path::PathBuf;
+use anyhow::anyhow;
+use gpui::{AssetSource, Result, SharedString};
+use rust_embed::RustEmbed;
 
-pub struct Assets {
-    pub base: PathBuf,
-}
+#[derive(RustEmbed)]
+#[folder = "img"]
+pub struct Assets;
 
 impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<std::borrow::Cow<'static, [u8]>>> {
-        fs::read(self.base.join(path))
-            .map(|data| Some(std::borrow::Cow::Owned(data)))
-            .map_err(|err| err.into())
+        Self::get(path)
+            .map(|f| Some(f.data))
+            .ok_or_else(|| anyhow!("Could not find asset at path \"{}\"", path))
     }
 
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
-        fs::read_dir(self.base.join(path))
-            .map(|entries| {
-                entries
-                    .filter_map(|entry| {
-                        entry
-                            .ok()
-                            .and_then(|entry| entry.file_name().into_string().ok())
-                            .map(SharedString::from)
-                    })
-                    .collect()
+        Ok(Self::iter()
+            .filter_map(|p| {
+                if p.starts_with(path) {
+                    Some(p.into())
+                } else {
+                    None
+                }
             })
-            .map_err(|err| err.into())
+            .collect())
     }
 }

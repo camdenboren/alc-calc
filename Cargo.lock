@@ -49,6 +49,7 @@ dependencies = [
  "anyhow",
  "gpui",
  "gpui_macros",
+ "rust-embed",
  "serde",
  "strum",
  "strum_macros",

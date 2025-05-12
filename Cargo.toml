@@ -16,3 +16,4 @@ whoami = { version = "1.6.0", default-features = false }
 toml = "0.8.22"
 serde = "1.0.219"
 anyhow = "1.0.98"
+rust-embed = "8.7.1"

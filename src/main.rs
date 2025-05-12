@@ -13,9 +13,7 @@ actions!(alc_alc, [Quit]);
 
 fn main() {
     Application::new()
-        .with_assets(Assets {
-            base: PathBuf::from("img"),
-        })
+        .with_assets(Assets {})
         .run(|cx: &mut App| {
             cx.activate(true);
             cx.on_action(|_: &Quit, cx| cx.quit());
