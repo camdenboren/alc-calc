@@ -4,8 +4,8 @@
 #![allow(unused_imports)]
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
-    App, Application, KeyBinding, Menu, MenuItem, TitlebarOptions, WindowBackgroundAppearance,
-    WindowOptions, actions,
+    App, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
+    WindowBackgroundAppearance, WindowBounds, WindowOptions, actions, px, size,
 };
 use std::path::PathBuf;
 
@@ -34,6 +34,11 @@ fn main() {
             cx.open_window(
                 WindowOptions {
                     focus: true,
+                    window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
+                        None,
+                        size(px(1080.0), px(1000.0)),
+                        cx,
+                    ))),
                     #[cfg(target_os = "macos")]
                     titlebar: Some(TitlebarOptions {
                         appears_transparent: true,

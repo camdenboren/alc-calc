@@ -46,7 +46,7 @@ impl Render for UI {
             .text_color(cx.theme().text)
             .when(
                 cfg!(target_os = "linux") && !window.is_maximized(),
-                |this| this.border(px(0.5)).border_color(cx.theme().border),
+                |this| this.border(px(0.75)).border_color(cx.theme().border),
             )
             .child(self.titlebar.clone())
             .when(!window.is_maximized(), |this| this.rounded_xl())

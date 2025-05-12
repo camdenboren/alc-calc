@@ -79,7 +79,7 @@ impl Dropdown {
             .rounded_md()
             .p_1()
             .w_full()
-            .h_80()
+            .h_48()
             .child(
                 uniform_list(
                     cx.entity(),
