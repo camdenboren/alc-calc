@@ -49,11 +49,8 @@ pub struct TextInput {
 
 impl TextInput {
     pub fn new(cx: &mut App, placeholder: SharedString) -> Self {
-        let ctrl = if cfg!(target_os = "linux") {
-            "ctrl"
-        } else {
-            "cmd"
-        };
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([
             KeyBinding::new("backspace", Backspace, Some(CONTEXT)),
             KeyBinding::new("delete", Delete, Some(CONTEXT)),

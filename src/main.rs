@@ -17,11 +17,8 @@ fn main() {
         .run(|cx: &mut App| {
             cx.activate(true);
             cx.on_action(|_: &Quit, cx| cx.quit());
-            let ctrl = if cfg!(target_os = "linux") {
-                "ctrl"
-            } else {
-                "cmd"
-            };
+            let is_linux = cfg!(target_os = "linux");
+            let ctrl = if is_linux { "ctrl" } else { "cmd" };
             cx.bind_keys([KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, None)]);
 
             cx.set_menus(vec![Menu {

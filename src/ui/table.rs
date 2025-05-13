@@ -39,11 +39,8 @@ struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, cx: &mut App) -> Self {
-        let ctrl = if cfg!(target_os = "linux") {
-            "ctrl"
-        } else {
-            "cmd"
-        };
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
             KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
