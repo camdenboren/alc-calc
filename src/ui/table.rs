@@ -354,7 +354,7 @@ impl Render for Table {
             .track_focus(&self.focus_handle(cx))
             .flex()
             .flex_col()
-            .bottom_10()
+            .bottom(px(55.))
             .gap_3()
             .items_center()
             // num_drinks input

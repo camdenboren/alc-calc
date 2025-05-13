@@ -9,7 +9,7 @@
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-r+iVeskteiNSxfdcSGUGvvcdNze4yqxXYGVKHaAOT8s=";
+    cargoHash = "sha256-QT5KhM92A5JuY/Hh+ccwHHEmfYsk8l3xxnAM+1TbYI4=";
     useFetchCargoVendor = true;
     buildInputs = deps.build;
     nativeBuildInputs = deps.run;

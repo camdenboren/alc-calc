@@ -5,7 +5,7 @@
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
     App, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
-    WindowBackgroundAppearance, WindowBounds, WindowOptions, actions, px, size,
+    WindowBackgroundAppearance, WindowBounds, WindowDecorations, WindowOptions, actions, px, size,
 };
 use std::path::PathBuf;
 
@@ -37,6 +37,7 @@ fn main() {
                         size(px(1080.0), px(1000.0)),
                         cx,
                     ))),
+                    window_decorations: Some(WindowDecorations::Client),
                     #[cfg(target_os = "macos")]
                     titlebar: Some(TitlebarOptions {
                         appears_transparent: true,

@@ -51,6 +51,7 @@ dependencies = [
  "gpui_macros",
  "rust-embed",
  "serde",
+ "smallvec",
  "strum",
  "strum_macros",
  "toml",
