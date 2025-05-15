@@ -143,18 +143,12 @@ pub struct Table {
 
 impl Table {
     pub fn new(cx: &mut App) -> Self {
-        let mut width = 0.;
-        for field in FIELDS {
-            let (_, val) = field;
-            width += val;
-        }
-
         Self {
             ingreds: vec![],
             num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
             num_drinks: 0.,
             count: 0,
-            width,
+            width: FIELDS.iter().fold(0., |acc, field| acc + field.1),
             init: true,
             focus_handle: cx.focus_handle(),
         }
