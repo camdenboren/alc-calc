@@ -38,7 +38,12 @@ fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> f32 {
 }
 
 pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec<IngredientData> {
-    if data.len() > 1 {
+    if data.len() <= 1 {
+        // use calc_ingred_weight directly if there's only one ingredient
+        let weight;
+        (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage);
+        data[0].weight = round_to_place(weight * num_drinks, 1.0);
+    } else {
         // factor in volume and number of parts when there's multiple ingreds
         let mut first = data[0].clone();
         data.iter_mut().enumerate().for_each(|(ix, item)| {
@@ -60,11 +65,6 @@ pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec
         data.iter_mut().for_each(|item| {
             item.weight = round_to_place(scalar * item.intermediate_weight, 1.0);
         });
-    } else {
-        // use calc_ingred_weight directly if there's only one ingredient
-        let weight;
-        (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage);
-        data[0].weight = round_to_place(weight * num_drinks, 1.0);
     }
 
     data
