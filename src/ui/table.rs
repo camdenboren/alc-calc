@@ -244,7 +244,10 @@ impl Table {
             })
             .collect();
 
-        let ingred_data = calc_weights(&mut ingred_data, num_drinks);
+        let ingred_data = match calc_weights(&mut ingred_data, num_drinks) {
+            Ok(ingred_data) => ingred_data,
+            Err(_) => return,
+        };
 
         self.ingreds.iter().enumerate().for_each(|(ix, ingred)| {
             ingred.update(cx, |ingred, _| {
