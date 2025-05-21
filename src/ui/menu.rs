@@ -48,22 +48,40 @@ impl Menu {
         }
     }
 
+    pub fn focus(&self, window: &mut Window) {
+        self.focus_handle.focus(window)
+    }
+
+    pub fn is_focused(&self, window: &mut Window) -> bool {
+        self.focus_handle.is_focused(window)
+    }
+
     fn update(&mut self, val: SharedString, cx: &mut Context<Self>) {
         self.focused_item = self.variants.iter().position(|t| *t == val).unwrap() as isize;
         Theme::update(&val, cx);
         self.toggle();
     }
 
-    fn toggle(&mut self) {
+    pub fn toggle(&mut self) {
         self.show = !self.show;
     }
 
-    fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
+    pub fn escape(&mut self, cx: &mut Context<Self>) {
         self.show = false;
         cx.notify();
     }
 
-    fn show(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
+    pub fn show(&mut self, cx: &mut Context<Self>) {
+        self.show = true;
+        cx.notify();
+    }
+
+    fn escape_key(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
+        self.show = false;
+        cx.notify();
+    }
+
+    fn show_key(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
         cx.notify();
     }
@@ -102,12 +120,14 @@ impl Render for Menu {
             .flex_col()
             .key_context(CONTEXT)
             .when(self.show, |this| {
-                this.on_action(cx.listener(Self::escape))
+                this.on_action(cx.listener(Self::escape_key))
                     .on_action(cx.listener(Self::select))
                     .on_action(cx.listener(Self::next))
                     .on_action(cx.listener(Self::prev))
             })
-            .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
+            .when(!self.show, |this| {
+                this.on_action(cx.listener(Self::show_key))
+            })
             .track_focus(&self.focus_handle)
             .justify_start()
             .items_end()

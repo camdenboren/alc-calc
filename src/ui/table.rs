@@ -133,7 +133,7 @@ impl Default for IngredientData {
 
 pub struct Table {
     ingreds: Vec<Entity<Ingredient>>,
-    num_drinks_input: Entity<TextInput>,
+    pub num_drinks_input: Entity<TextInput>,
     num_drinks: f32,
     count: usize,
     width: f32,
