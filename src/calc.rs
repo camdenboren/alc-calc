@@ -45,7 +45,7 @@ pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec
         data[0].weight = round_to_place(weight * num_drinks, 1.0);
     } else {
         // factor in volume and number of parts when there's multiple ingreds
-        let mut first = data[0].clone();
+        let mut first = &data[0].clone();
         data.iter_mut().enumerate().for_each(|(ix, item)| {
             let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage);
             item.weight = weight;
@@ -54,7 +54,7 @@ pub fn calc_weights(data: &mut Vec<IngredientData>, num_drinks: f32) -> &mut Vec
 
             if ix == 0 {
                 item.intermediate_weight = weight;
-                first = item.clone();
+                first = item;
             } else {
                 item.intermediate_weight =
                     ((first.volume * item.parts) / first.parts) * item.density;
