@@ -158,8 +158,6 @@ impl Table {
         if self.count < MAX_ITEMS {
             let id = self.count;
             let ingred = cx.new(|cx| Ingredient::new(id, cx));
-            self.ingreds.push(ingred.clone());
-            self.count += 1;
 
             // subscribe to Ingred's Remove event
             cx.subscribe(
@@ -169,6 +167,9 @@ impl Table {
                 },
             )
             .detach();
+
+            self.ingreds.push(ingred);
+            self.count += 1;
         }
         cx.notify();
     }
@@ -228,8 +229,8 @@ impl Table {
         }
 
         (0..self.count).all(|ix| {
-            let percentage = self.parse_or_zero(self.percentage(ix, cx).content.clone());
-            let parts = self.parse_or_zero(self.parts(ix, cx).content.clone());
+            let percentage = self.parse_or_zero(&self.percentage(ix, cx).content);
+            let parts = self.parse_or_zero(&self.parts(ix, cx).content);
             percentage > 0. && (self.count <= 1 || parts > 0.)
         })
     }
@@ -238,8 +239,8 @@ impl Table {
         let mut ingred_data: Vec<IngredientData> = (0..self.count)
             .map(|ix| IngredientData {
                 alc_type: self.alc_type(ix, cx).current.clone(),
-                percentage: self.parse_or_zero(self.percentage(ix, cx).content.clone()),
-                parts: self.parse_or_zero(self.parts(ix, cx).content.clone()),
+                percentage: self.parse_or_zero(&self.percentage(ix, cx).content),
+                parts: self.parse_or_zero(&self.parts(ix, cx).content),
                 ..Default::default()
             })
             .collect();
@@ -275,7 +276,7 @@ impl Table {
         self.ingreds[ix].read(cx).percentage_input.read(cx)
     }
 
-    fn parse_or_zero(&mut self, content: SharedString) -> f32 {
+    fn parse_or_zero(&self, content: &SharedString) -> f32 {
         content.trim().parse().unwrap_or(0.)
     }
 
@@ -335,7 +336,7 @@ impl Render for Table {
             self.init = false;
         }
 
-        self.num_drinks = self.parse_or_zero(self.num_drinks(cx).content.clone());
+        self.num_drinks = self.parse_or_zero(&self.num_drinks(cx).content);
 
         if self.ready(cx) {
             self.calc(cx, self.num_drinks);
