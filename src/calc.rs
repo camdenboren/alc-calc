@@ -44,33 +44,35 @@ pub fn calc_weights(
 ) -> Result<&mut Vec<IngredientData>, Box<dyn Error>> {
     if data.len() <= 1 {
         // use calc_ingred_weight directly if there's only one ingredient
-        let weight;
-        (_, weight) =
-            calc_ingred_weight(&data[0].alc_type, data[0].percentage).unwrap_or((1, 42.3));
-        data[0].weight = round_to_place(weight * num_drinks, 1.0).unwrap_or(weight * num_drinks);
+        let (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage)?;
+        let scaled_weight = num_drinks * weight;
+        data[0].weight = round_to_place(scaled_weight, 1.0).unwrap_or(scaled_weight);
     } else {
         // factor in volume and number of parts when there's multiple ingreds
         let mut first = &data[0].clone();
-        data.iter_mut().enumerate().for_each(|(ix, item)| {
-            let (alc_type, weight) =
-                calc_ingred_weight(&item.alc_type, item.percentage).unwrap_or((1, 42.3));
-            item.weight = weight;
-            item.volume = calc_volume(alc_type, item.percentage).unwrap_or(44.355);
-            item.density = weight / item.volume;
+        data.iter_mut().enumerate().try_for_each(
+            |(ix, item): (usize, &mut IngredientData)| -> Result<(), Box<dyn Error>> {
+                let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage)?;
+                item.weight = weight;
+                item.volume = calc_volume(alc_type, item.percentage)?;
+                item.density = weight / item.volume;
 
-            if ix == 0 {
-                item.intermediate_weight = weight;
-                first = item;
-            } else {
-                item.intermediate_weight =
-                    ((first.volume * item.parts) / first.parts) * item.density;
-            }
-        });
+                if ix == 0 {
+                    item.intermediate_weight = weight;
+                    first = item;
+                } else {
+                    item.intermediate_weight =
+                        ((first.volume * item.parts) / first.parts) * item.density;
+                }
 
-        let scalar = calc_scalar(data, num_drinks).unwrap_or(1.);
+                Ok(())
+            },
+        )?;
+
+        let scalar = calc_scalar(data, num_drinks)?;
         data.iter_mut().for_each(|item| {
-            item.weight = round_to_place(scalar * item.intermediate_weight, 1.0)
-                .unwrap_or(scalar * item.intermediate_weight);
+            let scaled_weight = scalar * item.intermediate_weight;
+            item.weight = round_to_place(scaled_weight, 1.0).unwrap_or(scaled_weight);
         });
     }
 
@@ -83,20 +85,20 @@ mod tests {
 
     #[test]
     fn test_round_to_place() {
-        let num = round_to_place(42.281, 1.0).unwrap_or(42.281);
+        let num = round_to_place(42.281, 1.0).unwrap();
         assert_eq!(num, 42.3);
     }
 
     #[test]
     fn test_calc_ingred_weight() {
-        let (num, weight) = calc_ingred_weight("Hard", 40.0).unwrap_or((1, 42.3));
+        let (num, weight) = calc_ingred_weight("Hard", 40.0).unwrap();
         assert_eq!(num, 3);
         assert_eq!(weight, 42.280598);
     }
 
     #[test]
     fn test_calc_volume() {
-        assert_eq!(calc_volume(1, 40.).unwrap_or(44.355), 44.355);
+        assert_eq!(calc_volume(1, 40.).unwrap(), 44.355);
     }
 
     #[test]
@@ -112,7 +114,7 @@ mod tests {
         });
 
         let result = calc_scalar(&mut data, num_drinks);
-        assert_eq!(result.unwrap_or(1.), 1.0);
+        assert_eq!(result.unwrap(), 1.0);
     }
 
     #[test]
