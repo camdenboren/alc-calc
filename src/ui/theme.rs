@@ -151,10 +151,10 @@ impl Theme {
 
     fn path(username: String) -> PathBuf {
         #[cfg(target_os = "macos")]
-        let user_dir = PathBuf::from("/Users").join(username.clone());
+        let user_dir = PathBuf::from("/Users").join(&username);
         #[cfg(target_os = "linux")]
-        let user_dir = PathBuf::from("/home").join(username.clone());
-        user_dir.clone().join(".config").join("alc-calc")
+        let user_dir = PathBuf::from("/home").join(&username);
+        user_dir.join(".config").join("alc-calc")
     }
 
     fn deserialize(config_content: String) -> ThemeVariant {
