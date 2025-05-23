@@ -55,9 +55,11 @@ impl UI {
             .contains_focused(window, cx)
         {
             self.menu.read(cx).focus(window);
-            self.menu.update(cx, |menu, cx| menu.show(cx));
+            self.menu.update(cx, |menu, cx| menu.show(window, cx));
         } else if self.menu.read(cx).is_focused(window) {
-            self.menu.update(cx, |menu, cx| menu.escape(cx));
+            if self.menu.read(cx).show {
+                self.menu.update(cx, |menu, cx| menu.escape(window, cx));
+            }
             self.table.read(cx).num_drinks_input.read(cx).focus(window);
         }
     }

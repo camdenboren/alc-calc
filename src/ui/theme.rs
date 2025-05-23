@@ -31,6 +31,7 @@ pub enum ThemeVariant {
 }
 
 pub struct Theme {
+    pub variant: ThemeVariant,
     pub text: Hsla,
     pub subtext: Hsla,
     pub background: Rgba,
@@ -76,6 +77,7 @@ impl Theme {
 
     fn dark() -> Self {
         Self {
+            variant: ThemeVariant::Dark,
             text: hsla(0., 0., 0.9, 0.9),
             subtext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0x3c3c3c),
@@ -91,6 +93,7 @@ impl Theme {
 
     fn light() -> Self {
         Self {
+            variant: ThemeVariant::Light,
             text: hsla(0., 0., 0.1, 0.9),
             subtext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0xe0e0e0),
@@ -106,6 +109,7 @@ impl Theme {
 
     fn red_dark() -> Self {
         Self {
+            variant: ThemeVariant::RedDark,
             text: hsla(0., 0.5, 0.9, 0.9),
             subtext: hsla(0., 0.1, 0.5, 0.2),
             background: rgb(0x600000),
@@ -121,6 +125,7 @@ impl Theme {
 
     fn rose_pine_moon() -> Self {
         Self {
+            variant: ThemeVariant::RosePineMoon,
             text: hsla(0.7, 0.5, 0.9, 0.9),
             subtext: hsla(0.7, 0.1, 0.5, 0.2),
             background: rgb(0x393552),
@@ -136,6 +141,7 @@ impl Theme {
 
     fn solarized_dark() -> Self {
         Self {
+            variant: ThemeVariant::SolarizedDark,
             text: hsla(0.5, 0.5, 0.9, 0.9),
             subtext: hsla(0.5, 0.1, 0.5, 0.2),
             background: rgb(0x0a404c),

@@ -10,7 +10,6 @@ use gpui::{
     App, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div, prelude::*, px,
     uniform_list,
 };
-use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};
 
 actions!(menu, [Escape, Enter, Next, Prev, Select]);
@@ -19,9 +18,10 @@ const CONTEXT: &str = "Menu";
 
 pub struct Menu {
     variants: Vec<SharedString>,
-    show: bool,
+    prev: Option<SharedString>,
+    pub show: bool,
     count: usize,
-    focused_item: isize,
+    focused_item: usize,
     focus_handle: FocusHandle,
 }
 
@@ -37,13 +37,18 @@ impl Menu {
             KeyBinding::new("enter", Select, Some(CONTEXT)),
         ]);
 
+        let variants: Vec<SharedString> = ThemeVariant::iter()
+            .map(|t| SharedString::from(t.to_string()))
+            .collect();
+        let current = cx.theme().variant.to_string().into();
+        let focused_item = Menu::index_of(&variants, &current);
+
         Self {
-            variants: ThemeVariant::iter()
-                .map(|t| SharedString::from(t.to_string()))
-                .collect(),
+            variants,
+            prev: None,
             show: false,
             count: ThemeVariant::COUNT,
-            focused_item: -1,
+            focused_item,
             focus_handle: cx.focus_handle(),
         }
     }
@@ -56,60 +61,74 @@ impl Menu {
         self.focus_handle.is_focused(window)
     }
 
-    fn update(&mut self, val: SharedString, cx: &mut Context<Self>) {
-        self.focused_item = self.variants.iter().position(|t| *t == val).unwrap() as isize;
+    fn update(&mut self, val: SharedString, cx: &mut Context<Self>, toggle: bool) {
+        self.focused_item = Menu::index_of(&self.variants, &val);
         Theme::update(&val, cx);
-        self.toggle();
+        if toggle {
+            self.toggle(cx);
+        }
     }
 
-    pub fn toggle(&mut self) {
-        self.show = !self.show;
+    pub fn toggle(&mut self, cx: &mut Context<Self>) {
+        if self.show {
+            self.show = false;
+        } else {
+            self.prev = Some(cx.theme().variant.to_string().into());
+            self.show = true;
+        }
     }
 
-    pub fn escape(&mut self, cx: &mut Context<Self>) {
-        self.show = false;
-        cx.notify();
+    pub fn escape(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.escape_key(&Escape, window, cx);
     }
 
-    pub fn show(&mut self, cx: &mut Context<Self>) {
-        self.show = true;
-        cx.notify();
+    pub fn show(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.show_key(&Enter, window, cx);
     }
 
     fn escape_key(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
+        if self.prev.is_some() {
+            let current = self.prev.clone().unwrap_or("Dark".into());
+            self.focused_item = Menu::index_of(&self.variants, &current);
+            self.update(current, cx, false);
+        }
         cx.notify();
     }
 
     fn show_key(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
+        self.prev = Some(cx.theme().variant.to_string().into());
         cx.notify();
     }
 
     fn select(&mut self, _: &Select, _window: &mut Window, cx: &mut Context<Self>) {
-        self.update(
-            self.variants[max(self.focused_item, 0) as usize].clone(),
-            cx,
-        );
+        self.update(self.variants[self.focused_item].clone(), cx, true);
         cx.notify();
     }
 
     fn next(&mut self, _: &Next, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.focused_item < (self.count - 1) as isize {
+        if self.focused_item < (self.count - 1) {
             self.focused_item += 1;
         } else {
             self.focused_item = 0;
         }
+        self.update(self.variants[self.focused_item].clone(), cx, false);
         cx.notify();
     }
 
     fn prev(&mut self, _: &Prev, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.focused_item <= 0 {
-            self.focused_item = (self.count - 1) as isize;
+        if self.focused_item == 0 {
+            self.focused_item = self.count - 1;
         } else {
             self.focused_item -= 1;
         }
+        self.update(self.variants[self.focused_item].clone(), cx, false);
         cx.notify();
+    }
+
+    fn index_of(variants: &[SharedString], val: &SharedString) -> usize {
+        variants.iter().position(|v| v == val).unwrap_or(0)
     }
 }
 
@@ -136,7 +155,7 @@ impl Render for Menu {
                 "menu",
                 Icon::new(IconVariant::Theme, IconSize::Medium),
                 cx,
-                cx.listener(move |this, _, _, _| this.toggle()),
+                cx.listener(move |this, _, _, cx| this.toggle(cx)),
             ))
             .when(self.show, |this| {
                 this.child(
@@ -163,24 +182,24 @@ impl Render for Menu {
                                                 .rounded_md()
                                                 .px_1()
                                                 .hover(|this| this.bg(cx.theme().background))
-                                                .when(this.focused_item == ix as isize, |this| {
+                                                .when(this.focused_item == ix, |this| {
                                                     this.bg(cx.theme().background)
                                                 })
                                                 .child(text_button(
                                                     format!("theme_item_{ix}").as_str(),
                                                     item.clone(),
                                                     cx.listener(move |this, _, _window, cx| {
-                                                        this.update(item.clone(), cx);
+                                                        this.update(item.clone(), cx, true);
                                                     }),
                                                 ))
                                         })
                                         .collect()
                                 },
                             )
-                            .on_mouse_down_out(cx.listener(|this, _, _window, cx| {
+                            .on_mouse_down_out(cx.listener(|this, _, window, cx| {
                                 cx.stop_propagation();
                                 cx.notify();
-                                this.toggle();
+                                this.escape(window, cx);
                             }))
                             .h_full(),
                         ),

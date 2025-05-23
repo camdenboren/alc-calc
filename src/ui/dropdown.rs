@@ -15,7 +15,6 @@ use gpui::{
     App, FocusHandle, Focusable, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle,
     Window, actions, deferred, div, prelude::*, px, uniform_list,
 };
-use std::cmp::max;
 use strum::{EnumCount, IntoEnumIterator};
 
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
@@ -25,10 +24,11 @@ const CONTEXT: &str = "Dropdown";
 pub struct Dropdown {
     types: Vec<SharedString>,
     pub current: SharedString,
+    prev: Option<SharedString>,
     pub show: bool,
     count: usize,
     pub id: usize,
-    focused_item: isize,
+    focused_item: usize,
     focus_handle: FocusHandle,
     scroll_handle: UniformListScrollHandle,
 }
@@ -45,15 +45,20 @@ impl Dropdown {
             KeyBinding::new("enter", Select, Some(CONTEXT)),
         ]);
 
+        let types: Vec<SharedString> = Type::iter()
+            .map(|t| SharedString::from(t.to_string()))
+            .collect();
+        let current: SharedString = "Whiskey".into();
+        let focused_item = Dropdown::index_of(&types, &current);
+
         Self {
-            types: Type::iter()
-                .map(|t| SharedString::from(t.to_string()))
-                .collect(),
-            current: "Whiskey".into(),
+            types,
+            current,
+            prev: None,
             show: false,
             count: Type::COUNT,
             id,
-            focused_item: -1,
+            focused_item,
             focus_handle: cx.focus_handle(),
             scroll_handle: UniformListScrollHandle::new(),
         }
@@ -93,14 +98,14 @@ impl Dropdown {
                                     .rounded_md()
                                     .px_1()
                                     .hover(|this| this.bg(cx.theme().background))
-                                    .when(this.focused_item == ix as isize, |this| {
+                                    .when(this.focused_item == ix, |this| {
                                         this.bg(cx.theme().background)
                                     })
                                     .child(text_button(
                                         format!("dropdown_item_{ix}").as_str(),
                                         item.clone(),
                                         cx.listener(move |this, _, window, cx| {
-                                            this.update(window, cx, item.clone());
+                                            this.update(window, cx, item.clone(), true);
                                         }),
                                     ))
                             })
@@ -118,58 +123,80 @@ impl Dropdown {
 
     pub fn toggle(&mut self, cx: &mut Context<Self>) {
         cx.stop_propagation();
-        self.show = !self.show;
+        if self.show {
+            self.show = false;
+        } else {
+            self.prev = Some(self.current.clone());
+            self.show = true;
+        }
     }
 
-    fn update(&mut self, window: &mut Window, cx: &mut Context<Self>, val: SharedString) {
-        self.focused_item = self.types.iter().position(|t| *t == val).unwrap() as isize;
+    fn update(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+        val: SharedString,
+        toggle: bool,
+    ) {
+        self.focused_item = Dropdown::index_of(&self.types, &val);
         self.current = val;
-        self.toggle(cx);
+        if toggle {
+            self.toggle(cx);
+        }
         self.focus_handle.focus(window);
     }
 
     fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
+        if self.prev.is_some() {
+            let current = self.prev.clone().unwrap_or("Whiskey".into());
+            self.focused_item = Dropdown::index_of(&self.types, &current);
+            self.current = current;
+        }
+        self.scroll();
         cx.notify();
     }
 
     fn show(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
+        self.prev = Some(self.current.clone());
         cx.notify();
     }
 
     fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {
-        self.update(
-            window,
-            cx,
-            self.types[max(self.focused_item, 0) as usize].clone(),
-        );
+        self.update(window, cx, self.types[self.focused_item].clone(), true);
         cx.notify();
     }
 
-    fn next(&mut self, _: &Next, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.focused_item < (self.count - 1) as isize {
+    fn next(&mut self, _: &Next, window: &mut Window, cx: &mut Context<Self>) {
+        if self.focused_item < (self.count - 1) {
             self.focused_item += 1;
         } else {
             self.focused_item = 0;
         }
         self.scroll();
+        self.update(window, cx, self.types[self.focused_item].clone(), false);
         cx.notify();
     }
 
-    fn prev(&mut self, _: &Prev, _window: &mut Window, cx: &mut Context<Self>) {
-        if self.focused_item <= 0 {
-            self.focused_item = (self.count - 1) as isize;
+    fn prev(&mut self, _: &Prev, window: &mut Window, cx: &mut Context<Self>) {
+        if self.focused_item == 0 {
+            self.focused_item = self.count - 1;
         } else {
             self.focused_item -= 1;
         }
         self.scroll();
+        self.update(window, cx, self.types[self.focused_item].clone(), false);
         cx.notify();
     }
 
     fn scroll(&mut self) {
         self.scroll_handle
-            .scroll_to_item(self.focused_item as usize, ScrollStrategy::Top);
+            .scroll_to_item(self.focused_item, ScrollStrategy::Top);
+    }
+
+    fn index_of(types: &[SharedString], val: &SharedString) -> usize {
+        types.iter().position(|v| v == val).unwrap_or(0)
     }
 }
 
