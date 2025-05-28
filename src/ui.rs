@@ -31,7 +31,7 @@ actions!(ui, [Toggle]);
 const CONTEXT: &str = "UI";
 
 impl UI {
-    pub fn new(cx: &mut App) -> Entity<Self> {
+    pub fn new(window: &mut Window, cx: &mut App) -> Entity<Self> {
         let is_linux = cfg!(target_os = "linux");
         let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([KeyBinding::new(
@@ -42,7 +42,7 @@ impl UI {
         Theme::set(cx);
         cx.new(|cx| UI {
             menu: cx.new(|cx| Menu::new(cx)),
-            table: cx.new(|cx| Table::new(cx)),
+            table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
         })
     }

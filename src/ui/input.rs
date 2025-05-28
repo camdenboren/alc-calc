@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
+// Cursor blinking adapted from: https://github.com/lumehq/coop/blob/master/crates/ui/src/input/blink_cursor.rs
 
 use crate::ui::theme::ActiveTheme;
 use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
-    EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyBinding, LayoutId, MouseButton,
-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ShapedLine,
-    SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window, actions, div, fill,
-    point, prelude::*, px, relative, size,
+    EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyBinding, KeyDownEvent,
+    LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point,
+    ShapedLine, SharedString, Style, TextRun, Timer, UTF16Selection, UnderlineStyle, Window,
+    actions, div, fill, point, prelude::*, px, relative, size,
 };
-use std::ops::Range;
+use std::{ops::Range, time::Duration};
 use unicode_segmentation::UnicodeSegmentation;
 
 actions!(
@@ -34,8 +35,89 @@ actions!(
 );
 
 const CONTEXT: &str = "TextInput";
+const INTERVAL: u64 = 500;
+const DELAY: u64 = 300;
+
+struct CursorState {
+    show: bool,
+    paused: bool,
+    epoch: usize,
+}
+
+impl CursorState {
+    fn new() -> Self {
+        Self {
+            show: false,
+            paused: false,
+            epoch: 0,
+        }
+    }
+
+    fn start(&mut self, cx: &mut Context<Self>) {
+        self.blink(self.epoch, cx);
+    }
+
+    fn stop(&mut self, cx: &mut Context<Self>) {
+        self.epoch = 0;
+        cx.notify();
+    }
+
+    fn next_epoch(&mut self) -> usize {
+        self.epoch += 1;
+        self.epoch
+    }
+
+    fn blink(&mut self, epoch: usize, cx: &mut Context<Self>) {
+        if self.paused || epoch != self.epoch {
+            return;
+        }
+
+        self.show = !self.show;
+        cx.notify();
+
+        // Schedule the next blink
+        let epoch = self.next_epoch();
+
+        cx.spawn(async move |this, cx| {
+            Timer::after(Duration::from_millis(INTERVAL)).await;
+
+            if let Some(this) = this.upgrade() {
+                this.update(cx, |this, cx| this.blink(epoch, cx)).ok();
+            }
+        })
+        .detach();
+    }
+
+    pub fn show(&self) -> bool {
+        // Keep showing the cursor if paused
+        self.paused || self.show
+    }
+
+    /// Pause the blinking, and delay 500ms to resume the blinking.
+    pub fn pause(&mut self, cx: &mut Context<Self>) {
+        self.paused = true;
+        cx.notify();
+
+        // delay 500ms to start the blinking
+        let epoch = self.next_epoch();
+
+        cx.spawn(async move |this, cx| {
+            Timer::after(Duration::from_millis(DELAY)).await;
+
+            if let Some(this) = this.upgrade() {
+                this.update(cx, |this, cx| {
+                    this.paused = false;
+                    this.blink(epoch, cx);
+                })
+                .ok();
+            }
+        })
+        .detach();
+    }
+}
 
 pub struct TextInput {
+    cursor_state: Entity<CursorState>,
     focus_handle: FocusHandle,
     pub content: SharedString,
     placeholder: SharedString,
@@ -48,7 +130,7 @@ pub struct TextInput {
 }
 
 impl TextInput {
-    pub fn new(cx: &mut App, placeholder: SharedString) -> Self {
+    pub fn new(window: &mut Window, cx: &mut Context<Self>, placeholder: SharedString) -> Self {
         let is_linux = cfg!(target_os = "linux");
         let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([
@@ -71,7 +153,25 @@ impl TextInput {
             ),
         ]);
 
+        let cursor_state = cx.new(|_| CursorState::new());
+        let _subscriptions = [
+            // Observe the blink cursor to repaint the view when it changes.
+            cx.observe(&cursor_state, |_, _, cx| cx.notify()),
+            // Blink the cursor when the window is active, pause when it's not.
+            cx.observe_window_activation(window, |input, window, cx| {
+                if window.is_window_active() {
+                    let focus_handle = input.focus_handle.clone();
+                    if focus_handle.is_focused(window) {
+                        input.cursor_state.update(cx, |cursor_state, cx| {
+                            cursor_state.start(cx);
+                        });
+                    }
+                }
+            }),
+        ];
+
         Self {
+            cursor_state,
             focus_handle: cx.focus_handle(),
             content: "".into(),
             placeholder,
@@ -92,7 +192,18 @@ impl TextInput {
         self.focus_handle.is_focused(window)
     }
 
+    fn pause_blink(&mut self, cx: &mut Context<Self>) {
+        self.cursor_state.update(cx, |cursor, cx| {
+            cursor.pause(cx);
+        });
+    }
+
+    pub fn show_cursor(&self, window: &mut Window, cx: &App) -> bool {
+        self.is_focused(window) && self.cursor_state.read(cx).show()
+    }
+
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
         } else {
@@ -101,6 +212,7 @@ impl TextInput {
     }
 
     fn right(&mut self, _: &Right, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.next_boundary(self.selected_range.end), cx);
         } else {
@@ -122,10 +234,12 @@ impl TextInput {
     }
 
     fn home(&mut self, _: &Home, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         self.move_to(0, cx);
     }
 
     fn end(&mut self, _: &End, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         self.move_to(self.content.len(), cx);
     }
 
@@ -133,14 +247,20 @@ impl TextInput {
         if self.selected_range.is_empty() {
             self.select_to(self.previous_boundary(self.cursor_offset()), cx)
         }
-        self.replace_text_in_range(None, "", window, cx)
+        self.replace_text_in_range(None, "", window, cx);
+        self.pause_blink(cx);
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
         if self.selected_range.is_empty() {
             self.select_to(self.next_boundary(self.cursor_offset()), cx)
         }
-        self.replace_text_in_range(None, "", window, cx)
+        self.replace_text_in_range(None, "", window, cx);
+        self.pause_blink(cx);
+    }
+
+    fn on_key_down(&mut self, _: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
     }
 
     fn on_mouse_down(
@@ -202,6 +322,7 @@ impl TextInput {
 
     fn move_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         self.selected_range = offset..offset;
+        self.pause_blink(cx);
         cx.notify()
     }
 
@@ -525,13 +646,18 @@ impl Element for TextElement {
         let (selection, cursor) = if selected_range.is_empty() {
             (
                 None,
-                Some(fill(
-                    Bounds::new(
-                        point(bounds.left() + cursor_pos, bounds.top()),
-                        size(px(2.), bounds.bottom() - bounds.top()),
-                    ),
-                    cx.theme().cursor,
-                )),
+                // conditionally show cursor based on blink state
+                if self.input.read(cx).show_cursor(window, cx) {
+                    Some(fill(
+                        Bounds::new(
+                            point(bounds.left() + cursor_pos, bounds.top()),
+                            size(px(2.), bounds.bottom() - bounds.top()),
+                        ),
+                        cx.theme().cursor,
+                    ))
+                } else {
+                    None
+                },
             )
         } else {
             (
@@ -613,6 +739,7 @@ impl Render for TextInput {
             .on_action(cx.listener(Self::paste))
             .on_action(cx.listener(Self::cut))
             .on_action(cx.listener(Self::copy))
+            .on_key_down(cx.listener(Self::on_key_down))
             .on_mouse_down(MouseButton::Left, cx.listener(Self::on_mouse_down))
             .on_mouse_up(MouseButton::Left, cx.listener(Self::on_mouse_up))
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))

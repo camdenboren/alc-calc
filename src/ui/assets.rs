@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Adapted from: https://github.com/lumehq/coop/blob/master/crates/coop/src/asset.rs
+// Adapted from: https://github.com/MatthiasGrandl/Loungy/blob/main/src/assets.rs
 
 use anyhow::anyhow;
 use gpui::{AssetSource, Result, SharedString};

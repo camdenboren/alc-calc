@@ -44,7 +44,7 @@ fn main() {
                     window_background: WindowBackgroundAppearance::Transparent,
                     ..Default::default()
                 },
-                |_, cx| UI::new(cx),
+                UI::new,
             )
             .unwrap();
         });

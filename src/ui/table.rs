@@ -38,7 +38,7 @@ struct Ingredient {
 }
 
 impl Ingredient {
-    pub fn new(id: usize, cx: &mut App) -> Self {
+    pub fn new(id: usize, window: &mut Window, cx: &mut App) -> Self {
         let is_linux = cfg!(target_os = "linux");
         let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([
@@ -51,8 +51,8 @@ impl Ingredient {
 
         Self {
             alc_type: cx.new(|cx| Dropdown::new(id, cx)),
-            percentage_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
-            parts_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            percentage_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
+            parts_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
             weight: "0".into(),
             id,
         }
@@ -142,10 +142,10 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn new(cx: &mut App) -> Self {
+    pub fn new(window: &mut Window, cx: &mut App) -> Self {
         Self {
             ingreds: vec![],
-            num_drinks_input: cx.new(|cx| TextInput::new(cx, "Type here...".into())),
+            num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
             num_drinks: 0.,
             count: 0,
             width: FIELDS.iter().fold(0., |acc, field| acc + field.1),
@@ -154,10 +154,10 @@ impl Table {
         }
     }
 
-    fn add(&mut self, _: &Add, _window: &mut Window, cx: &mut Context<Self>) {
+    fn add(&mut self, _: &Add, window: &mut Window, cx: &mut Context<Self>) {
         if self.count < MAX_ITEMS {
             let id = self.count;
-            let ingred = cx.new(|cx| Ingredient::new(id, cx));
+            let ingred = cx.new(|cx| Ingredient::new(id, window, cx));
 
             // subscribe to Ingred's Remove event
             cx.subscribe(
