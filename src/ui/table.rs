@@ -9,7 +9,7 @@ use crate::{
         button::button,
         dropdown::Dropdown,
         icon::{Icon, IconSize, IconVariant},
-        input::TextInput,
+        input::text_input::TextInput,
         theme::ActiveTheme,
     },
 };
