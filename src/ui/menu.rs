@@ -63,7 +63,11 @@ impl Menu {
 
     fn update(&mut self, val: SharedString, cx: &mut Context<Self>, toggle: bool) {
         self.focused_item = Menu::index_of(&self.variants, &val);
+
+        // prevents fs access on tests
+        #[cfg(not(test))]
         Theme::update(&val, cx);
+
         if toggle {
             self.toggle(cx);
         }
@@ -211,5 +215,29 @@ impl Render for Menu {
 impl Focusable for Menu {
     fn focus_handle(&self, _: &App) -> FocusHandle {
         self.focus_handle.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gpui::{Entity, TestAppContext, VisualTestContext};
+
+    #[gpui::test]
+    fn test_menu_update(cx: &mut TestAppContext) {
+        let (menu, cx) = setup_menu(cx);
+        let mut result: ThemeVariant = ThemeVariant::Light;
+
+        menu.update(cx, |menu, cx| {
+            menu.update("Light".into(), cx, true);
+            result = cx.theme().variant.clone();
+        });
+
+        assert_eq!(ThemeVariant::Light, result);
+    }
+
+    fn setup_menu(cx: &mut TestAppContext) -> (Entity<Menu>, &mut VisualTestContext) {
+        Theme::test(cx);
+        cx.add_window_view(|_window, cx| Menu::new(cx))
     }
 }

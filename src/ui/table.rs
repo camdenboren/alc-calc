@@ -440,3 +440,29 @@ impl Focusable for Table {
         self.focus_handle.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ui::theme::Theme;
+
+    use super::*;
+    use gpui::{TestAppContext, VisualTestContext};
+
+    #[gpui::test]
+    fn test_table_remove(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut num_ingreds = 0;
+
+        table.update(cx, |table, cx| {
+            table.remove(0, cx);
+            num_ingreds = table.ingreds.len();
+        });
+
+        assert_eq!(0, num_ingreds);
+    }
+
+    fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, &mut VisualTestContext) {
+        Theme::test(cx);
+        cx.add_window_view(|window, cx| Table::new(window, cx))
+    }
+}

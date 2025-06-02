@@ -3,7 +3,7 @@
 
 // ActiveTheme adapted from https://github.com/zed-industries/zed/blob/main/crates/theme/src/theme.rs
 
-use gpui::{App, Global, Hsla, Rgba, hsla, rgb, rgba};
+use gpui::{App, Global, Hsla, Rgba, TestAppContext, hsla, rgb, rgba};
 use serde::{Deserialize, Serialize};
 use std::{
     error::Error,
@@ -21,7 +21,9 @@ struct Config {
     theme: ThemeVariant,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, EnumCount, EnumString, EnumIter, Display)]
+#[derive(
+    Serialize, Clone, Deserialize, PartialEq, EnumCount, EnumString, EnumIter, Debug, Display,
+)]
 pub enum ThemeVariant {
     Dark,
     Light,
@@ -222,9 +224,17 @@ impl Theme {
         }
     }
 
+    // RA thinks this is dead code even though it is used
+    #[allow(dead_code)]
     pub fn update(theme_str: &str, cx: &mut App) {
         Theme::write(theme_str);
         Theme::set(cx);
+    }
+
+    // RA thinks this is dead code even though it is used in tests
+    #[allow(dead_code)]
+    pub fn test(cx: &mut TestAppContext) {
+        cx.set_global(Theme::light());
     }
 }
 
