@@ -461,6 +461,30 @@ mod tests {
         assert_eq!(0, num_ingreds);
     }
 
+    #[gpui::test]
+    fn test_table_delete_when_empty(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut num_ingreds = 0;
+
+        cx.focus(&table);
+        (0..2).for_each(|_| cx.simulate_keystrokes("ctrl-d"));
+        table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
+
+        assert_eq!(0, num_ingreds);
+    }
+
+    #[gpui::test]
+    fn test_table_add_when_full(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut num_ingreds = 0;
+
+        cx.focus(&table);
+        (0..15).for_each(|_| cx.simulate_keystrokes("ctrl-i"));
+        table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
+
+        assert_eq!(MAX_ITEMS, num_ingreds);
+    }
+
     fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, &mut VisualTestContext) {
         Theme::test(cx);
         cx.add_window_view(|window, cx| Table::new(window, cx))
