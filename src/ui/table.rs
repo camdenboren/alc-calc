@@ -465,9 +465,11 @@ mod tests {
     fn test_table_delete_when_empty(cx: &mut TestAppContext) {
         let (table, cx) = setup_table(cx);
         let mut num_ingreds = 0;
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
-        (0..2).for_each(|_| cx.simulate_keystrokes("ctrl-d"));
+        (0..2).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-d").as_str()));
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(0, num_ingreds);
@@ -477,12 +479,28 @@ mod tests {
     fn test_table_add_when_full(cx: &mut TestAppContext) {
         let (table, cx) = setup_table(cx);
         let mut num_ingreds = 0;
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
-        (0..15).for_each(|_| cx.simulate_keystrokes("ctrl-i"));
+        (0..15).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-i").as_str()));
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(MAX_ITEMS, num_ingreds);
+    }
+
+    #[gpui::test]
+    fn test_table_remove_key_when_empty(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut num_ingreds = 0;
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+
+        cx.focus(&table);
+        (0..2).for_each(|_| cx.simulate_keystrokes(format!("tab {ctrl}-r {ctrl}-r").as_str()));
+        table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
+
+        assert_eq!(0, num_ingreds);
     }
 
     fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, &mut VisualTestContext) {
