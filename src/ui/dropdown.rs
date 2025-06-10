@@ -251,3 +251,76 @@ impl Focusable for Dropdown {
         self.focus_handle.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ui::theme::Theme;
+
+    use super::*;
+    use gpui::{Entity, TestAppContext, VisualTestContext};
+
+    const MAX_INDEX: usize = 17;
+
+    #[gpui::test]
+    fn test_dropdown_update(cx: &mut TestAppContext) {
+        let (dropdown, cx) = setup_dropdown(cx);
+        let mut result = String::new().into();
+
+        dropdown.update_in(cx, |dropdown, window, cx| {
+            dropdown.update(window, cx, "Vodka".into(), true);
+            result = dropdown.current.clone();
+        });
+
+        assert_eq!(SharedString::from("Vodka"), result);
+    }
+
+    #[gpui::test]
+    fn test_dropdown_select(cx: &mut TestAppContext) {
+        let (dropdown, cx) = setup_dropdown(cx);
+        dropdown.update(cx, |menu, _cx| menu.show = true);
+        let mut result = String::new().into();
+
+        cx.focus(&dropdown);
+        cx.simulate_keystrokes("j enter");
+        dropdown.update(cx, |dropdown, _cx| result = dropdown.current.clone());
+
+        assert_eq!(SharedString::from("Vodka"), result);
+    }
+
+    #[gpui::test]
+    fn test_dropdown_next_at_limit(cx: &mut TestAppContext) {
+        let (dropdown, cx) = setup_dropdown(cx);
+        dropdown.update(cx, |menu, _cx| {
+            menu.show = true;
+            menu.focused_item = MAX_INDEX;
+        });
+        let mut result = 0;
+
+        cx.focus(&dropdown);
+        cx.simulate_keystrokes("j");
+        dropdown.update(cx, |dropdown, _cx| result = dropdown.focused_item);
+
+        assert_eq!(0, result)
+    }
+
+    #[gpui::test]
+    fn test_dropdown_prev_at_limit(cx: &mut TestAppContext) {
+        let (dropdown, cx) = setup_dropdown(cx);
+        dropdown.update(cx, |dropdown, _cx| {
+            dropdown.show = true;
+            dropdown.focused_item = 0;
+        });
+        let mut result = 0;
+
+        cx.focus(&dropdown);
+        cx.simulate_keystrokes("k");
+        dropdown.update(cx, |dropdown, _cx| result = dropdown.focused_item);
+
+        assert_eq!(MAX_INDEX, result)
+    }
+
+    fn setup_dropdown(cx: &mut TestAppContext) -> (Entity<Dropdown>, &mut VisualTestContext) {
+        Theme::test(cx);
+        cx.add_window_view(|_window, cx| Dropdown::new(0, cx))
+    }
+}

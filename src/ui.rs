@@ -20,6 +20,7 @@ use crate::ui::{
 };
 use gpui::{App, Entity, FocusHandle, Focusable, KeyBinding, Window, actions, div, prelude::*};
 
+#[derive(Clone)]
 pub struct UI {
     menu: Entity<Menu>,
     table: Entity<Table>,
@@ -39,7 +40,11 @@ impl UI {
             KeyBinding::new(format!("{ctrl}-t").as_str(), Toggle, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
         ]);
+
+        // prevents fs access on tests
+        #[cfg(not(test))]
         Theme::set(cx);
+
         cx.new(|cx| UI {
             menu: cx.new(|cx| Menu::new(cx)),
             table: cx.new(|cx| Table::new(window, cx)),
@@ -107,5 +112,63 @@ impl Render for UI {
 impl Focusable for UI {
     fn focus_handle(&self, _: &App) -> FocusHandle {
         self.focus_handle.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gpui::{TestAppContext, VisualTestContext};
+
+    #[gpui::test]
+    fn test_ui_toggle_menu(cx: &mut TestAppContext) {
+        let (ui, cx) = setup_ui(cx);
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let mut show_menu = false;
+
+        cx.focus(&ui);
+        cx.simulate_keystrokes(format!("{ctrl}-t").as_str());
+        ui.update(cx, |ui, cx| show_menu = ui.menu.read(cx).show);
+
+        assert_eq!(true, show_menu)
+    }
+
+    #[gpui::test]
+    fn test_ui_toggle_table(cx: &mut TestAppContext) {
+        let (ui, cx) = setup_ui(cx);
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let mut show_menu = false;
+
+        cx.focus(&ui);
+        (0..2).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-t").as_str()));
+        ui.update(cx, |ui, cx| show_menu = ui.menu.read(cx).show);
+
+        assert_eq!(false, show_menu)
+    }
+
+    #[gpui::test]
+    fn test_ui_focus(cx: &mut TestAppContext) {
+        let (ui, cx) = setup_ui(cx);
+        let mut table_focused = false;
+
+        cx.focus(&ui);
+        cx.simulate_keystrokes("tab");
+        ui.update_in(cx, |ui, window, cx| {
+            table_focused = ui
+                .table
+                .read(cx)
+                .num_drinks_input
+                .read(cx)
+                .is_focused(window)
+        });
+
+        assert_eq!(true, table_focused)
+    }
+
+    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext) {
+        Theme::test(cx);
+        cx.add_window_view(|window, cx| UI::new(window, cx).read(cx).clone())
     }
 }

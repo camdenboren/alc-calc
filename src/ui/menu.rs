@@ -223,6 +223,8 @@ mod tests {
     use super::*;
     use gpui::{Entity, TestAppContext, VisualTestContext};
 
+    const MAX_INDEX: usize = 4;
+
     #[gpui::test]
     fn test_menu_update(cx: &mut TestAppContext) {
         let (menu, cx) = setup_menu(cx);
@@ -234,6 +236,38 @@ mod tests {
         });
 
         assert_eq!(ThemeVariant::Light, result);
+    }
+
+    #[gpui::test]
+    fn test_menu_next_at_limit(cx: &mut TestAppContext) {
+        let (menu, cx) = setup_menu(cx);
+        menu.update(cx, |menu, _cx| {
+            menu.show = true;
+            menu.focused_item = MAX_INDEX;
+        });
+        let mut result = 0;
+
+        cx.focus(&menu);
+        cx.simulate_keystrokes("j");
+        menu.update(cx, |menu, _cx| result = menu.focused_item);
+
+        assert_eq!(0, result)
+    }
+
+    #[gpui::test]
+    fn test_menu_prev_at_limit(cx: &mut TestAppContext) {
+        let (menu, cx) = setup_menu(cx);
+        menu.update(cx, |menu, _cx| {
+            menu.show = true;
+            menu.focused_item = 0;
+        });
+        let mut result = 0;
+
+        cx.focus(&menu);
+        cx.simulate_keystrokes("k");
+        menu.update(cx, |menu, _cx| result = menu.focused_item);
+
+        assert_eq!(MAX_INDEX, result)
     }
 
     fn setup_menu(cx: &mut TestAppContext) -> (Entity<Menu>, &mut VisualTestContext) {
