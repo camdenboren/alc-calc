@@ -239,6 +239,27 @@ mod tests {
     }
 
     #[gpui::test]
+    fn test_menu_select(cx: &mut TestAppContext) {
+        let (menu, cx) = setup_menu(cx);
+        let mut show = true;
+        let mut result = 0;
+        menu.update(cx, |menu, _cx| {
+            menu.show = show;
+            menu.focused_item = result;
+        });
+
+        cx.focus(&menu);
+        cx.simulate_keystrokes("j enter");
+        menu.update(cx, |menu, _cx| {
+            show = menu.show;
+            result = menu.focused_item;
+        });
+
+        assert_eq!(1, result);
+        assert_eq!(false, show)
+    }
+
+    #[gpui::test]
     fn test_menu_next_at_limit(cx: &mut TestAppContext) {
         let (menu, cx) = setup_menu(cx);
         menu.update(cx, |menu, _cx| {

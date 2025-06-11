@@ -223,7 +223,6 @@ impl Table {
     }
 
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
-        // calc_weights requires non-zero vec
         if self.ingreds.is_empty() {
             return false;
         }
@@ -497,10 +496,78 @@ mod tests {
         let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
-        (0..2).for_each(|_| cx.simulate_keystrokes(format!("tab {ctrl}-r {ctrl}-r").as_str()));
+        cx.simulate_keystrokes(format!("tab tab {ctrl}-r {ctrl}-r").as_str());
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(0, num_ingreds);
+    }
+
+    #[gpui::test]
+    fn test_table_calc_single_ingred(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut weight = SharedString::from("");
+
+        cx.focus(&table);
+        cx.simulate_keystrokes("tab 2 tab tab 4 0");
+        table.update(cx, |table, cx| {
+            weight = table.ingreds[0].read(cx).weight.clone()
+        });
+
+        assert_eq!(SharedString::from("84.6"), weight);
+    }
+
+    #[gpui::test]
+    fn test_table_calc_multiple_ingreds(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let mut weight: Vec<SharedString> = vec!["".into(), "".into()];
+
+        cx.focus(&table);
+        cx.simulate_keystrokes(format!("{ctrl}-i tab 2 tab tab 4 0 tab 1 . 5").as_str());
+        cx.simulate_keystrokes("tab enter k k k k enter tab 1 6 . 5 tab 1");
+        table.update(cx, |table, cx| {
+            weight[0] = table.ingreds[0].read(cx).weight.clone();
+            weight[1] = table.ingreds[1].read(cx).weight.clone();
+        });
+
+        assert_eq!(SharedString::from("66.3"), weight[0]);
+        assert_eq!(SharedString::from("46.9"), weight[1]);
+    }
+
+    #[gpui::test]
+    fn test_table_not_ready_when_empty(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let mut ready = true;
+
+        cx.focus(&table);
+        cx.simulate_keystrokes(format!("{ctrl}-d").as_str());
+        table.update(cx, |table, cx| ready = table.ready(cx));
+
+        assert_eq!(false, ready);
+    }
+
+    #[gpui::test]
+    fn test_table_focus_next_ingred(cx: &mut TestAppContext) {
+        let (table, cx) = setup_table(cx);
+        let mut ingred_focused = false;
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+
+        cx.focus(&table);
+        cx.simulate_keystrokes(format!("tab tab {ctrl}-i").as_str());
+        (0..3).for_each(|_| cx.simulate_keystrokes(format!("tab").as_str()));
+        table.update_in(cx, |table, window, cx| {
+            ingred_focused = table.ingreds[1]
+                .read(cx)
+                .alc_type
+                .read(cx)
+                .is_focused(window)
+        });
+
+        assert_eq!(true, ingred_focused);
     }
 
     fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, &mut VisualTestContext) {
