@@ -189,34 +189,35 @@ impl Table {
     }
 
     fn remove(&mut self, ix: usize, cx: &mut Context<Self>) {
-        self.ingreds.remove(ix);
-        self.count -= 1;
+        // prevents remove(ix) and ingreds[ix..] from panicking if ix is OOB
+        if self.count > 0 && ix < self.count {
+            self.ingreds.remove(ix);
+            self.count -= 1;
 
-        // update id's so that we can use them for indexed removal and dd deferral
-        self.ingreds[ix..]
-            .iter()
-            .enumerate()
-            .for_each(|(jx, ingred)| {
-                ingred.update(cx, |ingred, cx| {
-                    ingred.id = jx + ix;
-                    ingred.alc_type.update(cx, |alc_type, _cx| {
-                        alc_type.id = jx + ix;
-                    });
-                })
-            });
+            // update id's so that we can use them for indexed removal and dd deferral
+            self.ingreds[ix..]
+                .iter()
+                .enumerate()
+                .for_each(|(jx, ingred)| {
+                    ingred.update(cx, |ingred, cx| {
+                        ingred.id = jx + ix;
+                        ingred.alc_type.update(cx, |alc_type, _cx| {
+                            alc_type.id = jx + ix;
+                        });
+                    })
+                });
+        }
     }
 
     fn remove_key(&mut self, _: &RemoveKey, window: &mut Window, cx: &mut Context<Self>) {
-        if self.count > 0 {
-            for ix in 0..self.count {
-                if self.alc_type(ix, cx).is_focused(window)
-                    || self.parts(ix, cx).is_focused(window)
-                    || self.percentage(ix, cx).is_focused(window)
-                {
-                    self.remove(ix, cx);
-                    self.focus(&Escape, window, cx);
-                    break;
-                }
+        for ix in 0..self.count {
+            if self.alc_type(ix, cx).is_focused(window)
+                || self.parts(ix, cx).is_focused(window)
+                || self.percentage(ix, cx).is_focused(window)
+            {
+                self.remove(ix, cx);
+                self.focus(&Escape, window, cx);
+                break;
             }
         }
         cx.notify();
@@ -247,14 +248,15 @@ impl Table {
         let ingred_data = match calc_weights(&mut ingred_data, num_drinks) {
             Ok(ingred_data) => ingred_data,
             Err(e) => {
-                println!("Failed to calculate ingredient weights due to error: {e}");
+                eprintln!("Failed to calculate ingredient weights due to error: {e}");
                 return;
             }
         };
 
         self.ingreds.iter().enumerate().for_each(|(ix, ingred)| {
             ingred.update(cx, |ingred, _| {
-                ingred.weight(ingred_data[ix].weight);
+                // default to 0th ingred as both vecs are non-empty due to ready check
+                ingred.weight(ingred_data.get(ix).unwrap_or(&ingred_data[0]).weight);
             });
         })
     }
@@ -263,16 +265,36 @@ impl Table {
         self.num_drinks_input.read(cx)
     }
 
+    // default to 0th ingred to prevent panicking due to unexpected missing ingreds
+    // there will always be a 0th ingred as these methods are only called w/ either
+    //   1. an explicit non-empty check, or
+    //   2. within a (0..self.count) block, meaning an empty vec produces no calls
+
     fn alc_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {
-        self.ingreds[ix].read(cx).alc_type.read(cx)
+        self.ingreds
+            .get(ix)
+            .unwrap_or(&self.ingreds[0])
+            .read(cx)
+            .alc_type
+            .read(cx)
     }
 
     fn parts<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a TextInput {
-        self.ingreds[ix].read(cx).parts_input.read(cx)
+        self.ingreds
+            .get(ix)
+            .unwrap_or(&self.ingreds[0])
+            .read(cx)
+            .parts_input
+            .read(cx)
     }
 
     fn percentage<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a TextInput {
-        self.ingreds[ix].read(cx).percentage_input.read(cx)
+        self.ingreds
+            .get(ix)
+            .unwrap_or(&self.ingreds[0])
+            .read(cx)
+            .percentage_input
+            .read(cx)
     }
 
     fn parse_or_zero(&self, content: &SharedString) -> f32 {
@@ -307,7 +329,9 @@ impl Table {
             if self.alc_type(ix, cx).is_focused(window) {
                 // hide dropdown before focusing input
                 if self.alc_type(ix, cx).show {
-                    self.ingreds[ix]
+                    self.ingreds
+                        .get(ix)
+                        .unwrap_or(&self.ingreds[0])
                         .read(cx)
                         .alc_type
                         .clone()

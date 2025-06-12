@@ -7,7 +7,7 @@ use gpui::{
     App, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
     WindowBackgroundAppearance, WindowBounds, WindowDecorations, WindowOptions, actions, px, size,
 };
-use std::path::PathBuf;
+use std::{path::PathBuf, process};
 
 actions!(alc_alc, [Quit]);
 
@@ -26,7 +26,7 @@ fn main() {
                 items: vec![MenuItem::action("Quit", Quit)],
             }]);
 
-            cx.open_window(
+            if let Ok(_window) = cx.open_window(
                 WindowOptions {
                     focus: true,
                     window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
@@ -45,7 +45,10 @@ fn main() {
                     ..Default::default()
                 },
                 UI::new,
-            )
-            .unwrap();
+            ) {
+            } else {
+                eprintln!("alc-calc failed to open a window");
+                process::exit(1)
+            };
         });
 }

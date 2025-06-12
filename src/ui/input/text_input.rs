@@ -296,7 +296,10 @@ impl TextInput {
     fn copy(&mut self, _: &Copy, _: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
-                self.content[self.selected_range.clone()].to_string(),
+                self.content
+                    .get(self.selected_range.clone())
+                    .unwrap_or(&self.content[0..])
+                    .to_string(),
             ));
         }
     }
@@ -304,7 +307,10 @@ impl TextInput {
     fn cut(&mut self, _: &Cut, window: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
-                self.content[self.selected_range.clone()].to_string(),
+                self.content
+                    .get(self.selected_range.clone())
+                    .unwrap_or(&self.content[0..])
+                    .to_string(),
             ));
             self.replace_text_in_range(None, "", window, cx)
         }
@@ -421,7 +427,12 @@ impl EntityInputHandler for TextInput {
     ) -> Option<String> {
         let range = self.range_from_utf16(&range_utf16);
         actual_range.replace(self.range_to_utf16(&range));
-        Some(self.content[range].to_string())
+        Some(
+            self.content
+                .get(range)
+                .unwrap_or(&self.content[0..])
+                .to_string(),
+        )
     }
 
     fn selected_text_range(
@@ -463,9 +474,14 @@ impl EntityInputHandler for TextInput {
             .or(self.marked_range.clone())
             .unwrap_or(self.selected_range.clone());
 
-        self.content =
-            (self.content[0..range.start].to_owned() + new_text + &self.content[range.end..])
-                .into();
+        self.content = (self
+            .content
+            .get(0..range.start)
+            .unwrap_or(&self.content[0..])
+            .to_owned()
+            + new_text
+            + self.content.get(range.end..).unwrap_or(&self.content[0..]))
+        .into();
         self.selected_range = range.start + new_text.len()..range.start + new_text.len();
         self.marked_range.take();
         cx.notify();
@@ -485,9 +501,14 @@ impl EntityInputHandler for TextInput {
             .or(self.marked_range.clone())
             .unwrap_or(self.selected_range.clone());
 
-        self.content =
-            (self.content[0..range.start].to_owned() + new_text + &self.content[range.end..])
-                .into();
+        self.content = (self
+            .content
+            .get(0..range.start)
+            .unwrap_or(&self.content[0..])
+            .to_owned()
+            + new_text
+            + self.content.get(range.end..).unwrap_or(&self.content[0..]))
+        .into();
         self.marked_range = Some(range.start..range.start + new_text.len());
         self.selected_range = new_selected_range_utf16
             .as_ref()

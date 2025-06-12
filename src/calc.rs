@@ -5,15 +5,40 @@ use crate::{
     types::{Category, match_category},
     ui::table::IngredientData,
 };
-use std::error::Error;
+use std::{error::Error, fmt};
 
-fn round_to_place(raw: f32, place: f32) -> Result<f32, Box<dyn Error>> {
+#[derive(Debug)]
+struct EmptyError;
+
+#[derive(Debug)]
+struct CalculationError;
+
+impl fmt::Display for EmptyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Empty vector passed to calc")
+    }
+}
+
+impl fmt::Display for CalculationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Unexpected calculation error encountered while calculating weights"
+        )
+    }
+}
+
+impl Error for EmptyError {}
+
+impl Error for CalculationError {}
+
+fn round_to_place(raw: f32, place: f32) -> Result<f32, CalculationError> {
     let base: f32 = 10.;
     let scalar: f32 = base.powf(place);
     Ok((raw * scalar).round() / scalar)
 }
 
-fn calc_ingred_weight(alc_type: &str, percentage: f32) -> Result<(u32, f32), Box<dyn Error>> {
+fn calc_ingred_weight(alc_type: &str, percentage: f32) -> Result<(u32, f32), CalculationError> {
     let cat: Category = match_category(alc_type);
     Ok(match cat {
         Category::Carbonated => (1, 1772.6 * percentage.powf(-0.996)),
@@ -22,7 +47,7 @@ fn calc_ingred_weight(alc_type: &str, percentage: f32) -> Result<(u32, f32), Box
     })
 }
 
-fn calc_volume(alc_type: u32, percentage: f32) -> Result<f32, Box<dyn Error>> {
+fn calc_volume(alc_type: u32, percentage: f32) -> Result<f32, CalculationError> {
     Ok(match alc_type {
         1 => (40. / percentage) * 44.355,
         2 => (40. / percentage) * 44.355,
@@ -31,7 +56,7 @@ fn calc_volume(alc_type: u32, percentage: f32) -> Result<f32, Box<dyn Error>> {
     })
 }
 
-fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> Result<f32, Box<dyn Error>> {
+fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> Result<f32, CalculationError> {
     Ok(num_drinks
         / data
             .iter()
@@ -41,8 +66,12 @@ fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> Result<f32, Box<
 pub fn calc_weights(
     data: &mut Vec<IngredientData>,
     num_drinks: f32,
-) -> Result<&mut Vec<IngredientData>, Box<dyn Error>> {
-    if data.len() <= 1 {
+) -> Result<&mut Vec<IngredientData>, anyhow::Error> {
+    if data.is_empty() {
+        return Err(anyhow::Error::new(EmptyError));
+    }
+
+    if data.len() == 1 {
         // use calc_ingred_weight directly if there's only one ingredient
         let (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage)?;
         let scaled_weight = num_drinks * weight;
@@ -51,7 +80,7 @@ pub fn calc_weights(
         // factor in volume and number of parts when there's multiple ingreds
         let mut first = &data[0].clone();
         data.iter_mut().enumerate().try_for_each(
-            |(ix, item): (usize, &mut IngredientData)| -> Result<(), Box<dyn Error>> {
+            |(ix, item): (usize, &mut IngredientData)| -> Result<(), CalculationError> {
                 let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage)?;
                 item.weight = weight;
                 item.volume = calc_volume(alc_type, item.percentage)?;

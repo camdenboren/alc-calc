@@ -93,7 +93,9 @@ impl Dropdown {
                     |this, range, _window, cx| {
                         range
                             .map(|ix| {
-                                let item = this.types[ix].clone();
+                                // 0th type is guranteed to exist, so this prevents
+                                // panicking if underlying uniform_list has a bug
+                                let item = this.types.get(ix).unwrap_or(&this.types[0]).clone();
                                 div()
                                     .rounded_md()
                                     .px_1()
@@ -163,8 +165,18 @@ impl Dropdown {
         cx.notify();
     }
 
+    // types is guaranteed to be non-empty, so default to 0th type to avoid panicking
+
     fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {
-        self.update(window, cx, self.types[self.focused_item].clone(), true);
+        self.update(
+            window,
+            cx,
+            self.types
+                .get(self.focused_item)
+                .unwrap_or(&self.types[0])
+                .clone(),
+            true,
+        );
         cx.notify();
     }
 
@@ -175,7 +187,15 @@ impl Dropdown {
             self.focused_item = 0;
         }
         self.scroll();
-        self.update(window, cx, self.types[self.focused_item].clone(), false);
+        self.update(
+            window,
+            cx,
+            self.types
+                .get(self.focused_item)
+                .unwrap_or(&self.types[0])
+                .clone(),
+            false,
+        );
         cx.notify();
     }
 
@@ -186,7 +206,15 @@ impl Dropdown {
             self.focused_item -= 1;
         }
         self.scroll();
-        self.update(window, cx, self.types[self.focused_item].clone(), false);
+        self.update(
+            window,
+            cx,
+            self.types
+                .get(self.focused_item)
+                .unwrap_or(&self.types[0])
+                .clone(),
+            false,
+        );
         cx.notify();
     }
 

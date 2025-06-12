@@ -106,8 +106,17 @@ impl Menu {
         cx.notify();
     }
 
+    // variants is guaranteed to be non-empty, so default to 0th variant to avoid panicking
+
     fn select(&mut self, _: &Select, _window: &mut Window, cx: &mut Context<Self>) {
-        self.update(self.variants[self.focused_item].clone(), cx, true);
+        self.update(
+            self.variants
+                .get(self.focused_item)
+                .unwrap_or(&self.variants[0])
+                .clone(),
+            cx,
+            true,
+        );
         cx.notify();
     }
 
@@ -117,7 +126,14 @@ impl Menu {
         } else {
             self.focused_item = 0;
         }
-        self.update(self.variants[self.focused_item].clone(), cx, false);
+        self.update(
+            self.variants
+                .get(self.focused_item)
+                .unwrap_or(&self.variants[0])
+                .clone(),
+            cx,
+            false,
+        );
         cx.notify();
     }
 
@@ -127,7 +143,14 @@ impl Menu {
         } else {
             self.focused_item -= 1;
         }
-        self.update(self.variants[self.focused_item].clone(), cx, false);
+        self.update(
+            self.variants
+                .get(self.focused_item)
+                .unwrap_or(&self.variants[0])
+                .clone(),
+            cx,
+            false,
+        );
         cx.notify();
     }
 
@@ -181,7 +204,13 @@ impl Render for Menu {
                                 |this, range, _window, cx| {
                                     range
                                         .map(|ix| {
-                                            let item = this.variants[ix].clone();
+                                            // 0th type is guranteed to exist, so this prevents
+                                            // panicking if underlying uniform_list has a bug
+                                            let item = this
+                                                .variants
+                                                .get(ix)
+                                                .unwrap_or(&this.variants[0])
+                                                .clone();
                                             div()
                                                 .rounded_md()
                                                 .px_1()

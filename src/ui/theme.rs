@@ -6,7 +6,6 @@
 use gpui::{App, Global, Hsla, Rgba, TestAppContext, hsla, rgb, rgba};
 use serde::{Deserialize, Serialize};
 use std::{
-    error::Error,
     fs::{File, write},
     io::Read,
     path::PathBuf,
@@ -169,7 +168,7 @@ impl Theme {
         match toml::from_str(&config_content) {
             Ok(config) => config,
             Err(_) => {
-                println!("Failed to deserialize config. Defaulting to Dark theme");
+                eprintln!("Failed to deserialize config. Defaulting to Dark theme");
                 Config {
                     theme: ThemeVariant::Dark,
                 }
@@ -184,13 +183,13 @@ impl Theme {
         match toml::to_string(&config) {
             Ok(config_content) => config_content,
             Err(_) => {
-                println!("Failed to serialize config. Defaulting to Dark theme");
+                eprintln!("Failed to serialize config. Defaulting to Dark theme");
                 String::from(DEFAULT_THEME)
             }
         }
     }
 
-    fn read(path: PathBuf) -> Result<String, Box<dyn Error>> {
+    fn read(path: PathBuf) -> Result<String, anyhow::Error> {
         let file_path = path.join("config.toml");
         if std::fs::metadata(&file_path).is_err() {
             Theme::write("Dark");
@@ -202,7 +201,7 @@ impl Theme {
             Ok(_) => (),
             Err(_) => {
                 config_content = String::from(DEFAULT_THEME);
-                println!("Failed to read config file. Defaulting to Dark theme");
+                eprintln!("Failed to read config file. Defaulting to Dark theme");
             }
         }
 
@@ -215,12 +214,12 @@ impl Theme {
         if std::fs::metadata(&path).is_err() {
             match std::fs::create_dir(&path) {
                 Ok(_) => (),
-                Err(_) => println!("Failed to create config directory"),
+                Err(_) => eprintln!("Failed to create config directory"),
             }
         }
         match write(path.join("config.toml"), &config_content) {
             Ok(_) => (),
-            Err(_) => println!("Failed to write to config file"),
+            Err(_) => eprintln!("Failed to write to config file"),
         }
     }
 
