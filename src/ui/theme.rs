@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Camden Boren
+// SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // ActiveTheme adapted from https://github.com/zed-industries/zed/blob/main/crates/theme/src/theme.rs

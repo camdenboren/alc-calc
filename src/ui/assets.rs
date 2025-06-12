@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Camden Boren
+// SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Adapted from: https://github.com/MatthiasGrandl/Loungy/blob/main/src/assets.rs
