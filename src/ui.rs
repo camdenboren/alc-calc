@@ -13,7 +13,7 @@ mod titlebar;
 mod window_border;
 use crate::ui::{
     menu::Menu,
-    table::Table,
+    table::data_table::Table,
     theme::{ActiveTheme, Theme},
     titlebar::Titlebar,
     window_border::{WindowBorder, window_border},
@@ -33,7 +33,7 @@ actions!(ui, [Toggle, Tab]);
 const CONTEXT: &str = "UI";
 
 impl UI {
-    pub fn new(window: &mut Window, cx: &mut App) -> Entity<Self> {
+    pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let is_linux = cfg!(target_os = "linux");
         let ctrl = if is_linux { "ctrl" } else { "cmd" };
         cx.bind_keys([
@@ -45,12 +45,12 @@ impl UI {
         #[cfg(not(test))]
         Theme::set(cx);
 
-        cx.new(|cx| UI {
-            menu: cx.new(|cx| Menu::new(cx)),
+        UI {
+            menu: cx.new(Menu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle(),
-        })
+        }
     }
 
     fn toggle(&mut self, _: &Toggle, window: &mut Window, cx: &mut Context<Self>) {
@@ -169,6 +169,6 @@ mod tests {
 
     fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext) {
         Theme::test(cx);
-        cx.add_window_view(|window, cx| UI::new(window, cx).read(cx).clone())
+        cx.add_window_view(|window, cx| UI::new(window, cx))
     }
 }

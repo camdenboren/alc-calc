@@ -7,7 +7,7 @@ use crate::{
         button::button,
         button::text_button,
         icon::{Icon, IconSize, IconVariant},
-        table::MAX_ITEMS,
+        table::data_table::MAX_ITEMS,
         theme::ActiveTheme,
     },
 };
@@ -34,7 +34,7 @@ pub struct Dropdown {
 }
 
 impl Dropdown {
-    pub fn new(id: usize, cx: &mut App) -> Self {
+    pub fn new(id: usize, cx: &mut Context<Self>) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
             KeyBinding::new("enter", Enter, Some(CONTEXT)),
@@ -70,57 +70,6 @@ impl Dropdown {
 
     pub fn is_focused(&self, window: &mut Window) -> bool {
         self.focus_handle.is_focused(window)
-    }
-
-    fn render_list(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .key_context(CONTEXT)
-            .flex()
-            .flex_col()
-            .absolute()
-            .top_9()
-            .right(px(0.))
-            .bg(cx.theme().field)
-            .rounded_md()
-            .p_1()
-            .w_full()
-            .h_48()
-            .child(
-                uniform_list(
-                    cx.entity(),
-                    "ingreds_list",
-                    self.count,
-                    |this, range, _window, cx| {
-                        range
-                            .map(|ix| {
-                                // 0th type is guranteed to exist, so this prevents
-                                // panicking if underlying uniform_list has a bug
-                                let item = this.types.get(ix).unwrap_or(&this.types[0]).clone();
-                                div()
-                                    .rounded_md()
-                                    .px_1()
-                                    .hover(|this| this.bg(cx.theme().background))
-                                    .when(this.focused_item == ix, |this| {
-                                        this.bg(cx.theme().background)
-                                    })
-                                    .child(text_button(
-                                        format!("dropdown_item_{ix}").as_str(),
-                                        item.clone(),
-                                        cx.listener(move |this, _, window, cx| {
-                                            this.update(window, cx, item.clone(), true);
-                                        }),
-                                    ))
-                            })
-                            .collect()
-                    },
-                )
-                .track_scroll(self.scroll_handle.clone())
-                .on_mouse_down_out(cx.listener(|this, _, window, cx| {
-                    cx.stop_propagation();
-                    this.escape(&Escape, window, cx);
-                }))
-                .h_full(),
-            )
     }
 
     pub fn toggle(&mut self, cx: &mut Context<Self>) {
@@ -268,7 +217,67 @@ impl Render for Dropdown {
                             }),
                         )),
                 )
-                .when(self.show, |this| this.child(self.render_list(cx))),
+                .when(self.show, |this| {
+                    this.child(
+                        div()
+                            .key_context(CONTEXT)
+                            .flex()
+                            .flex_col()
+                            .absolute()
+                            .top_9()
+                            .right(px(0.))
+                            .bg(cx.theme().field)
+                            .rounded_md()
+                            .p_1()
+                            .w_full()
+                            .h_48()
+                            .child(
+                                uniform_list(
+                                    cx.entity(),
+                                    "ingreds_list",
+                                    self.count,
+                                    |this, range, _window, cx| {
+                                        range
+                                            .map(|ix| {
+                                                // 0th type is guranteed to exist, so this prevents
+                                                // panicking if underlying uniform_list has a bug
+                                                let item = this
+                                                    .types
+                                                    .get(ix)
+                                                    .unwrap_or(&this.types[0])
+                                                    .clone();
+                                                div()
+                                                    .rounded_md()
+                                                    .px_1()
+                                                    .hover(|this| this.bg(cx.theme().background))
+                                                    .when(this.focused_item == ix, |this| {
+                                                        this.bg(cx.theme().background)
+                                                    })
+                                                    .child(text_button(
+                                                        format!("dropdown_item_{ix}").as_str(),
+                                                        item.clone(),
+                                                        cx.listener(move |this, _, window, cx| {
+                                                            this.update(
+                                                                window,
+                                                                cx,
+                                                                item.clone(),
+                                                                true,
+                                                            );
+                                                        }),
+                                                    ))
+                                            })
+                                            .collect()
+                                    },
+                                )
+                                .track_scroll(self.scroll_handle.clone())
+                                .on_mouse_down_out(cx.listener(|this, _, window, cx| {
+                                    cx.stop_propagation();
+                                    this.escape(&Escape, window, cx);
+                                }))
+                                .h_full(),
+                            ),
+                    )
+                }),
         )
         .with_priority(MAX_ITEMS - self.id)
     }

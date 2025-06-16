@@ -4,7 +4,7 @@
 #![allow(unused_imports)]
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
-    App, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
+    App, AppContext, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
     WindowBackgroundAppearance, WindowBounds, WindowDecorations, WindowOptions, actions, px, size,
 };
 use std::{path::PathBuf, process};
@@ -44,7 +44,7 @@ fn main() {
                     window_background: WindowBackgroundAppearance::Transparent,
                     ..Default::default()
                 },
-                UI::new,
+                |window, cx| cx.new(|cx| UI::new(window, cx)),
             ) {
             } else {
                 eprintln!("alc-calc failed to open a window");

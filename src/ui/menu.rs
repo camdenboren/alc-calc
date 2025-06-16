@@ -26,7 +26,7 @@ pub struct Menu {
 }
 
 impl Menu {
-    pub fn new(cx: &mut App) -> Self {
+    pub fn new(cx: &mut Context<Self>) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
             KeyBinding::new("enter", Enter, Some(CONTEXT)),
