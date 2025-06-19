@@ -12,11 +12,11 @@ use gpui::{
 };
 use strum::{EnumCount, IntoEnumIterator};
 
-actions!(menu, [Escape, Enter, Next, Prev, Select]);
+actions!(theme_menu, [Escape, Enter, Next, Prev, Select]);
 
-const CONTEXT: &str = "Menu";
+const CONTEXT: &str = "ThemeMenu";
 
-pub struct Menu {
+pub struct ThemeMenu {
     variants: Vec<SharedString>,
     prev: Option<SharedString>,
     pub show: bool,
@@ -25,7 +25,7 @@ pub struct Menu {
     focus_handle: FocusHandle,
 }
 
-impl Menu {
+impl ThemeMenu {
     pub fn new(cx: &mut Context<Self>) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
@@ -41,7 +41,7 @@ impl Menu {
             .map(|t| SharedString::from(t.to_string()))
             .collect();
         let current = cx.theme().variant.to_string().into();
-        let focused_item = Menu::index_of(&variants, &current);
+        let focused_item = ThemeMenu::index_of(&variants, &current);
 
         Self {
             variants,
@@ -62,7 +62,7 @@ impl Menu {
     }
 
     fn update(&mut self, val: SharedString, cx: &mut Context<Self>, toggle: bool) {
-        self.focused_item = Menu::index_of(&self.variants, &val);
+        self.focused_item = ThemeMenu::index_of(&self.variants, &val);
 
         // prevents fs access on tests
         #[cfg(not(test))]
@@ -94,7 +94,7 @@ impl Menu {
         self.show = false;
         if self.prev.is_some() {
             let current = self.prev.clone().unwrap_or("Dark".into());
-            self.focused_item = Menu::index_of(&self.variants, &current);
+            self.focused_item = ThemeMenu::index_of(&self.variants, &current);
             self.update(current, cx, false);
         }
         cx.notify();
@@ -159,7 +159,7 @@ impl Menu {
     }
 }
 
-impl Render for Menu {
+impl Render for ThemeMenu {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
@@ -241,7 +241,7 @@ impl Render for Menu {
     }
 }
 
-impl Focusable for Menu {
+impl Focusable for ThemeMenu {
     fn focus_handle(&self, _: &App) -> FocusHandle {
         self.focus_handle.clone()
     }
@@ -320,8 +320,8 @@ mod tests {
         assert_eq!(MAX_INDEX, result)
     }
 
-    fn setup_menu(cx: &mut TestAppContext) -> (Entity<Menu>, &mut VisualTestContext) {
+    fn setup_menu(cx: &mut TestAppContext) -> (Entity<ThemeMenu>, &mut VisualTestContext) {
         Theme::test(cx);
-        cx.add_window_view(|_window, cx| Menu::new(cx))
+        cx.add_window_view(|_window, cx| ThemeMenu::new(cx))
     }
 }

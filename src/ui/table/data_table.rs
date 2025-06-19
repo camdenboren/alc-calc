@@ -6,6 +6,7 @@
 use crate::{
     calc::calc_weights,
     ui::{
+        ActiveCtrl,
         button::button,
         dropdown::Dropdown,
         icon::{Icon, IconSize, IconVariant},
@@ -15,7 +16,8 @@ use crate::{
     },
 };
 use gpui::{
-    App, Entity, FocusHandle, Focusable, SharedString, Window, actions, div, prelude::*, px,
+    App, Entity, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div,
+    prelude::*, px,
 };
 
 actions!(table, [Tab, Add, Delete, Escape, RemoveKey]);
@@ -35,6 +37,15 @@ pub struct Table {
 
 impl Table {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        let ctrl = cx.ctrl();
+        cx.bind_keys([
+            KeyBinding::new("tab", Tab, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, Some(CONTEXT)),
+            KeyBinding::new(format!("{ctrl}-r").as_str(), RemoveKey, Some(CONTEXT)),
+            KeyBinding::new("escape", Escape, Some(CONTEXT)),
+        ]);
+
         Self {
             ingreds: vec![],
             num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
@@ -365,7 +376,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_remove(cx: &mut TestAppContext) {
-        let (table, _ctrl, cx) = setup_table(cx);
+        let (table, cx, _ctrl) = setup_table(cx);
         let mut num_ingreds = 0;
 
         table.update(cx, |table, cx| {
@@ -378,7 +389,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_delete_when_empty(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut num_ingreds = 0;
 
         cx.focus(&table);
@@ -390,7 +401,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_add_when_full(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut num_ingreds = 0;
 
         cx.focus(&table);
@@ -402,7 +413,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_remove_key_when_empty(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut num_ingreds = 0;
 
         cx.focus(&table);
@@ -414,7 +425,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_calc_single_ingred(cx: &mut TestAppContext) {
-        let (table, _ctrl, cx) = setup_table(cx);
+        let (table, cx, _ctrl) = setup_table(cx);
         let mut weight = SharedString::from("");
 
         cx.focus(&table);
@@ -428,7 +439,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_calc_multiple_ingreds(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut weight: Vec<SharedString> = vec!["".into(), "".into()];
 
         cx.focus(&table);
@@ -445,7 +456,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_not_ready_when_empty(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut ready = true;
 
         cx.focus(&table);
@@ -457,7 +468,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_focus_next_ingred(cx: &mut TestAppContext) {
-        let (table, ctrl, cx) = setup_table(cx);
+        let (table, cx, ctrl) = setup_table(cx);
         let mut ingred_focused = false;
 
         cx.focus(&table);
@@ -474,14 +485,17 @@ mod tests {
         assert_eq!(true, ingred_focused);
     }
 
-    fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, String, &mut VisualTestContext) {
+    fn setup_table(
+        cx: &mut TestAppContext,
+    ) -> (Entity<Table>, &mut VisualTestContext, SharedString) {
         Theme::test(cx);
-        let mut ctrl: String = "".into();
+        let mut ctrl: SharedString = "".into();
         cx.update(|cx| {
             Ctrl::set(cx);
             ctrl = cx.ctrl();
         });
-        let (table, window) = cx.add_window_view(|window, cx| Table::new(window, cx));
-        (table, ctrl, window)
+
+        let (table, cx) = cx.add_window_view(|window, cx| Table::new(window, cx));
+        (table, cx, ctrl)
     }
 }

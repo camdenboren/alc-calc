@@ -6,35 +6,40 @@ mod button;
 mod dropdown;
 mod icon;
 mod input;
-mod menu;
 pub mod table;
 mod theme;
+mod theme_menu;
 mod titlebar;
 mod window_border;
+
 use crate::ui::{
-    menu::Menu,
     table::data_table::Table,
     theme::{ActiveTheme, Theme},
+    theme_menu::ThemeMenu,
     titlebar::Titlebar,
     window_border::{WindowBorder, window_border},
 };
 use gpui::{
-    App, Entity, FocusHandle, Focusable, Global, KeyBinding, Window, actions, div, prelude::*,
+    App, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem, SharedString, Window,
+    actions, div, prelude::*,
 };
 
+actions!(ui, [Quit, Toggle, Tab]);
+
+const CONTEXT: &str = "UI";
+
 struct Ctrl {
-    ctrl: String,
+    ctrl: SharedString,
 }
 
 impl Ctrl {
     pub fn set(cx: &mut App) {
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
-        let ctrl = ctrl.to_owned();
+        let is_mac = cfg!(target_os = "macos");
+        let ctrl = (if is_mac { "cmd" } else { "ctrl" }).into();
         cx.set_global(Ctrl { ctrl });
     }
 
-    pub fn global(cx: &App) -> String {
+    pub fn global(cx: &App) -> SharedString {
         cx.global::<Ctrl>().ctrl.clone()
     }
 }
@@ -42,46 +47,51 @@ impl Ctrl {
 impl Global for Ctrl {}
 
 pub trait ActiveCtrl {
-    fn ctrl(&self) -> String;
+    fn ctrl(&self) -> SharedString;
 }
 
 impl ActiveCtrl for App {
-    fn ctrl(&self) -> String {
+    fn ctrl(&self) -> SharedString {
         Ctrl::global(self)
     }
 }
 
 #[derive(Clone)]
 pub struct UI {
-    menu: Entity<Menu>,
+    menu: Entity<ThemeMenu>,
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
     focus_handle: FocusHandle,
 }
-
-actions!(ui, [Toggle, Tab]);
-
-const CONTEXT: &str = "UI";
 
 impl UI {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
+            KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, Some(CONTEXT)),
             KeyBinding::new(format!("{ctrl}-t").as_str(), Toggle, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
         ]);
+        cx.set_menus(vec![Menu {
+            name: "alc-calc".into(),
+            items: vec![MenuItem::action("Quit", Quit)],
+        }]);
 
         // prevents fs access on tests
         #[cfg(not(test))]
         Theme::set(cx);
 
         UI {
-            menu: cx.new(Menu::new),
+            menu: cx.new(ThemeMenu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle(),
         }
+    }
+
+    fn quit(&mut self, _: &Quit, _window: &mut Window, cx: &mut Context<Self>) {
+        cx.quit();
     }
 
     fn toggle(&mut self, _: &Toggle, window: &mut Window, cx: &mut Context<Self>) {
@@ -118,6 +128,7 @@ impl Render for UI {
                 .key_context(CONTEXT)
                 .on_action(cx.listener(Self::toggle))
                 .on_action(cx.listener(Self::focus_next))
+                .on_action(cx.listener(Self::quit))
                 .font_family(".SystemUIFont")
                 .bg(cx.theme().background)
                 .size_full()
@@ -153,7 +164,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_toggle_menu(cx: &mut TestAppContext) {
-        let (ui, ctrl, cx) = setup_ui(cx);
+        let (ui, cx, ctrl) = setup_ui(cx);
         let mut show_menu = false;
 
         cx.focus(&ui);
@@ -165,7 +176,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_toggle_table(cx: &mut TestAppContext) {
-        let (ui, ctrl, cx) = setup_ui(cx);
+        let (ui, cx, ctrl) = setup_ui(cx);
         let mut show_menu = false;
 
         cx.focus(&ui);
@@ -177,7 +188,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_focus(cx: &mut TestAppContext) {
-        let (ui, _ctrl, cx) = setup_ui(cx);
+        let (ui, cx, _ctrl) = setup_ui(cx);
         let mut table_focused = false;
 
         cx.focus(&ui);
@@ -194,14 +205,15 @@ mod tests {
         assert_eq!(true, table_focused)
     }
 
-    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, String, &mut VisualTestContext) {
+    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext, SharedString) {
         Theme::test(cx);
-        let mut ctrl: String = "".into();
+        let mut ctrl: SharedString = "".into();
         cx.update(|cx| {
             Ctrl::set(cx);
             ctrl = cx.ctrl();
         });
+
         let (ui, cx) = cx.add_window_view(|window, cx| UI::new(window, cx));
-        (ui, ctrl, cx)
+        (ui, cx, ctrl)
     }
 }

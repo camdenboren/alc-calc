@@ -4,15 +4,13 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
 
 use crate::ui::{
-    ActiveCtrl,
     button::button,
     dropdown::Dropdown,
     icon::{Icon, IconSize, IconVariant},
     input::text_input::TextInput,
-    table::data_table::{Add, CONTEXT, Delete, Escape, RemoveKey, Tab},
     theme::ActiveTheme,
 };
-use gpui::{Entity, EventEmitter, KeyBinding, Pixels, SharedString, Window, div, prelude::*, px};
+use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
 pub const FIELDS: [(&str, f32); 4] = [
     ("alc_type", 148.),
@@ -31,15 +29,6 @@ pub struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let ctrl = cx.ctrl();
-        cx.bind_keys([
-            KeyBinding::new("tab", Tab, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-r").as_str(), RemoveKey, Some(CONTEXT)),
-            KeyBinding::new("escape", Escape, Some(CONTEXT)),
-        ]);
-
         Self {
             alc_type: cx.new(|cx| Dropdown::new(id, cx)),
             percentage_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),

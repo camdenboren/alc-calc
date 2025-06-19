@@ -4,28 +4,16 @@
 #![allow(unused_imports)]
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
-    App, AppContext, Application, Bounds, KeyBinding, Menu, MenuItem, TitlebarOptions,
-    WindowBackgroundAppearance, WindowBounds, WindowDecorations, WindowOptions, actions, px, size,
+    App, AppContext, Application, Bounds, TitlebarOptions, WindowBackgroundAppearance,
+    WindowBounds, WindowDecorations, WindowOptions, px, size,
 };
-use std::{path::PathBuf, process};
-
-actions!(alc_alc, [Quit]);
+use std::process;
 
 fn main() {
     Application::new()
         .with_assets(Assets {})
         .run(|cx: &mut App| {
             cx.activate(true);
-            cx.on_action(|_: &Quit, cx| cx.quit());
-            let is_linux = cfg!(target_os = "linux");
-            let ctrl = if is_linux { "ctrl" } else { "cmd" };
-            cx.bind_keys([KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, None)]);
-
-            cx.set_menus(vec![Menu {
-                name: "alc-calc".into(),
-                items: vec![MenuItem::action("Quit", Quit)],
-            }]);
-
             if let Ok(_window) = cx.open_window(
                 WindowOptions {
                     focus: true,
