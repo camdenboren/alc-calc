@@ -4,6 +4,7 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
 
 use crate::ui::{
+    ActiveCtrl,
     button::button,
     dropdown::Dropdown,
     icon::{Icon, IconSize, IconVariant},
@@ -30,8 +31,7 @@ pub struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
             KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),

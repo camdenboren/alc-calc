@@ -4,6 +4,7 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
 use crate::ui::{
+    ActiveCtrl,
     input::{cursor_state::CursorState, text_element::TextElement},
     theme::ActiveTheme,
 };
@@ -59,8 +60,7 @@ pub struct TextInput {
 
 impl TextInput {
     pub fn new(window: &mut Window, cx: &mut Context<Self>, placeholder: SharedString) -> Self {
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new("backspace", Backspace, Some(CONTEXT)),
             KeyBinding::new("delete", Delete, Some(CONTEXT)),

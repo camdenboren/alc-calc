@@ -358,14 +358,14 @@ impl Focusable for Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::ui::theme::Theme;
+    use crate::ui::{ActiveCtrl, Ctrl, theme::Theme};
 
     use super::*;
     use gpui::{TestAppContext, VisualTestContext};
 
     #[gpui::test]
     fn test_table_remove(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, _ctrl, cx) = setup_table(cx);
         let mut num_ingreds = 0;
 
         table.update(cx, |table, cx| {
@@ -378,10 +378,8 @@ mod tests {
 
     #[gpui::test]
     fn test_table_delete_when_empty(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, ctrl, cx) = setup_table(cx);
         let mut num_ingreds = 0;
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
         (0..2).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-d").as_str()));
@@ -392,10 +390,8 @@ mod tests {
 
     #[gpui::test]
     fn test_table_add_when_full(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, ctrl, cx) = setup_table(cx);
         let mut num_ingreds = 0;
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
         (0..15).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-i").as_str()));
@@ -406,10 +402,8 @@ mod tests {
 
     #[gpui::test]
     fn test_table_remove_key_when_empty(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, ctrl, cx) = setup_table(cx);
         let mut num_ingreds = 0;
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
         cx.simulate_keystrokes(format!("tab tab {ctrl}-r {ctrl}-r").as_str());
@@ -420,7 +414,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_calc_single_ingred(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, _ctrl, cx) = setup_table(cx);
         let mut weight = SharedString::from("");
 
         cx.focus(&table);
@@ -434,9 +428,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_calc_multiple_ingreds(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let (table, ctrl, cx) = setup_table(cx);
         let mut weight: Vec<SharedString> = vec!["".into(), "".into()];
 
         cx.focus(&table);
@@ -453,9 +445,7 @@ mod tests {
 
     #[gpui::test]
     fn test_table_not_ready_when_empty(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let (table, ctrl, cx) = setup_table(cx);
         let mut ready = true;
 
         cx.focus(&table);
@@ -467,10 +457,8 @@ mod tests {
 
     #[gpui::test]
     fn test_table_focus_next_ingred(cx: &mut TestAppContext) {
-        let (table, cx) = setup_table(cx);
+        let (table, ctrl, cx) = setup_table(cx);
         let mut ingred_focused = false;
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
 
         cx.focus(&table);
         cx.simulate_keystrokes(format!("tab tab {ctrl}-i").as_str());
@@ -486,8 +474,14 @@ mod tests {
         assert_eq!(true, ingred_focused);
     }
 
-    fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, &mut VisualTestContext) {
+    fn setup_table(cx: &mut TestAppContext) -> (Entity<Table>, String, &mut VisualTestContext) {
         Theme::test(cx);
-        cx.add_window_view(|window, cx| Table::new(window, cx))
+        let mut ctrl: String = "".into();
+        cx.update(|cx| {
+            Ctrl::set(cx);
+            ctrl = cx.ctrl();
+        });
+        let (table, window) = cx.add_window_view(|window, cx| Table::new(window, cx));
+        (table, ctrl, window)
     }
 }

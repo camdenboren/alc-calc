@@ -18,7 +18,38 @@ use crate::ui::{
     titlebar::Titlebar,
     window_border::{WindowBorder, window_border},
 };
-use gpui::{App, Entity, FocusHandle, Focusable, KeyBinding, Window, actions, div, prelude::*};
+use gpui::{
+    App, Entity, FocusHandle, Focusable, Global, KeyBinding, Window, actions, div, prelude::*,
+};
+
+struct Ctrl {
+    ctrl: String,
+}
+
+impl Ctrl {
+    pub fn set(cx: &mut App) {
+        let is_linux = cfg!(target_os = "linux");
+        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let ctrl = ctrl.to_owned();
+        cx.set_global(Ctrl { ctrl });
+    }
+
+    pub fn global(cx: &App) -> String {
+        cx.global::<Ctrl>().ctrl.clone()
+    }
+}
+
+impl Global for Ctrl {}
+
+pub trait ActiveCtrl {
+    fn ctrl(&self) -> String;
+}
+
+impl ActiveCtrl for App {
+    fn ctrl(&self) -> String {
+        Ctrl::global(self)
+    }
+}
 
 #[derive(Clone)]
 pub struct UI {
@@ -34,8 +65,8 @@ const CONTEXT: &str = "UI";
 
 impl UI {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        Ctrl::set(cx);
+        let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new(format!("{ctrl}-t").as_str(), Toggle, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
@@ -122,9 +153,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_toggle_menu(cx: &mut TestAppContext) {
-        let (ui, cx) = setup_ui(cx);
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let (ui, ctrl, cx) = setup_ui(cx);
         let mut show_menu = false;
 
         cx.focus(&ui);
@@ -136,9 +165,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_toggle_table(cx: &mut TestAppContext) {
-        let (ui, cx) = setup_ui(cx);
-        let is_linux = cfg!(target_os = "linux");
-        let ctrl = if is_linux { "ctrl" } else { "cmd" };
+        let (ui, ctrl, cx) = setup_ui(cx);
         let mut show_menu = false;
 
         cx.focus(&ui);
@@ -150,7 +177,7 @@ mod tests {
 
     #[gpui::test]
     fn test_ui_focus(cx: &mut TestAppContext) {
-        let (ui, cx) = setup_ui(cx);
+        let (ui, _ctrl, cx) = setup_ui(cx);
         let mut table_focused = false;
 
         cx.focus(&ui);
@@ -167,8 +194,14 @@ mod tests {
         assert_eq!(true, table_focused)
     }
 
-    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext) {
+    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, String, &mut VisualTestContext) {
         Theme::test(cx);
-        cx.add_window_view(|window, cx| UI::new(window, cx))
+        let mut ctrl: String = "".into();
+        cx.update(|cx| {
+            Ctrl::set(cx);
+            ctrl = cx.ctrl();
+        });
+        let (ui, cx) = cx.add_window_view(|window, cx| UI::new(window, cx));
+        (ui, ctrl, cx)
     }
 }
