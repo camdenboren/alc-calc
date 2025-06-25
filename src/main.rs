@@ -16,6 +16,7 @@ fn main() {
             cx.activate(true);
             if let Ok(_window) = cx.open_window(
                 WindowOptions {
+                    app_id: Some("alc-calc".into()),
                     focus: true,
                     window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
                         None,
