@@ -42,6 +42,13 @@
         mv target/release/alc-calc $out/bin/
         mv $app_path $out/Applications/
       ''
+      + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+        install -Dm755 $release_target/alc-calc $out/bin/alc-calc
+
+        install -Dm644 $src/img/brand/app-icon@2x.png $out/share/icons/hicolor/1024x1024@2x/apps/alc-calc.png
+        install -Dm644 $src/img/brand/app-icon.png $out/share/icons/hicolor/512x512/apps/alc-calc.png
+        install -Dm644 $src/os/linux/alc-calc.desktop $out/share/applications/alc-calc.desktop
+      ''
       + ''
         runHook postInstall
       '';
