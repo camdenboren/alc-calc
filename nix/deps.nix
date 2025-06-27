@@ -37,5 +37,6 @@
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       cargo-bundle
+      makeBinaryWrapper
     ];
 }

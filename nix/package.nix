@@ -39,8 +39,8 @@
 
         # moving the binary to $out/bin works, but a wrapper might allow the icon to show
         mkdir -p $out/Applications $out/bin
-        mv target/release/alc-calc $out/bin/
         mv $app_path $out/Applications/
+        makeWrapper $out/Applications/alc-calc.app/Contents/MacOS/alc-calc $out/bin/alc-calc
       ''
       + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
         install -Dm755 $release_target/alc-calc $out/bin/alc-calc
