@@ -6,7 +6,7 @@
 <div align="center">
     <p>
         alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume
-    </p><br>
+    </p>
 
 ![Static Badge](https://img.shields.io/badge/Platforms-Linux,_macOS-forestgreen?style=for-the-badge)
 [![built with garnix](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2Fcamdenboren%2Falc-calc%3Fbranch%3Dmain&style=for-the-badge&color=grey&labelColor=grey)](https://garnix.io/repo/camdenboren/alc-calc)
