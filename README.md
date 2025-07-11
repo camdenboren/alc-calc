@@ -73,6 +73,33 @@ nix.settings.substituters = [ "https://cache.garnix.io" ];
 nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
 ```
 
+App bundles for non-Nix users will also be provided on each release
+
+You can generate these bundles by accessing the bundle devShell
+
+```shell
+nix develop .#bundle
+```
+
+Then installing cargo-bundle and executing the script for your current OS
+
+```shell
+{
+cargo install cargo-bundle
+chmod +x ./os/bundle-$CUR_OS
+./os/bundle-$CUR_OS
+}
+```
+
+<i>The bundle scripts are implemented sans-Nix for 2 reasons:
+
+1. Bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users
+2. Non-Nix users can also leverage these scripts by manually installing:
+
+   - boxes
+   - cargo
+   - create-dmg</i>
+
 ## License
 
 [GPLv3]

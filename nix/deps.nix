@@ -17,8 +17,17 @@
       (darwinMinVersionHook "12.3")
     ];
 
+  bundle =
+    with pkgs;
+    [
+      boxes
+      cargo
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      create-dmg
+    ];
+
   dev = with pkgs; [
-    bashInteractive
     rustc
     cargo
     cargo-bundle
