@@ -33,7 +33,7 @@
 
   bundle = pkgs.mkShell {
     packages = deps.bundle;
-    env.CUR_OS = if pkgs.stdenv.hostPlatform.isDarwin then "mac" else "linux";
+    env.CUR_OS = if pkgs.stdenv.hostPlatform.isDarwin then "mac    " else "linux  ";
 
     shellHook = ''
       echo -e "\nalc-calc bundle DevShell via Nix Flake\n"

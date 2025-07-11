@@ -23,6 +23,13 @@
       boxes
       cargo
     ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      openssl
+      pkg-config
+      xorg.libX11
+      libxkbcommon
+      squashfsTools
+    ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       create-dmg
     ];
