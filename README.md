@@ -60,17 +60,10 @@ nix run github:camdenboren/alc-calc
 
 The `build` and `format` scripts are very useful for any contributors (these aren't directly used in CI, but they smooth out the PR process)
 
-You can access the development environment (including these scripts) with
+After cloning, you can access the development environment (including these scripts) with
 
 ```shell
-nix develop github:camdenboren/alc-calc
-```
-
-Leverage the binary cache by adding [Garnix] to your nix-config
-
-```nix
-nix.settings.substituters = [ "https://cache.garnix.io" ];
-nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
+nix develop
 ```
 
 App bundles for non-Nix users will also be provided on each release
@@ -79,6 +72,12 @@ You can generate these bundles by accessing the bundle devShell
 
 ```shell
 nix develop .#bundle
+```
+
+Adding system dependencies (linux-only)
+
+```shell
+sudo apt intall -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
 ```
 
 Then installing cargo-bundle and executing the script for your current OS
@@ -95,6 +94,13 @@ chmod +x ./os/bundle-$CUR_OS
 
 1. Bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users
 2. Non-Nix users can also leverage these scripts by manually installing: boxes, cargo, create-dmg</i>
+
+You can also leverage the binary cache by adding [Garnix] to your nix-config
+
+```nix
+nix.settings.substituters = [ "https://cache.garnix.io" ];
+nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
+```
 
 ## License
 
