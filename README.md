@@ -98,10 +98,7 @@ chmod +x ./os/bundle-$CUR_OS
 }
 ```
 
-<i>The bundle scripts are implemented sans-Nix for 2 reasons:
-
-1. Bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users
-2. Non-Nix users can also leverage these scripts by manually installing: boxes, cargo, create-dmg</i>
+<i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users</i>
 
 You can also leverage the binary cache by adding [Garnix] to your nix-config
 
