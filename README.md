@@ -76,6 +76,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
 sudo apt update
 sudo apt install -y boxes pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+cargo install cargo-bundle
 }
 ```
 
@@ -89,7 +90,9 @@ Then installing cargo-bundle and executing the script for your current OS
 
 ```shell
 {
-cargo install cargo-bundle
+if [ $CUR_OS = "mac    "]; then
+  cargo install cargo-bundle
+fi
 chmod +x ./os/bundle-$CUR_OS
 ./os/bundle-$CUR_OS
 }
