@@ -75,7 +75,7 @@ You can generate these bundles manually by adding system dependencies (**linux-o
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
 sudo apt update
-sudo apt install -y boxes pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
 cargo install cargo-bundle
 }
 ```
