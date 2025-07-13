@@ -79,7 +79,7 @@ home.packages = with pkgs; [
 
 Once released, app bundles will be distributed in the releases page. Download the correct bundle for your OS/distro and follow the standard installation procedures
 
-Until then, the only way to install alc-calc is to follow the manual instructions in [App Bundles](#app-bundles)
+Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [App Bundles](#app-bundles)
 
 ## Build
 
@@ -105,7 +105,7 @@ nix develop
 
 App bundles for non-Nix users will also be provided on each release
 
-You can generate these bundles manually by adding system dependencies (**linux-only**, tested on Ubuntu 24.04)
+You can generate these bundles manually by cloning and adding system dependencies (**linux-only**, tested on Ubuntu 24.04)
 
 ```shell
 {
@@ -119,12 +119,12 @@ cargo install cargo-bundle
 
 Accessing the bundle devShell
 
-> [!NOTE]
-> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export $CUR_OS="linux  "` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set `export $CUR_OS="mac    "`
-
 ```shell
 nix develop .#bundle
 ```
+
+> [!NOTE]
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux  "` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set `export CUR_OS="mac    "`
 
 Then executing the script for your current OS
 
