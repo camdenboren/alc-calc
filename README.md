@@ -77,7 +77,7 @@ nix develop .#bundle
 Adding system dependencies (linux-only)
 
 ```shell
-sudo apt intall -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
 ```
 
 Then installing cargo-bundle and executing the script for your current OS
