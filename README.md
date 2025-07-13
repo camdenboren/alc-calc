@@ -90,7 +90,7 @@ Then installing cargo-bundle and executing the script for your current OS
 
 ```shell
 {
-if [ $CUR_OS = "mac    "]; then
+if [ $CUR_OS = "mac    " ]; then
   cargo install cargo-bundle
 fi
 chmod +x ./os/bundle-$CUR_OS
