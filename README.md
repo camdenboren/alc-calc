@@ -77,7 +77,7 @@ home.packages = with pkgs; [
 
 ### Non-Nix
 
-Once released, app bundles will be distributed in the releases page. Download the correct bundle for your OS/distro and follow the standard installation procedures
+Once released, app bundles will be distributed in the [Releases] page. Download the correct bundle for your OS/distro and follow the standard installation procedures
 
 Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [App Bundles](#app-bundles)
 
@@ -163,5 +163,6 @@ nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObb
 
 [Alcohol_Weight_Calculator]: https://github.com/camdenboren/Alcohol_Weight_Calculator
 [GPUI]: https://www.gpui.rs/
+[Releases]: https://github.com/camdenboren/alc-calc/releases
 [Garnix]: https://garnix.io/
 [GPLv3]: COPYING
