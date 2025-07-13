@@ -38,17 +38,52 @@ Enter [GPUI], the UI Framework from the Zed team
 
 Rust rewrite with an undocumented framework it is :moyai:
 
-## Structure
+## Install
 
-### Source
+### Nix
 
-`src` contains two crates
+Add the following to your `flake.nix`
 
-- The binary crate (`main`) serves only as an entry point into the library crate, which contains the UI and calculation logic
+```nix
+inputs = {
+  nixpkgs = {
+    url = "github:nixos/nixpkgs/nixos-unstable";
+  };
+  alc-calc = {
+    url = "github:camdenboren/alc-calc";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+  ...
+}
+```
 
-- `ui` contains the main window, with individual views and components delegated to other modules like `dropdown`
+Then, add alc-calc to your packages
 
-### Build System
+> For system wide installation in `configuration.nix`
+
+```nix
+environment.systemPackages = with pkgs; [
+  inputs.alc-calc.packages.${system}.default
+];
+```
+
+> For user level installation in `home.nix`
+
+```nix
+home.packages = with pkgs; [
+  inputs.alc-calc.packages.${system}.default
+];
+```
+
+### Non-Nix
+
+Once released, app bundles will be distributed in the releases page. Download the correct bundle for your OS/distro and follow the standard installation procedures
+
+Until then, the only way to install alc-calc is to follow the manual instructions in [App Bundles](#app-bundles)
+
+## Build
+
+### Nix
 
 Cargo is the underlying build system, _but_ Nix is the 'meta' build system
 
@@ -66,6 +101,8 @@ After cloning, you can access the development environment (including these scrip
 nix develop
 ```
 
+### App Bundles
+
 App bundles for non-Nix users will also be provided on each release
 
 You can generate these bundles manually by adding system dependencies (**linux-only**, tested on Ubuntu 24.04)
@@ -82,11 +119,14 @@ cargo install cargo-bundle
 
 Accessing the bundle devShell
 
+> [!NOTE]
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export $CUR_OS="linux  "` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set `export $CUR_OS="mac    "`
+
 ```shell
 nix develop .#bundle
 ```
 
-Then installing cargo-bundle and executing the script for your current OS
+Then executing the script for your current OS
 
 ```shell
 {
@@ -100,12 +140,22 @@ chmod +x ./os/bundle-$CUR_OS
 
 <i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users</i>
 
-You can also leverage the binary cache by adding [Garnix] to your nix-config
+### Binary Cache
+
+You can leverage the binary cache by adding [Garnix] to your nix-config
 
 ```nix
 nix.settings.substituters = [ "https://cache.garnix.io" ];
 nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
 ```
+
+## Structure
+
+`src` contains two crates
+
+- The binary crate (`main`) serves only as an entry point into the library crate, which contains the UI and calculation logic
+
+- `ui` contains the main window, with individual views and components delegated to other modules like `table`
 
 ## License
 
