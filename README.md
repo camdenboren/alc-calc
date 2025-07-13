@@ -68,17 +68,18 @@ nix develop
 
 App bundles for non-Nix users will also be provided on each release
 
-You can generate these bundles manually by accessing the bundle devShell (mac-only, though this shell also works on linux and may also be helpful for non-Debian-based distros)
+You can generate these bundles manually by accessing the bundle devShell
 
 ```shell
 nix develop .#bundle
 ```
 
-Adding system dependencies (linux-only, tested on Ubuntu 24.04)
+Adding system dependencies (**linux-only**, tested on Ubuntu 24.04)
 
 ```shell
 {
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+. "$HOME/.cargo/env"
 sudo apt update
 sudo apt install -y boxes pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
 export CUR_OS=linux

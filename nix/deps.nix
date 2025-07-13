@@ -21,9 +21,9 @@
     with pkgs;
     [
       boxes
-      cargo
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      cargo
       create-dmg
     ];
 
