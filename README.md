@@ -81,6 +81,9 @@ Once released, app bundles will be distributed in the [Releases] page. Download 
 
 Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [App Bundles](#app-bundles)
 
+> [!NOTE]
+> Though I sign both `alc-calc.app` and `alc-calc.dmg` for macOS users, you'll still need to whitelist alc-calc before installing since I'm not paying $99 to notarize binaries for something no one else uses. This can be done by attempting to open `alc-calc.dmg` then navigating to: `System Settings -> Privacy and Security -> Security`, and clicking: `Open Anyway`. Repeat this step once you attempt to run alc-calc after installing, and then you should be able to run alc-calc like normal
+
 ## Build
 
 ### Nix
@@ -105,7 +108,7 @@ nix develop
 
 App bundles for non-Nix users will also be provided on each release
 
-You can generate these bundles manually by cloning and adding system dependencies (**linux-only**, tested on Ubuntu 24.04)
+You can generate these bundles manually by cloning and adding system dependencies (**linux-only**, tested on Ubuntu 24.04–don't use NixOS since it breaks the bundle for non-Nix users)
 
 ```shell
 {
@@ -117,6 +120,16 @@ cargo install cargo-bundle
 }
 ```
 
+Preparing the signing certificate (**mac-only**, tested on Sequoia v15.5)
+
+- Download imtermediate certificates: WWDR G2-G6 from [Certificate Authority]
+- Create a dev certificate in XCode
+  - `XCode -> Settings -> Accounts -> Manage Certificates -> + -> Apple Development`
+  - Right Click Certificate -> `Export Certificate`
+- Import the dev certificate in Keychain Access
+  - `File -> Import Items...`
+  - The 'Name' field of this cert will be the `$CERT_IDENTITY` in the next step (it can also be added to a `.env` file, which is automatically loaded via the bundle devShell)
+
 Accessing the bundle devShell
 
 ```shell
@@ -124,14 +137,15 @@ nix develop .#bundle
 ```
 
 > [!NOTE]
-> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux  "` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set `export CUR_OS="mac    "`
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
 
 Then executing the script for your current OS
 
 ```shell
 {
-if [ $CUR_OS = "mac    " ]; then
+if [ $CUR_OS = "mac" ]; then
   cargo install cargo-bundle
+  echo ""
 fi
 chmod +x ./os/bundle-$CUR_OS
 ./os/bundle-$CUR_OS
@@ -164,5 +178,6 @@ nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObb
 [Alcohol_Weight_Calculator]: https://github.com/camdenboren/Alcohol_Weight_Calculator
 [GPUI]: https://www.gpui.rs/
 [Releases]: https://github.com/camdenboren/alc-calc/releases
+[Certificate Authority]: https://www.apple.com/certificateauthority/
 [Garnix]: https://garnix.io/
 [GPLv3]: COPYING

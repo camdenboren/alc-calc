@@ -14,6 +14,9 @@ cargo bundle --release 2> /dev/null | xargs | box
 pushd . > /dev/null
 cd target/release/bundle/osx/
 
+echo -e "\n\033[1;33msigning app...\033[0m"
+codesign -s "$CERT_IDENTITY" alc-calc.app &> /dev/null
+
 if test -f alc-calc.dmg; then
   echo -e "\n\033[1;33mremoving old dmg...\033[0m"
   rm -f alc-calc.dmg
@@ -32,6 +35,10 @@ create-dmg \
   &> /dev/null
 
 readlink -f alc-calc.dmg | box
+
+echo -e "\n\033[1;33msigning dmg...\033[0m"
+codesign -s "$CERT_IDENTITY" alc-calc.dmg &> /dev/null
+
 popd > /dev/null
 
 echo -e "\n\033[1;32mRelease build succeeded.\033[0m"
