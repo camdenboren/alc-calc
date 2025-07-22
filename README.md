@@ -8,7 +8,7 @@
         alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume
     </p>
 
-![Static Badge](https://img.shields.io/badge/Platforms-Linux,_macOS-forestgreen?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Platforms-Linux,_macOS,_Windows-forestgreen?style=for-the-badge)
 [![built with garnix](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2Fcamdenboren%2Falc-calc%3Fbranch%3Dmain&style=for-the-badge&color=grey&labelColor=grey)](https://garnix.io/repo/camdenboren/alc-calc)
 ![Static Badge](https://img.shields.io/badge/Powered_by_Nix-grey?logo=nixOS&logoColor=white&logoSize=auto&style=for-the-badge)
 
@@ -79,10 +79,13 @@ home.packages = with pkgs; [
 
 Once released, app bundles will be distributed in the [Releases] page. Download the correct bundle for your OS/distro and follow the standard installation procedures
 
-Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [App Bundles](#app-bundles)
+Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [App Bundles](#app-bundles-non-windows)
 
 > [!NOTE]
 > Though I sign both `alc-calc.app` and `alc-calc.dmg` for macOS users, you'll still need to whitelist alc-calc before installing since I'm not paying $99 to notarize binaries for something no one else uses. This can be done by attempting to open `alc-calc.dmg` then navigating to: `System Settings -> Privacy and Security -> Security`, and clicking: `Open Anyway`. Repeat this step once you attempt to run alc-calc after installing, and then you should be able to run alc-calc like normal
+
+> [!NOTE]
+> I do not sign `alc-calc_*_x64-setup.exe` for Windows users for the same reason, so you'll need to click `More Info` before installing
 
 ## Build
 
@@ -104,9 +107,9 @@ After cloning, you can access the development environment (including these scrip
 nix develop
 ```
 
-### App Bundles
+### App Bundles: Non-Windows
 
-App bundles for non-Nix users will also be provided on each release
+App bundles for Linux and macOS users **not** using Nix will also be provided on each release
 
 You can generate these bundles manually by cloning and adding system dependencies (**linux-only**, tested on Ubuntu 24.04–don't use NixOS since it breaks the bundle for non-Nix users)
 
@@ -152,7 +155,17 @@ chmod +x ./os/bundle-$CUR_OS
 }
 ```
 
-<i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dylibs in /nix/store/\*, breaking the bundle for non-Nix users</i>
+<i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dylibs in `/nix/store/*`, breaking the bundle for non-Nix users</i>
+
+### App Bundles: Windows
+
+Though cargo-bundle's Windows support is experimental (and broken for me), App bundles for Windows users will also be provided on each release via cargo-packager
+
+You can generate these bundles manually by cloning, installing rustc + cargo (v1.86 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
+
+```powershell
+cargo install cargo-packager; .\os\bundle-windows.ps1
+```
 
 ### Binary Cache
 

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(unused_imports)]
+#![windows_subsystem = "windows"]
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
     App, AppContext, Application, Bounds, TitlebarOptions, WindowBackgroundAppearance,

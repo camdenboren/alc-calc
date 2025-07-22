@@ -59,8 +59,7 @@ impl ActiveTheme for App {
 
 impl Theme {
     pub fn set(cx: &mut App) {
-        let username = whoami::username();
-        let path = Theme::path(username);
+        let path = dirs::config_dir().unwrap_or_default();
         let config_content = Theme::read(path).unwrap_or(String::from(DEFAULT_THEME));
         let theme = match Theme::deserialize(config_content) {
             ThemeVariant::Dark => Theme::dark(),
@@ -156,14 +155,6 @@ impl Theme {
         }
     }
 
-    fn path(username: String) -> PathBuf {
-        #[cfg(target_os = "macos")]
-        let user_dir = PathBuf::from("/Users").join(&username);
-        #[cfg(target_os = "linux")]
-        let user_dir = PathBuf::from("/home").join(&username);
-        user_dir.join(".config").join("alc-calc")
-    }
-
     fn deserialize(config_content: String) -> ThemeVariant {
         match toml::from_str(&config_content) {
             Ok(config) => config,
@@ -210,7 +201,7 @@ impl Theme {
 
     fn write(theme_str: &str) {
         let config_content = Theme::serialize(theme_str);
-        let path = Theme::path(whoami::username());
+        let path = dirs::config_dir().unwrap_or_default();
         if std::fs::metadata(&path).is_err() {
             match std::fs::create_dir(&path) {
                 Ok(_) => (),
@@ -240,16 +231,6 @@ impl Theme {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_path() {
-        let username = String::from("abc");
-        let path = Theme::path(username);
-        #[cfg(target_os = "macos")]
-        assert_eq!(path, PathBuf::from("/Users/abc/.config/alc-calc"));
-        #[cfg(target_os = "linux")]
-        assert_eq!(path, PathBuf::from("/home/abc/.config/alc-calc"));
-    }
 
     #[test]
     fn test_deserialize() {
