@@ -26,7 +26,7 @@ pub struct WindowBorder {
 #[allow(unused_variables, unreachable_code)]
 impl WindowBorder {
     pub fn rounding(div: Div, decorations: Decorations) -> Div {
-        if cfg!(target_os = "macos") {
+        if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
         }
 
@@ -49,7 +49,7 @@ impl WindowBorder {
     }
 
     pub fn titlebar_rounding(div: Stateful<Div>, decorations: Decorations) -> Stateful<Div> {
-        if cfg!(target_os = "macos") {
+        if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
         }
 
@@ -82,7 +82,7 @@ impl ParentElement for WindowBorder {
 
 impl RenderOnce for WindowBorder {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        if cfg!(target_os = "macos") {
+        if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div()
                 .id("window-border")
                 .size_full()

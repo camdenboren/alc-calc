@@ -5,6 +5,8 @@
 name = "alc-calc"
 version = "0.1.0"
 edition = "2024"
+authors = ["Camden Boren"]
+description = "alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume"
 
 [dependencies]
 strum = "0.27.1"
@@ -14,9 +16,23 @@ gpui = { git = "https://github.com/zed-industries/zed", rev = "37010aac6b340e058
 ] }
 gpui_macros = { git = "https://github.com/zed-industries/zed", rev = "37010aac6b340e058ef9c5a3c783802af90e5b9f" }
 unicode-segmentation = "1.12.0"
-whoami = { version = "1.6.0", default-features = false }
 toml = "0.8.22"
 serde = "1.0.219"
 anyhow = "1.0.98"
 rust-embed = "8.7.1"
 smallvec = "1.6"
+dirs = { version = "6.0.0", default-features = false }
+
+[package.metadata.packager]
+before-packaging-command = "cargo build --release"
+icons = ["img/brand/app-icon.ico"]
+resources = ["img/brand/app-icon.ico"]
+
+[package.metadata.packager.nsis]
+template = "os/installer.nsi"
+installer-icon = "img/brand/app-icon.ico"
+
+[package.metadata.bundle]
+category = "Utility"
+identifier = "io.github.camdenboren.alc-calc"
+icon = ["img/brand/app-icon@2x.png", "img/brand/app-icon.png"]

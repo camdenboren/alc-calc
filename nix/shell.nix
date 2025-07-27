@@ -20,14 +20,36 @@
     shellHook = ''
       echo -e "\nalc-calc DevShell via Nix Flake\n"
 
-      echo -e "┌─────────────────────────┐"
-      echo -e "│     Useful Commands     │"
-      echo -e "├─────────────────────────┤"
-      echo -e "│ Build    │ $ build      │"
-      echo -e "│ Format   │ $ format     │"
-      echo -e "│ Run      │ $ cargo run  │"
-      echo -e "│ Test     │ $ cargo test │"
-      echo -e "└──────────┴──────────────┘"
+      echo -e "┌───────────────────────┐"
+      echo -e "│    Useful Commands    │"
+      echo -e "├────────┬──────────────┤"
+      echo -e "│ Build  │ $ build      │"
+      echo -e "│ Format │ $ format     │"
+      echo -e "│ Run    │ $ cargo run  │"
+      echo -e "│ Test   │ $ cargo test │"
+      echo -e "└────────┴──────────────┘"
+    '';
+  };
+
+  bundle = pkgs.mkShell {
+    packages = deps.bundle;
+    env.CUR_OS = if pkgs.stdenv.hostPlatform.isDarwin then "mac" else "linux";
+
+    shellHook = ''
+      echo -e "\nalc-calc bundle DevShell via Nix Flake\n"
+
+      if test -f .env; then
+        set -a
+        source .env
+        set +a
+      fi
+
+      echo -e "┌───────────────────────────────────────┐"
+      echo -e "│            Useful Commands            │"
+      echo -e "├────────┬──────────────────────────────┤"
+      echo -e "│ Chmod  │ $ chmod +x ./os/bundle-$(printf %-5s $CUR_OS | tr ' ' " ") │"
+      echo -e "│ Bundle │ $ ./os/bundle-$(printf %-5s $CUR_OS | tr ' ' " ")          │"
+      echo -e "└────────┴──────────────────────────────┘"
     '';
   };
 }

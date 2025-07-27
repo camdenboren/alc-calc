@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+box() { boxes -d ansi -s $(tput cols); }
+failed() {
+  echo -e "\n\033[1;31mRelease build failed.\033[0m"
+  exit 1
+}
+trap 'failed' ERR
+
+echo -e "\033[1;33mcargo bundle...\033[0m"
+cargo bundle --release 2> /dev/null | xargs | box
+
+pushd . > /dev/null
+cd target/release/bundle/osx/
+
+echo -e "\n\033[1;33msigning app...\033[0m"
+codesign -s "$CERT_IDENTITY" alc-calc.app &> /dev/null
+
+if test -f alc-calc.dmg; then
+  echo -e "\n\033[1;33mremoving old dmg...\033[0m"
+  rm -f alc-calc.dmg
+fi
+
+echo -e "\n\033[1;33mcreating dmg...\033[0m"
+create-dmg \
+  --app-drop-link 95 25 \
+  --icon alc-calc.app 265 25 \
+  --icon-size 50 \
+  --text-size 12 \
+  --window-pos 520 405 \
+  --window-size 920 435 \
+  alc-calc.dmg \
+  . \
+  &> /dev/null
+
+readlink -f alc-calc.dmg | box
+
+echo -e "\n\033[1;33msigning dmg...\033[0m"
+codesign -s "$CERT_IDENTITY" alc-calc.dmg &> /dev/null
+
+popd > /dev/null
+
+echo -e "\n\033[1;32mRelease build succeeded.\033[0m"

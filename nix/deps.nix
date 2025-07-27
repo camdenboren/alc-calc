@@ -16,10 +16,21 @@
       apple-sdk_15
       (darwinMinVersionHook "12.3")
     ];
+
+  bundle =
+    with pkgs;
+    [
+      boxes
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      cargo
+      create-dmg
+    ];
+
   dev = with pkgs; [
-    bashInteractive
     rustc
     cargo
+    cargo-bundle
     rust-analyzer
     rustfmt
     taplo
@@ -27,5 +38,14 @@
     build
     format
   ];
-  run = with pkgs; [ pkg-config ];
+
+  run =
+    with pkgs;
+    [
+      pkg-config
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      cargo-bundle
+      makeBinaryWrapper
+    ];
 }

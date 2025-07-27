@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=0.1.0
+Type=Application
+Name=alc-calc
+GenericName=Calculator
+Comment=alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume
+TryExec=alc-calc
+StartupNotify=false
+Exec=alc-calc %U
+Icon=alc-calc
+Categories=Utility;

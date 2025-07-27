@@ -8,7 +8,7 @@ use gpui::{AssetSource, Result, SharedString};
 use rust_embed::RustEmbed;
 
 #[derive(RustEmbed)]
-#[folder = "img"]
+#[folder = "img/icons"]
 pub struct Assets;
 
 impl AssetSource for Assets {

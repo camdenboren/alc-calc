@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(unused_imports)]
+#![windows_subsystem = "windows"]
 use alc_calc::ui::{UI, assets::Assets};
 use gpui::{
     App, AppContext, Application, Bounds, TitlebarOptions, WindowBackgroundAppearance,
@@ -16,6 +17,7 @@ fn main() {
             cx.activate(true);
             if let Ok(_window) = cx.open_window(
                 WindowOptions {
+                    app_id: Some("alc-calc".into()),
                     focus: true,
                     window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
                         None,
