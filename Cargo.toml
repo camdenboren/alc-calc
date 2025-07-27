@@ -5,6 +5,7 @@
 name = "alc-calc"
 version = "0.1.0"
 edition = "2024"
+authors = ["Camden Boren"]
 description = "alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume"
 
 [dependencies]
