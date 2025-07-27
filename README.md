@@ -111,9 +111,9 @@ nix develop
 
 App bundles for Linux and macOS users **not** using Nix will also be provided on each release
 
-You can generate these bundles manually by 
+You can generate these bundles manually by cloning and
 
-> [!**Linux only**] Cloning and adding system dependencies (tested on Ubuntu 24.04–don't use NixOS since it breaks the bundle for non-Nix users)
+> On Linux: adding system dependencies (tested on Ubuntu 24.04–don't use NixOS since it breaks the bundle for non-Nix users)
 
 ```shell
 {
@@ -125,7 +125,7 @@ cargo install cargo-bundle
 }
 ```
 
-> [!**macOS only**] Preparing the signing certificate (tested on Sequoia v15.5)
+> On macOS: preparing the signing certificate (tested on Sequoia v15.5)
 
 - Download imtermediate certificates: WWDR G2-G6 from [Certificate Authority]
 - Create a dev certificate in XCode
