@@ -23,21 +23,32 @@
       boxes
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      bundle-mac
       cargo
       create-dmg
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      bundle-linux
     ];
 
-  dev = with pkgs; [
-    rustc
-    cargo
-    cargo-bundle
-    rust-analyzer
-    rustfmt
-    taplo
-    clippy
-    build
-    format
-  ];
+  dev =
+    with pkgs;
+    [
+      boxes
+      rustc
+      cargo
+      cargo-bundle
+      rust-analyzer
+      rustfmt
+      taplo
+      nixfmt-rfc-style
+      clippy
+      build
+      format
+    ]
+    ++ (with nodePackages; [
+      prettier
+    ]);
 
   run =
     with pkgs;

@@ -44,12 +44,11 @@
         set +a
       fi
 
-      echo -e "┌───────────────────────────────────────┐"
-      echo -e "│            Useful Commands            │"
-      echo -e "├────────┬──────────────────────────────┤"
-      echo -e "│ Chmod  │ $ chmod +x ./os/bundle-$(printf %-5s $CUR_OS | tr ' ' " ") │"
-      echo -e "│ Bundle │ $ ./os/bundle-$(printf %-5s $CUR_OS | tr ' ' " ")          │"
-      echo -e "└────────┴──────────────────────────────┘"
+      echo -e "┌─────────────────────────┐"
+      echo -e "│     Useful Commands     │"
+      echo -e "├────────┬────────────────┤"
+      echo -e "│ Bundle │ $ bundle-$(printf %-5s $CUR_OS | tr ' ' " ") │"
+      echo -e "└────────┴────────────────┘"
     '';
   };
 }

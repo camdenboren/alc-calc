@@ -146,14 +146,28 @@ nix develop .#bundle
 
 Then executing the script for your current OS
 
+> For Nix
+
 ```shell
 {
 if [ $CUR_OS = "mac" ]; then
   cargo install cargo-bundle
   echo ""
 fi
-chmod +x ./os/bundle-$CUR_OS
-./os/bundle-$CUR_OS
+bundle-$CUR_OS
+}
+```
+
+> For Non-Nix
+
+```shell
+{
+if [ $CUR_OS = "mac" ]; then
+  cargo install cargo-bundle
+  echo ""
+fi
+chmod +x ./script/bundle-$CUR_OS
+./script/bundle-$CUR_OS
 }
 ```
 
@@ -166,7 +180,7 @@ Though cargo-bundle's Windows support is experimental (and broken for me), App b
 You can generate these bundles manually by cloning, installing rustc + cargo (v1.86 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
 
 ```powershell
-cargo install cargo-packager; .\os\bundle-windows.ps1
+cargo install cargo-packager; .\script\bundle-windows.ps1
 ```
 
 ### Binary Cache

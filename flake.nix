@@ -25,7 +25,7 @@
         nixpkgs.lib.genAttrs supportedSystems (
           system:
           function rec {
-            pkgs = nixpkgs.legacyPackages.${system}.extend (import ./nix/overlay.nix { inherit pkgs; });
+            pkgs = nixpkgs.legacyPackages.${system}.extend (import ./nix/overlay.nix);
             deps = (import ./nix/deps.nix { inherit pkgs; });
           }
         );
