@@ -219,7 +219,7 @@ impl Render for ThemeMenu {
                                                     this.bg(cx.theme().background)
                                                 })
                                                 .child(text_button(
-                                                    format!("theme_item_{ix}").as_str(),
+                                                    &format!("theme_item_{ix}"),
                                                     item.clone(),
                                                     cx.listener(move |this, _, _window, cx| {
                                                         this.update(item.clone(), cx, true);

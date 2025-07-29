@@ -40,9 +40,9 @@ impl Table {
         let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-i").as_str(), Add, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-d").as_str(), Delete, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-r").as_str(), RemoveKey, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-i"), Add, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-d"), Delete, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-r"), RemoveKey, Some(CONTEXT)),
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
         ]);
 
@@ -393,7 +393,7 @@ mod tests {
         let mut num_ingreds = 0;
 
         cx.focus(&table);
-        (0..2).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-d").as_str()));
+        (0..2).for_each(|_| cx.simulate_keystrokes(&format!("{ctrl}-d")));
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(0, num_ingreds);
@@ -405,7 +405,7 @@ mod tests {
         let mut num_ingreds = 0;
 
         cx.focus(&table);
-        (0..15).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-i").as_str()));
+        (0..15).for_each(|_| cx.simulate_keystrokes(&format!("{ctrl}-i")));
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(MAX_ITEMS, num_ingreds);
@@ -417,7 +417,7 @@ mod tests {
         let mut num_ingreds = 0;
 
         cx.focus(&table);
-        cx.simulate_keystrokes(format!("tab tab {ctrl}-r {ctrl}-r").as_str());
+        cx.simulate_keystrokes(&format!("tab tab {ctrl}-r {ctrl}-r"));
         table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
 
         assert_eq!(0, num_ingreds);
@@ -443,7 +443,7 @@ mod tests {
         let mut weight: Vec<SharedString> = vec!["".into(), "".into()];
 
         cx.focus(&table);
-        cx.simulate_keystrokes(format!("{ctrl}-i tab 2 tab tab 4 0 tab 1 . 5").as_str());
+        cx.simulate_keystrokes(&format!("{ctrl}-i tab 2 tab tab 4 0 tab 1 . 5"));
         cx.simulate_keystrokes("tab enter k k k k enter tab 1 6 . 5 tab 1");
         table.update(cx, |table, cx| {
             weight[0] = table.ingreds[0].read(cx).weight.clone();
@@ -460,7 +460,7 @@ mod tests {
         let mut ready = true;
 
         cx.focus(&table);
-        cx.simulate_keystrokes(format!("{ctrl}-d").as_str());
+        cx.simulate_keystrokes(&format!("{ctrl}-d"));
         table.update(cx, |table, cx| ready = table.ready(cx));
 
         assert_eq!(false, ready);
@@ -472,8 +472,8 @@ mod tests {
         let mut ingred_focused = false;
 
         cx.focus(&table);
-        cx.simulate_keystrokes(format!("tab tab {ctrl}-i").as_str());
-        (0..3).for_each(|_| cx.simulate_keystrokes(format!("tab").as_str()));
+        cx.simulate_keystrokes(&format!("tab tab {ctrl}-i"));
+        (0..3).for_each(|_| cx.simulate_keystrokes(&format!("tab")));
         table.update_in(cx, |table, window, cx| {
             ingred_focused = table.ingreds[1]
                 .read(cx)

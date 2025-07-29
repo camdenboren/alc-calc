@@ -201,6 +201,7 @@ impl Render for Dropdown {
                 .rounded_md()
                 .child(
                     div()
+                        .id(format!("dropdown_{}", self.id).into_element())
                         .flex()
                         .flex_row()
                         .size_full()
@@ -208,8 +209,12 @@ impl Render for Dropdown {
                         .justify_between()
                         .h(px(20. + 4. * 2.))
                         .child(self.current.clone())
+                        .cursor_pointer()
+                        .on_click(cx.listener(move |this, _, _window, cx| {
+                            this.toggle(cx);
+                        }))
                         .child(button(
-                            "dropdown",
+                            &format!("chevron_{}", self.id),
                             Icon::new(IconVariant::Chevron, IconSize::Small),
                             cx,
                             cx.listener(move |this, _, _window, cx| {
@@ -254,7 +259,7 @@ impl Render for Dropdown {
                                                         this.bg(cx.theme().background)
                                                     })
                                                     .child(text_button(
-                                                        format!("dropdown_item_{ix}").as_str(),
+                                                        &format!("dropdown_item_{ix}"),
                                                         item.clone(),
                                                         cx.listener(move |this, _, window, cx| {
                                                             this.update(

@@ -19,13 +19,15 @@ pub fn button(
         .id(id.to_string().into_element())
         .flex()
         .map(|this| IconSize::size(this, &icon.size))
-        .bg(cx.theme().button)
         .justify_center()
         .items_center()
         .active(|this| this.opacity(0.85))
-        .rounded_full()
-        .when(icon.variant == IconVariant::Theme, |this| this.rounded_md())
-        .cursor_pointer()
+        .when(icon.variant == IconVariant::Close, |this| {
+            this.bg(cx.theme().button)
+        })
+        .when(icon.variant != IconVariant::Close, |this| {
+            this.cursor_pointer()
+        })
         .child(icon)
         .on_click(move |event, window, cx| on_click(event, window, cx))
 }

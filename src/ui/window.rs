@@ -3,16 +3,39 @@
 
 // Adapted from: https://github.com/lumehq/coop/blob/master/crates/ui/src/window_border.rs
 
+#![allow(unused_imports)]
 use crate::ui::theme::ActiveTheme;
 use gpui::{
     AnyElement, App, Bounds, CursorStyle, Decorations, Div, Hsla, InteractiveElement as _,
     IntoElement, MouseButton, ParentElement, Pixels, Point, RenderOnce, ResizeEdge, Size, Stateful,
-    Styled as _, Window, canvas, div, point, prelude::FluentBuilder as _, px,
+    Styled as _, TitlebarOptions, Window, WindowBackgroundAppearance, WindowBounds,
+    WindowDecorations, WindowOptions, canvas, div, point, prelude::FluentBuilder as _, px, size,
 };
 
 const BORDER_RADIUS: Pixels = Pixels(12.0);
 const BORDER_SIZE: Pixels = Pixels(0.75);
 const SHADOW_SIZE: Pixels = Pixels(12.0);
+
+pub fn window_options(cx: &App) -> WindowOptions {
+    WindowOptions {
+        app_id: Some("alc-calc".into()),
+        focus: true,
+        window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
+            None,
+            size(px(1000.0), px(700.0)),
+            cx,
+        ))),
+        window_decorations: Some(WindowDecorations::Client),
+        #[cfg(target_os = "macos")]
+        titlebar: Some(TitlebarOptions {
+            appears_transparent: true,
+            ..Default::default()
+        }),
+        #[cfg(target_os = "linux")]
+        window_background: WindowBackgroundAppearance::Transparent,
+        ..Default::default()
+    }
+}
 
 pub fn window_border() -> WindowBorder {
     WindowBorder::new()

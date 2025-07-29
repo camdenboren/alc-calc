@@ -7,7 +7,7 @@ use crate::ui::{
     button::button,
     icon::{Icon, IconSize, IconVariant},
     theme::ActiveTheme,
-    window_border::WindowBorder,
+    window::WindowBorder,
 };
 use gpui::{Window, div, prelude::*, px};
 
@@ -66,7 +66,7 @@ impl Render for Titlebar {
             .when(cfg!(target_os = "linux"), |this| {
                 this.child(button(
                     "quit",
-                    Icon::new(IconVariant::Close, IconSize::Small),
+                    Icon::new(IconVariant::Close, IconSize::Medium),
                     cx,
                     |_, window, _| {
                         window.remove_window();

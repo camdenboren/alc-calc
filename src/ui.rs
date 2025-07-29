@@ -10,14 +10,14 @@ pub mod table;
 mod theme;
 mod theme_menu;
 mod titlebar;
-mod window_border;
+pub mod window;
 
 use crate::ui::{
     table::data_table::Table,
     theme::{ActiveTheme, Theme},
     theme_menu::ThemeMenu,
     titlebar::Titlebar,
-    window_border::{WindowBorder, window_border},
+    window::{WindowBorder, window_border},
 };
 use gpui::{
     App, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem, SharedString, Window,
@@ -69,8 +69,8 @@ impl UI {
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
-            KeyBinding::new(format!("{ctrl}-q").as_str(), Quit, Some(CONTEXT)),
-            KeyBinding::new(format!("{ctrl}-t").as_str(), Toggle, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-q"), Quit, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-t"), Toggle, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
         ]);
         cx.set_menus(vec![Menu {
@@ -170,7 +170,7 @@ mod tests {
         let mut show_menu = false;
 
         cx.focus(&ui);
-        cx.simulate_keystrokes(format!("{ctrl}-t").as_str());
+        cx.simulate_keystrokes(&format!("{ctrl}-t"));
         ui.update(cx, |ui, cx| show_menu = ui.menu.read(cx).show);
 
         assert_eq!(true, show_menu)
@@ -182,7 +182,7 @@ mod tests {
         let mut show_menu = false;
 
         cx.focus(&ui);
-        (0..2).for_each(|_| cx.simulate_keystrokes(format!("{ctrl}-t").as_str()));
+        (0..2).for_each(|_| cx.simulate_keystrokes(&format!("{ctrl}-t")));
         ui.update(cx, |ui, cx| show_menu = ui.menu.read(cx).show);
 
         assert_eq!(false, show_menu)
