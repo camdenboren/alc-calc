@@ -66,7 +66,7 @@ impl Render for Titlebar {
             .when(cfg!(target_os = "linux"), |this| {
                 this.child(button(
                     "quit",
-                    Icon::new(IconVariant::Close, IconSize::Medium),
+                    Icon::new(IconVariant::Close, IconSize::Small),
                     cx,
                     |_, window, _| {
                         window.remove_window();

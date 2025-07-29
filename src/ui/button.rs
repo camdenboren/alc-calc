@@ -23,7 +23,7 @@ pub fn button(
         .items_center()
         .active(|this| this.opacity(0.85))
         .when(icon.variant == IconVariant::Close, |this| {
-            this.bg(cx.theme().button)
+            this.bg(cx.theme().button).rounded_full()
         })
         .when(icon.variant != IconVariant::Close, |this| {
             this.cursor_pointer()
