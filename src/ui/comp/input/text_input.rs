@@ -5,8 +5,8 @@
 
 use crate::ui::{
     ActiveCtrl,
-    input::{cursor_state::CursorState, text_element::TextElement},
-    theme::ActiveTheme,
+    comp::input::{cursor_state::CursorState, text_element::TextElement},
+    util::theme::ActiveTheme,
 };
 use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, Entity, EntityInputHandler, EventEmitter,

@@ -4,11 +4,13 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
 
 use crate::ui::{
-    button::button,
-    dropdown::Dropdown,
-    icon::{Icon, IconSize, IconVariant},
-    input::text_input::TextInput,
-    theme::ActiveTheme,
+    comp::{
+        button::button,
+        dropdown::Dropdown,
+        icon::{Icon, IconSize, IconVariant},
+        input::text_input::TextInput,
+    },
+    util::theme::ActiveTheme,
 };
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 

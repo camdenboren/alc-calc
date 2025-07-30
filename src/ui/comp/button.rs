@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::{
-    icon::{Icon, IconSize},
-    theme::ActiveTheme,
+    comp::icon::{Icon, IconSize},
+    util::theme::ActiveTheme,
 };
 use gpui::{App, ClickEvent, SharedString, Window, div, prelude::*};
 

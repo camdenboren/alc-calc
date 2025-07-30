@@ -7,12 +7,14 @@ use crate::{
     calc::calc_weights,
     ui::{
         ActiveCtrl,
-        button::button,
-        dropdown::Dropdown,
-        icon::{Icon, IconSize, IconVariant},
-        input::text_input::TextInput,
-        table::ingredient::{FIELDS, Ingredient, IngredientData},
-        theme::ActiveTheme,
+        comp::{
+            button::button,
+            dropdown::Dropdown,
+            icon::{Icon, IconSize, IconVariant},
+            input::text_input::TextInput,
+        },
+        util::theme::ActiveTheme,
+        view::table::ingredient::{FIELDS, Ingredient, IngredientData},
     },
 };
 use gpui::{
@@ -369,7 +371,7 @@ impl Focusable for Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::ui::{ActiveCtrl, Ctrl, theme::Theme};
+    use crate::ui::{ActiveCtrl, Ctrl, util::theme::Theme};
 
     use super::*;
     use gpui::{TestAppContext, VisualTestContext};

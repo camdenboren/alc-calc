@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![windows_subsystem = "windows"]
-use alc_calc::ui::{UI, assets::Assets, window::window_options};
+use alc_calc::ui::{
+    UI,
+    util::{assets::Assets, window::window_options},
+};
 use gpui::{App, AppContext, Application};
 use std::process;
 

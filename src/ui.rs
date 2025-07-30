@@ -1,23 +1,16 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pub mod assets;
-mod button;
-mod dropdown;
-mod icon;
-mod input;
-pub mod table;
-mod theme;
-mod theme_menu;
-mod titlebar;
-pub mod window;
+mod comp;
+pub mod util;
+pub mod view;
 
 use crate::ui::{
-    table::data_table::Table,
-    theme::{ActiveTheme, Theme},
-    theme_menu::ThemeMenu,
-    titlebar::Titlebar,
-    window::{WindowBorder, window_border},
+    util::{
+        theme::{ActiveTheme, Theme},
+        window::{WindowBorder, window_border},
+    },
+    view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
     App, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem, SharedString, Window,

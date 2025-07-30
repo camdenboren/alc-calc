@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::{
-    button::{button, text_button},
-    icon::{Icon, IconSize, IconVariant},
-    theme::{ActiveTheme, Theme, ThemeVariant},
+    comp::{
+        button::{button, text_button},
+        icon::{Icon, IconSize, IconVariant},
+    },
+    util::theme::{ActiveTheme, Theme, ThemeVariant},
 };
 use gpui::{
     App, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div, prelude::*, px,

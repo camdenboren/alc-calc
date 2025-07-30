@@ -4,10 +4,11 @@
 // Move-by-mouse from: https://github.com/zed-industries/zed/blob/main/crates/title_bar/src/title_bar.rs
 
 use crate::ui::{
-    button::button,
-    icon::{Icon, IconSize, IconVariant},
-    theme::ActiveTheme,
-    window::WindowBorder,
+    comp::{
+        button::button,
+        icon::{Icon, IconSize, IconVariant},
+    },
+    util::{theme::ActiveTheme, window::WindowBorder},
 };
 use gpui::{Window, div, prelude::*, px};
 

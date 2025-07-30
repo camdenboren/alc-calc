@@ -3,7 +3,7 @@
 
 use crate::{
     types::{Category, match_category},
-    ui::table::ingredient::IngredientData,
+    ui::view::table::ingredient::IngredientData,
 };
 use std::{error::Error, fmt};
 

@@ -4,7 +4,7 @@
 // Adapted from: https://github.com/lumehq/coop/blob/master/crates/ui/src/window_border.rs
 
 #![allow(unused_imports)]
-use crate::ui::theme::ActiveTheme;
+use crate::ui::util::theme::ActiveTheme;
 use gpui::{
     AnyElement, App, Bounds, CursorStyle, Decorations, Div, Hsla, InteractiveElement as _,
     IntoElement, MouseButton, ParentElement, Pixels, Point, RenderOnce, ResizeEdge, Size, Stateful,

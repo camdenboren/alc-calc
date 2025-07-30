@@ -3,7 +3,7 @@
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
-use crate::ui::{input::text_input::TextInput, theme::ActiveTheme};
+use crate::ui::{comp::input::text_input::TextInput, util::theme::ActiveTheme};
 use gpui::{
     App, Bounds, ElementId, ElementInputHandler, Entity, GlobalElementId, LayoutId, PaintQuad,
     Pixels, ShapedLine, Style, TextRun, UnderlineStyle, Window, fill, point, prelude::*, px,

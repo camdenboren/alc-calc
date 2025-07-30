@@ -4,11 +4,12 @@
 use crate::{
     types::Type,
     ui::{
-        button::button,
-        button::text_button,
-        icon::{Icon, IconSize, IconVariant},
-        table::data_table::MAX_ITEMS,
-        theme::ActiveTheme,
+        comp::{
+            button::{button, text_button},
+            icon::{Icon, IconSize, IconVariant},
+        },
+        util::theme::ActiveTheme,
+        view::table::data_table::MAX_ITEMS,
     },
 };
 use gpui::{
@@ -296,7 +297,7 @@ impl Focusable for Dropdown {
 
 #[cfg(test)]
 mod tests {
-    use crate::ui::theme::Theme;
+    use crate::ui::util::theme::Theme;
 
     use super::*;
     use gpui::{Entity, TestAppContext, VisualTestContext};
