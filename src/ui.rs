@@ -14,7 +14,7 @@ use crate::ui::{
 };
 use gpui::{
     App, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem, SharedString, Window,
-    actions, div, prelude::*,
+    actions, deferred, div, prelude::*,
 };
 
 actions!(ui, [Quit, Toggle, Tab]);
@@ -130,9 +130,9 @@ impl Render for UI {
                 .map(|this| WindowBorder::rounding(this, decorations))
                 .track_focus(&self.focus_handle(cx))
                 .when(cfg!(not(target_os = "windows")), |this| {
-                    this.child(self.titlebar.clone())
+                    this.child(deferred(self.titlebar.clone()).with_priority(999))
                 })
-                .child(self.menu.clone())
+                .child(deferred(self.menu.clone()).with_priority(998))
                 .child(
                     div()
                         .flex()
