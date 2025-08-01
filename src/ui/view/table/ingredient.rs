@@ -77,7 +77,6 @@ impl Render for Ingredient {
             .child(button(
                 "remove",
                 Icon::new(IconVariant::Minus, IconSize::Small),
-                cx,
                 cx.listener(move |this, _, _window, cx| this.remove(cx)),
             ))
             .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))

@@ -65,14 +65,18 @@ impl Render for Titlebar {
                 }),
             )
             .when(cfg!(target_os = "linux"), |this| {
-                this.child(button(
-                    "quit",
-                    Icon::new(IconVariant::Close, IconSize::Small),
-                    cx,
-                    |_, window, _| {
-                        window.remove_window();
-                    },
-                ))
+                this.child(
+                    div()
+                        .child(button(
+                            "quit",
+                            Icon::new(IconVariant::Close, IconSize::Small),
+                            |_, window, _| {
+                                window.remove_window();
+                            },
+                        ))
+                        .bg(cx.theme().button)
+                        .rounded_full(),
+                )
             })
     }
 }

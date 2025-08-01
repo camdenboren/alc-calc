@@ -1,18 +1,12 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::ui::{
-    comp::icon::{Icon, IconSize},
-    util::theme::ActiveTheme,
-};
+use crate::ui::comp::icon::{Icon, IconSize, IconVariant};
 use gpui::{App, ClickEvent, SharedString, Window, div, prelude::*};
-
-use super::icon::IconVariant;
 
 pub fn button(
     id: &str,
     icon: Icon,
-    cx: &App,
     on_click: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     div()
@@ -22,9 +16,6 @@ pub fn button(
         .justify_center()
         .items_center()
         .active(|this| this.opacity(0.85))
-        .when(icon.variant == IconVariant::Close, |this| {
-            this.bg(cx.theme().button).rounded_full()
-        })
         .when(icon.variant != IconVariant::Close, |this| {
             this.cursor_pointer()
         })

@@ -183,7 +183,6 @@ impl Render for ThemeMenu {
             .child(button(
                 "menu",
                 Icon::new(IconVariant::Theme, IconSize::Medium),
-                cx,
                 cx.listener(move |this, _, _, cx| this.toggle(cx)),
             ))
             .when(self.show, |this| {

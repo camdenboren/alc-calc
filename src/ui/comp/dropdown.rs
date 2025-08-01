@@ -217,7 +217,6 @@ impl Render for Dropdown {
                         .child(button(
                             &format!("chevron_{}", self.id),
                             Icon::new(IconVariant::Chevron, IconSize::Small),
-                            cx,
                             cx.listener(move |this, _, _window, cx| {
                                 this.toggle(cx);
                             }),

@@ -354,7 +354,6 @@ impl Render for Table {
                     .child(div().pt_2().h_6().w(px(self.width + 78.)).child(button(
                         "add",
                         Icon::new(IconVariant::Plus, IconSize::Small),
-                        cx,
                         cx.listener(move |this, _, window, cx| {
                             this.add(&Add, window, cx);
                         }),
