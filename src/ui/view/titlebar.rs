@@ -13,7 +13,7 @@ use crate::ui::{
 use gpui::{Window, div, prelude::*, px};
 
 #[cfg(target_os = "linux")]
-const HEIGHT: f32 = 32.;
+const HEIGHT: f32 = 36.;
 #[cfg(not(target_os = "linux"))]
 const HEIGHT: f32 = 28.;
 
