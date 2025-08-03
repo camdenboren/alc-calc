@@ -69,7 +69,7 @@ impl Render for Titlebar {
                     div()
                         .child(button(
                             "quit",
-                            Icon::new(IconVariant::Close, IconSize::Small),
+                            Icon::new(IconVariant::Close, IconSize::Medium),
                             |_, window, _| {
                                 window.remove_window();
                             },
