@@ -37,7 +37,14 @@ impl Render for Titlebar {
             .items_center()
             .justify_end()
             .px_2()
-            .bg(cx.theme().foreground)
+            .when(
+                cfg!(not(target_os = "linux")) || window.is_window_active(),
+                |this| this.bg(cx.theme().foreground),
+            )
+            .when(
+                cfg!(target_os = "linux") && !window.is_window_active(),
+                |this| this.bg(cx.theme().foreground_inactive),
+            )
             .on_click(|event, window, _| {
                 if event.up.click_count == 2 {
                     window.zoom_window();
@@ -74,7 +81,12 @@ impl Render for Titlebar {
                                 window.remove_window();
                             },
                         ))
-                        .bg(cx.theme().button)
+                        .when(window.is_window_active(), |this| {
+                            this.bg(cx.theme().close_button)
+                        })
+                        .when(!window.is_window_active(), |this| {
+                            this.bg(cx.theme().close_button_inactive)
+                        })
                         .rounded_full(),
                 )
             })
