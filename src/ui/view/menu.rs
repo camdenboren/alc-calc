@@ -12,6 +12,7 @@ use gpui::{
     App, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div, prelude::*, px,
     uniform_list,
 };
+use std::ops::Range;
 use strum::{EnumCount, IntoEnumIterator};
 
 actions!(theme_menu, [Escape, Enter, Next, Prev, Select]);
@@ -199,10 +200,9 @@ impl Render for ThemeMenu {
                         .p_1()
                         .child(
                             uniform_list(
-                                cx.entity(),
                                 "themes_list",
                                 self.count,
-                                |this, range, _window, cx| {
+                                cx.processor(|this, range: Range<usize>, _window, cx| {
                                     range
                                         .map(|ix| {
                                             // 0th type is guranteed to exist, so this prevents
@@ -228,7 +228,7 @@ impl Render for ThemeMenu {
                                                 ))
                                         })
                                         .collect()
-                                },
+                                }),
                             )
                             .on_mouse_down_out(cx.listener(|this, _, window, cx| {
                                 cx.stop_propagation();

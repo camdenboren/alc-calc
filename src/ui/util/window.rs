@@ -6,10 +6,11 @@
 #![allow(unused_imports)]
 use crate::ui::util::theme::ActiveTheme;
 use gpui::{
-    AnyElement, App, Bounds, CursorStyle, Decorations, Div, Hsla, InteractiveElement as _,
-    IntoElement, MouseButton, ParentElement, Pixels, Point, RenderOnce, ResizeEdge, Size, Stateful,
-    Styled as _, TitlebarOptions, Window, WindowBackgroundAppearance, WindowBounds,
-    WindowDecorations, WindowOptions, canvas, div, point, prelude::FluentBuilder as _, px, size,
+    AnyElement, App, Bounds, CursorStyle, Decorations, Div, HitboxBehavior, Hsla,
+    InteractiveElement as _, IntoElement, MouseButton, ParentElement, Pixels, Point, RenderOnce,
+    ResizeEdge, Size, Stateful, Styled as _, TitlebarOptions, Window, WindowBackgroundAppearance,
+    WindowBounds, WindowDecorations, WindowOptions, canvas, div, point,
+    prelude::FluentBuilder as _, px, size,
 };
 
 const BORDER_RADIUS: Pixels = Pixels(12.0);
@@ -125,7 +126,7 @@ impl RenderOnce for WindowBorder {
                                 point(px(0.0), px(0.0)),
                                 window.window_bounds().get_bounds().size,
                             ),
-                            false,
+                            HitboxBehavior::Normal,
                         )
                     },
                     move |_bounds, hitbox, window, _cx| {
@@ -147,7 +148,7 @@ impl RenderOnce for WindowBorder {
                                     CursorStyle::ResizeUpRightDownLeft
                                 }
                             },
-                            Some(&hitbox),
+                            &hitbox,
                         );
                     },
                 )
@@ -179,7 +180,7 @@ impl RenderOnce for WindowBorder {
                             .when(!tiling.left, |div| div.border_l(BORDER_SIZE))
                             .when(!tiling.right, |div| div.border_r(BORDER_SIZE))
                             .when(!tiling.is_tiled(), |div| {
-                                div.shadow(smallvec::smallvec![gpui::BoxShadow {
+                                div.shadow(vec![gpui::BoxShadow {
                                     color: Hsla {
                                         h: 0.,
                                         s: 0.,

@@ -40,7 +40,7 @@ impl Render for Titlebar {
             .justify_end()
             .px_2()
             .on_click(|event, window, _| {
-                if event.up.click_count == 2 {
+                if event.click_count() == 2 {
                     window.zoom_window();
                 }
             })

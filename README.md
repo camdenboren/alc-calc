@@ -142,7 +142,7 @@ nix develop .#bundle
 ```
 
 > [!NOTE]
-> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.86) and create-dmg (v1.2.2), and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.88) and create-dmg (v1.2.2), and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
 
 Then executing the script for your current OS
 
@@ -177,7 +177,7 @@ chmod +x ./script/bundle-$CUR_OS
 
 Though cargo-bundle's Windows support is experimental (and broken for me), App bundles for Windows users will also be provided on each release via cargo-packager
 
-You can generate these bundles manually by cloning, installing rustc + cargo (v1.86 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
+You can generate these bundles manually by cloning, installing rustc + cargo (v1.88 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
 
 ```powershell
 cargo install cargo-packager; .\script\bundle-windows.ps1
@@ -190,6 +190,28 @@ You can leverage the binary cache by adding [Garnix] to your nix-config
 ```nix
 nix.settings.substituters = [ "https://cache.garnix.io" ];
 nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
+```
+
+### Updating Dependencies
+
+Update nixpkgs
+
+```shell
+nix flake update
+```
+
+Manually update each cargo dep to the most recent on [crates.io], bump the rev for [GPUI], then update `cargoHash` in [package.nix]
+
+> [!NOTE]
+> There are probably better ways to update the Cargo deps, but this has worked pretty well for me
+
+Then run the `build` and `format` scripts after fixing any breakages
+
+```shell
+{
+build
+format
+}
 ```
 
 ## Structure
@@ -209,4 +231,6 @@ nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObb
 [Releases]: https://github.com/camdenboren/alc-calc/releases
 [Certificate Authority]: https://www.apple.com/certificateauthority/
 [Garnix]: https://garnix.io/
+[crates.io]: https://crates.io
+[package.nix]: nix/package.nix
 [GPLv3]: COPYING
