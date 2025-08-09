@@ -61,9 +61,20 @@ impl ActiveTheme for App {
 
 impl Theme {
     pub fn set(cx: &mut App) {
-        let path = dirs::config_dir().unwrap_or_default();
+        let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let config_content = Theme::read(path).unwrap_or(String::from(DEFAULT_THEME));
         let theme = match Theme::deserialize(config_content) {
+            ThemeVariant::Dark => Theme::dark(),
+            ThemeVariant::Light => Theme::light(),
+            ThemeVariant::RedDark => Theme::red_dark(),
+            ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
+            ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+        };
+        cx.set_global(theme);
+    }
+
+    pub fn preview(cx: &mut App, val: &str) {
+        let theme = match ThemeVariant::from_str(val).unwrap_or(ThemeVariant::Dark) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
@@ -213,7 +224,7 @@ impl Theme {
 
     fn write(theme_str: &str) {
         let config_content = Theme::serialize(theme_str);
-        let path = dirs::config_dir().unwrap_or_default();
+        let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         if std::fs::metadata(&path).is_err() {
             match std::fs::create_dir(&path) {
                 Ok(_) => (),

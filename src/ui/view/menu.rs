@@ -98,7 +98,7 @@ impl ThemeMenu {
         if self.prev.is_some() {
             let current = self.prev.clone().unwrap_or("Dark".into());
             self.focused_item = ThemeMenu::index_of(&self.variants, &current);
-            self.update(current, cx, false);
+            Theme::preview(cx, &current);
         }
         cx.notify();
     }
@@ -129,14 +129,7 @@ impl ThemeMenu {
         } else {
             self.focused_item = 0;
         }
-        self.update(
-            self.variants
-                .get(self.focused_item)
-                .unwrap_or(&self.variants[0])
-                .clone(),
-            cx,
-            false,
-        );
+        Theme::preview(cx, &self.variants[self.focused_item]);
         cx.notify();
     }
 
@@ -146,14 +139,7 @@ impl ThemeMenu {
         } else {
             self.focused_item -= 1;
         }
-        self.update(
-            self.variants
-                .get(self.focused_item)
-                .unwrap_or(&self.variants[0])
-                .clone(),
-            cx,
-            false,
-        );
+        Theme::preview(cx, &self.variants[self.focused_item]);
         cx.notify();
     }
 
