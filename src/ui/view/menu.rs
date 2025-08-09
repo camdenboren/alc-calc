@@ -129,7 +129,13 @@ impl ThemeMenu {
         } else {
             self.focused_item = 0;
         }
-        Theme::preview(cx, &self.variants[self.focused_item]);
+        Theme::preview(
+            cx,
+            &self
+                .variants
+                .get(self.focused_item)
+                .unwrap_or(&self.variants[0]),
+        );
         cx.notify();
     }
 
@@ -139,7 +145,13 @@ impl ThemeMenu {
         } else {
             self.focused_item -= 1;
         }
-        Theme::preview(cx, &self.variants[self.focused_item]);
+        Theme::preview(
+            cx,
+            &self
+                .variants
+                .get(self.focused_item)
+                .unwrap_or(&self.variants[0]),
+        );
         cx.notify();
     }
 
