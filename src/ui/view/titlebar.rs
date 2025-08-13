@@ -68,6 +68,7 @@ impl Render for Titlebar {
             .when(cfg!(target_os = "linux"), |this| {
                 this.child(
                     div()
+                        .id("quit-div")
                         .child(button(
                             "quit",
                             Icon::new(IconVariant::Close, IconSize::Medium),
@@ -79,6 +80,8 @@ impl Render for Titlebar {
                             true => this.bg(cx.theme().close_button),
                             false => this.bg(cx.theme().close_button_inactive),
                         })
+                        .hover(|this| this.bg(cx.theme().close_button_hover))
+                        .active(|this| this.bg(cx.theme().close_button_click))
                         .rounded_full(),
                 )
             })
