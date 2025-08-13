@@ -39,9 +39,13 @@ pub struct Theme {
     pub foreground: Rgba,
     pub foreground_inactive: Rgba,
     pub field: Rgba,
+    #[cfg(target_os = "linux")]
     pub close_button: Rgba,
+    #[cfg(target_os = "linux")]
     pub close_button_hover: Rgba,
+    #[cfg(target_os = "linux")]
     pub close_button_click: Rgba,
+    #[cfg(target_os = "linux")]
     pub close_button_inactive: Rgba,
     pub cursor: Rgba,
     pub highlight: Rgba,
@@ -99,9 +103,13 @@ impl Theme {
             foreground: rgb(0x282828),
             foreground_inactive: rgb(0x232323),
             field: rgb(0x1d1d1d),
+            #[cfg(target_os = "linux")]
             close_button: rgb(0x404040),
+            #[cfg(target_os = "linux")]
             close_button_hover: rgb(0x464646),
+            #[cfg(target_os = "linux")]
             close_button_click: rgb(0x505050),
+            #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0x3b3b3b),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
@@ -119,9 +127,13 @@ impl Theme {
             foreground: rgb(0xc0c0c0),
             foreground_inactive: rgb(0xd0d0d0),
             field: rgb(0xb0b0b0),
+            #[cfg(target_os = "linux")]
             close_button: rgb(0xd0d0d0),
+            #[cfg(target_os = "linux")]
             close_button_hover: rgb(0xc8c8c8),
+            #[cfg(target_os = "linux")]
             close_button_click: rgb(0xc0c0c0),
+            #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0xe0e0e0),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
@@ -139,9 +151,13 @@ impl Theme {
             foreground: rgb(0x490000),
             foreground_inactive: rgb(0x410000),
             field: rgb(0x390000),
+            #[cfg(target_os = "linux")]
             close_button: rgb(0x6a0000),
+            #[cfg(target_os = "linux")]
             close_button_hover: rgb(0x740000),
+            #[cfg(target_os = "linux")]
             close_button_click: rgb(0x7e0000),
+            #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0x5f0000),
             cursor: rgb(0xd12727),
             highlight: rgba(0xd1272730),
@@ -159,9 +175,13 @@ impl Theme {
             foreground: rgb(0x2a273f),
             foreground_inactive: rgb(0x252038),
             field: rgb(0x1e1c31),
+            #[cfg(target_os = "linux")]
             close_button: rgb(0x3b3754),
+            #[cfg(target_os = "linux")]
             close_button_hover: rgb(0x413d5e),
+            #[cfg(target_os = "linux")]
             close_button_click: rgb(0x464166),
+            #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0x36324c),
             cursor: rgb(0x9bced6),
             highlight: rgba(0x9bced630),
@@ -179,9 +199,13 @@ impl Theme {
             foreground: rgb(0x002b36),
             foreground_inactive: rgb(0x002631),
             field: rgb(0x00212c),
+            #[cfg(target_os = "linux")]
             close_button: rgb(0x0b434f),
+            #[cfg(target_os = "linux")]
             close_button_hover: rgb(0x0c4a58),
+            #[cfg(target_os = "linux")]
             close_button_click: rgb(0x0c5262),
+            #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0x093e48),
             cursor: rgb(0x278ad1),
             highlight: rgba(0x278ad130),

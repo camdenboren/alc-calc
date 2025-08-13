@@ -3,13 +3,12 @@
 
 // Move-by-mouse from: https://github.com/zed-industries/zed/blob/main/crates/title_bar/src/title_bar.rs
 
-use crate::ui::{
-    comp::{
-        button::button,
-        icon::{Icon, IconSize, IconVariant},
-    },
-    util::{theme::ActiveTheme, window::WindowBorder},
+#[cfg(target_os = "linux")]
+use crate::ui::comp::{
+    button::button,
+    icon::{Icon, IconSize, IconVariant},
 };
+use crate::ui::util::{theme::ActiveTheme, window::WindowBorder};
 use gpui::{Window, div, prelude::*, px};
 
 #[cfg(target_os = "linux")]
@@ -67,6 +66,9 @@ impl Render for Titlebar {
             )
             .when(cfg!(target_os = "linux"), |this| {
                 this.child(
+                    #[cfg(not(target_os = "linux"))]
+                    div(),
+                    #[cfg(target_os = "linux")]
                     div()
                         .id("quit-div")
                         .child(button(

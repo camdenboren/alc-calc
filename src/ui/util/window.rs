@@ -4,18 +4,29 @@
 // Adapted from: https://github.com/lumehq/coop/blob/master/crates/ui/src/window_border.rs
 
 #![allow(unused_imports)]
-use crate::ui::util::theme::ActiveTheme;
+use crate::ui::{UI, util::theme::ActiveTheme};
 use gpui::{
-    AnyElement, App, Bounds, CursorStyle, Decorations, Div, HitboxBehavior, Hsla,
+    AnyElement, App, AppContext, Bounds, CursorStyle, Decorations, Div, HitboxBehavior, Hsla,
     InteractiveElement as _, IntoElement, MouseButton, ParentElement, Pixels, Point, RenderOnce,
     ResizeEdge, Size, Stateful, Styled as _, TitlebarOptions, Window, WindowBackgroundAppearance,
     WindowBounds, WindowDecorations, WindowOptions, canvas, div, point,
     prelude::FluentBuilder as _, px, size,
 };
+use std::process;
 
 const BORDER_RADIUS: Pixels = Pixels(12.0);
 const BORDER_SIZE: Pixels = Pixels(0.75);
 const SHADOW_SIZE: Pixels = Pixels(12.0);
+
+pub fn new_window(cx: &mut App) {
+    if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
+        cx.new(|cx| UI::new(window, cx))
+    }) {
+    } else {
+        eprintln!("alc-calc failed to open a window");
+        process::exit(1)
+    };
+}
 
 pub fn window_options(cx: &App) -> WindowOptions {
     WindowOptions {

@@ -6,18 +6,31 @@ pub mod util;
 pub mod view;
 
 use crate::ui::{
+    comp::input::text_input::{Copy, Cut, Paste, SelectAll},
     util::{
         theme::{ActiveTheme, Theme},
-        window::{WindowBorder, window_border},
+        window::{self, WindowBorder, window_border},
     },
     view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
-    App, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem, SharedString, Window,
-    actions, deferred, div, prelude::*,
+    App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem,
+    OsAction, PromptLevel, SharedString, Window, actions, deferred, div, prelude::*,
 };
 
-actions!(ui, [Quit, Toggle, Tab]);
+actions!(
+    ui,
+    [
+        About,
+        Quit,
+        Hide,
+        NewWindow,
+        CloseWindow,
+        Minimize,
+        Toggle,
+        Tab
+    ]
+);
 
 const CONTEXT: &str = "UI";
 
@@ -64,12 +77,59 @@ impl UI {
         cx.bind_keys([
             KeyBinding::new(&format!("{ctrl}-q"), Quit, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-t"), Toggle, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-n"), NewWindow, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-h"), Hide, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-w"), CloseWindow, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-x"), Cut, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-c"), Copy, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-v"), Paste, Some(CONTEXT)),
+            #[cfg(target_os = "macos")]
+            KeyBinding::new(&format!("{ctrl}-a"), SelectAll, Some(CONTEXT)),
         ]);
-        cx.set_menus(vec![Menu {
-            name: "alc-calc".into(),
-            items: vec![MenuItem::action("Quit", Quit)],
-        }]);
+
+        #[cfg(target_os = "macos")]
+        cx.set_menus(vec![
+            Menu {
+                name: "alc-calc".into(),
+                items: vec![
+                    MenuItem::action("About alc-calc…", About),
+                    MenuItem::Separator,
+                    MenuItem::action("Hide alc-calc", Hide),
+                    MenuItem::Separator,
+                    MenuItem::action("Quit alc-calc", Quit),
+                ],
+            },
+            Menu {
+                name: "File".into(),
+                items: vec![
+                    MenuItem::action("New Window", NewWindow),
+                    MenuItem::Separator,
+                    MenuItem::action("Close Window", CloseWindow),
+                ],
+            },
+            Menu {
+                name: "Edit".into(),
+                items: vec![
+                    MenuItem::os_action("Cut", Cut, OsAction::Cut),
+                    MenuItem::os_action("Copy", Copy, OsAction::Copy),
+                    MenuItem::os_action("Paste", Paste, OsAction::Paste),
+                    MenuItem::os_action("Select All", SelectAll, OsAction::SelectAll),
+                ],
+            },
+            Menu {
+                name: "Window".into(),
+                items: vec![MenuItem::action("Minimize", Minimize)],
+            },
+        ]);
+
+        #[cfg(target_os = "macos")]
+        cx.set_dock_menu(vec![MenuItem::action("New Window", NewWindow)]);
 
         // prevents fs access on tests
         #[cfg(not(test))]
@@ -86,6 +146,52 @@ impl UI {
     fn quit(&mut self, _: &Quit, _window: &mut Window, cx: &mut Context<Self>) {
         cx.quit();
     }
+
+    fn close(&mut self, _: &CloseWindow, window: &mut Window, _cx: &mut Context<Self>) {
+        window.remove_window();
+    }
+
+    fn create(&mut self, _: &NewWindow, _window: &mut Window, cx: &mut Context<Self>) {
+        window::new_window(cx);
+    }
+
+    fn hide(&mut self, _: &Hide, _window: &mut Window, cx: &mut Context<Self>) {
+        cx.hide();
+    }
+
+    fn minimize(&mut self, _: &Minimize, window: &mut Window, _cx: &mut Context<Self>) {
+        window.minimize_window();
+    }
+
+    fn about(&mut self, _: &About, window: &mut Window, cx: &mut Context<Self>) {
+        let message = "alc-calc";
+        let detail = "v0.0.1";
+        let prompt = window.prompt(
+            PromptLevel::Info,
+            "alc-calc",
+            Some("v0.0.1"),
+            &["Copy", "Ok"],
+            cx,
+        );
+
+        cx.spawn(async move |_, cx| {
+            if let Ok(0) = prompt.await {
+                let content = format!("{}\n{}", message, detail);
+                cx.update(|cx| {
+                    cx.write_to_clipboard(ClipboardItem::new_string(content));
+                })
+                .ok();
+            }
+        })
+        .detach();
+    }
+
+    // hacky stubs to inform MenuItems that they have an .on_action()
+    // since it doesn't seem to be propagating from TextInput
+    fn cut(&mut self, _: &Cut, _window: &mut Window, _cx: &mut Context<Self>) {}
+    fn copy(&mut self, _: &Copy, _window: &mut Window, _cx: &mut Context<Self>) {}
+    fn paste(&mut self, _: &Paste, _window: &mut Window, _cx: &mut Context<Self>) {}
+    fn select(&mut self, _: &SelectAll, _window: &mut Window, _cx: &mut Context<Self>) {}
 
     fn toggle(&mut self, _: &Toggle, window: &mut Window, cx: &mut Context<Self>) {
         if self
@@ -122,6 +228,17 @@ impl Render for UI {
                 .on_action(cx.listener(Self::toggle))
                 .on_action(cx.listener(Self::focus_next))
                 .on_action(cx.listener(Self::quit))
+                .on_action(cx.listener(Self::close))
+                .on_action(cx.listener(Self::create))
+                .when(cfg!(target_os = "macos"), |this| {
+                    this.on_action(cx.listener(Self::hide))
+                        .on_action(cx.listener(Self::minimize))
+                        .on_action(cx.listener(Self::about))
+                        .on_action(cx.listener(Self::cut))
+                        .on_action(cx.listener(Self::copy))
+                        .on_action(cx.listener(Self::paste))
+                        .on_action(cx.listener(Self::select))
+                })
                 .font_family(".SystemUIFont")
                 .bg(cx.theme().background)
                 .size_full()
