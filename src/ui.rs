@@ -14,9 +14,11 @@ use crate::ui::{
     view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
-    App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, Menu, MenuItem,
-    OsAction, PromptLevel, SharedString, Window, actions, deferred, div, prelude::*,
+    App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, PromptLevel,
+    SharedString, Window, actions, deferred, div, prelude::*,
 };
+#[cfg(target_os = "macos")]
+use gpui::{Menu, MenuItem, OsAction};
 
 actions!(
     ui,
@@ -78,11 +80,10 @@ impl UI {
             KeyBinding::new(&format!("{ctrl}-q"), Quit, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-t"), Toggle, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-n"), NewWindow, Some(CONTEXT)),
+            KeyBinding::new(&format!("{ctrl}-w"), CloseWindow, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
             #[cfg(target_os = "macos")]
             KeyBinding::new(&format!("{ctrl}-h"), Hide, Some(CONTEXT)),
-            #[cfg(target_os = "macos")]
-            KeyBinding::new(&format!("{ctrl}-w"), CloseWindow, Some(CONTEXT)),
             #[cfg(target_os = "macos")]
             KeyBinding::new(&format!("{ctrl}-x"), Cut, Some(CONTEXT)),
             #[cfg(target_os = "macos")]
@@ -176,7 +177,7 @@ impl UI {
 
         cx.spawn(async move |_, cx| {
             if let Ok(0) = prompt.await {
-                let content = format!("{}\n{}", message, detail);
+                let content = format!("{message}\n{detail}");
                 cx.update(|cx| {
                     cx.write_to_clipboard(ClipboardItem::new_string(content));
                 })

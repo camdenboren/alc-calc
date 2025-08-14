@@ -131,8 +131,7 @@ impl ThemeMenu {
         }
         Theme::preview(
             cx,
-            &self
-                .variants
+            self.variants
                 .get(self.focused_item)
                 .unwrap_or(&self.variants[0]),
         );
@@ -147,8 +146,7 @@ impl ThemeMenu {
         }
         Theme::preview(
             cx,
-            &self
-                .variants
+            self.variants
                 .get(self.focused_item)
                 .unwrap_or(&self.variants[0]),
         );
