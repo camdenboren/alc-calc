@@ -35,6 +35,7 @@ pub struct Theme {
     pub variant: ThemeVariant,
     pub text: Hsla,
     pub subtext: Hsla,
+    pub inactivetext: Hsla,
     pub background: Rgba,
     pub foreground: Rgba,
     pub foreground_inactive: Rgba,
@@ -98,7 +99,8 @@ impl Theme {
         Self {
             variant: ThemeVariant::Dark,
             text: hsla(0., 0., 0.9, 0.9),
-            subtext: hsla(0., 0., 0.5, 0.2),
+            subtext: hsla(0., 0., 0.8, 0.6),
+            inactivetext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0x3c3c3c),
             foreground: rgb(0x282828),
             foreground_inactive: rgb(0x232323),
@@ -122,7 +124,8 @@ impl Theme {
         Self {
             variant: ThemeVariant::Light,
             text: hsla(0., 0., 0.1, 0.9),
-            subtext: hsla(0., 0., 0.5, 0.2),
+            subtext: hsla(0., 0., 0.3, 0.6),
+            inactivetext: hsla(0., 0., 0.5, 0.2),
             background: rgb(0xe0e0e0),
             foreground: rgb(0xc0c0c0),
             foreground_inactive: rgb(0xd0d0d0),
@@ -146,7 +149,8 @@ impl Theme {
         Self {
             variant: ThemeVariant::RedDark,
             text: hsla(0., 0.5, 0.9, 0.9),
-            subtext: hsla(0., 0.1, 0.5, 0.2),
+            subtext: hsla(0., 0.3, 0.8, 0.6),
+            inactivetext: hsla(0., 0.1, 0.5, 0.2),
             background: rgb(0x600000),
             foreground: rgb(0x490000),
             foreground_inactive: rgb(0x410000),
@@ -170,7 +174,8 @@ impl Theme {
         Self {
             variant: ThemeVariant::RosePineMoon,
             text: hsla(0.7, 0.5, 0.9, 0.9),
-            subtext: hsla(0.7, 0.1, 0.5, 0.2),
+            subtext: hsla(0.7, 0.3, 0.8, 0.6),
+            inactivetext: hsla(0.7, 0.1, 0.5, 0.2),
             background: rgb(0x393552),
             foreground: rgb(0x2a273f),
             foreground_inactive: rgb(0x252038),
@@ -194,7 +199,8 @@ impl Theme {
         Self {
             variant: ThemeVariant::SolarizedDark,
             text: hsla(0.5, 0.5, 0.9, 0.9),
-            subtext: hsla(0.5, 0.1, 0.5, 0.2),
+            subtext: hsla(0.5, 0.3, 0.8, 0.6),
+            inactivetext: hsla(0.5, 0.1, 0.5, 0.2),
             background: rgb(0x0a404c),
             foreground: rgb(0x002b36),
             foreground_inactive: rgb(0x002631),
