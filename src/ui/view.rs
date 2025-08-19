@@ -4,4 +4,3 @@
 pub mod menu;
 pub mod table;
 pub mod titlebar;
-pub mod toast;

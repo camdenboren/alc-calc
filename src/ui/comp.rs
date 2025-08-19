@@ -5,3 +5,4 @@ pub mod button;
 pub mod dropdown;
 pub mod icon;
 pub mod input;
+pub mod toast;

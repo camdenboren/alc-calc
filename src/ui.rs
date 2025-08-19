@@ -6,12 +6,15 @@ pub mod util;
 pub mod view;
 
 use crate::ui::{
-    comp::input::text_input::{Copy, Cut, Paste, SelectAll},
+    comp::{
+        input::text_input::{Copy, Cut, Paste, SelectAll},
+        toast::Toast,
+    },
     util::{
         theme::{ActiveTheme, Theme},
         window::{self, WindowBorder, window_border},
     },
-    view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar, toast::Toast},
+    view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
     App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, PromptLevel,
@@ -69,7 +72,7 @@ pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
-    toasts: Vec<Entity<Toast>>,
+    toasts: Entity<Toast>,
     focus_handle: FocusHandle,
 }
 
@@ -141,7 +144,7 @@ impl UI {
             menu: cx.new(ThemeMenu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
-            toasts: vec![cx.new(Toast::new)],
+            toasts: cx.new(Toast::new),
             focus_handle: cx.focus_handle(),
         }
     }
@@ -253,14 +256,12 @@ impl Render for UI {
                     this.child(deferred(self.titlebar.clone()).with_priority(999))
                 })
                 .child(deferred(self.menu.clone()).with_priority(998))
-                .when(!self.toasts.is_empty(), |this| {
-                    this.child(
-                        div()
-                            .flex()
-                            .justify_center()
-                            .child(deferred(self.toasts[0].clone()).with_priority(997)),
-                    )
-                })
+                .child(
+                    div()
+                        .flex()
+                        .justify_center()
+                        .child(deferred(self.toasts.clone()).with_priority(997)),
+                )
                 .child(
                     div()
                         .flex()
