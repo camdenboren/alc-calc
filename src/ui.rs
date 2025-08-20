@@ -140,11 +140,15 @@ impl UI {
         #[cfg(not(test))]
         Theme::set(cx);
 
+        let toasts = cx.new(|_| Toast::default());
+        toasts.update(cx, |t, cx| t.toast(cx, "Longer description for first"));
+        toasts.update(cx, |t, cx| t.toast(cx, "Longer description for second"));
+
         UI {
             menu: cx.new(ThemeMenu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
-            toasts: cx.new(Toast::new),
+            toasts,
             focus_handle: cx.focus_handle(),
         }
     }

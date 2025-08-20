@@ -3,27 +3,28 @@
 
 use crate::ui::{comp::button::text_button, util::theme::ActiveTheme};
 use gpui::{
-    Animation, AnimationExt, App, ElementId, Entity, FocusHandle, Focusable, SharedString, Timer,
-    Window, div, prelude::*, px, svg,
+    Animation, AnimationExt, ElementId, Entity, EventEmitter, SharedString, Timer, Window, div,
+    prelude::*, px, svg,
 };
 use std::time::Duration;
 
-pub const _MAX_ITEMS: usize = 3;
+pub const MAX_ITEMS: usize = 3;
 
 pub struct ToastItem {
     pub description: SharedString,
-    focus_handle: FocusHandle,
     dismissed: bool,
     id: usize,
+    count: usize,
 }
 
 impl ToastItem {
-    fn new(cx: &mut Context<Self>, description: &str, id: usize) -> Self {
+    fn new(cx: &mut Context<Self>, description: &str, id: usize, count: usize) -> Self {
         cx.spawn(async move |toast, cx| {
-            Timer::after(Duration::from_secs(5)).await;
+            Timer::after(Duration::from_secs(4)).await;
             cx.update(|cx| {
                 toast.update(cx, |toast, cx| {
                     toast.dismissed = true;
+                    toast.remove(cx);
                     cx.notify();
                 })
             })
@@ -32,22 +33,35 @@ impl ToastItem {
 
         ToastItem {
             description: description.to_string().into(),
-            focus_handle: cx.focus_handle(),
             dismissed: false,
             id,
+            count,
         }
+    }
+
+    fn remove(&mut self, cx: &mut Context<Self>) {
+        cx.spawn(async move |item, cx| {
+            Timer::after(Duration::from_millis(200)).await;
+            cx.update(|cx| {
+                if let Some(item) = item.upgrade() {
+                    item.update(cx, |_item, cx| cx.emit(Remove {}));
+                }
+            })
+        })
+        .detach();
     }
 }
 
 impl Render for ToastItem {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let dismissed = self.dismissed;
-        let up_offset = 30. - 15. * self.id as f32;
-        let down_offset = 105. - 15. * self.id as f32;
+        let up_offset = -55. + 25. * (self.count - self.id) as f32;
+        let down_offset = 80. + 15. * self.id as f32;
 
         div()
             .flex()
             .flex_row()
+            .occlude()
             .absolute()
             .p_2()
             .gap_4()
@@ -89,9 +103,10 @@ impl Render for ToastItem {
                     .child(text_button(
                         "okay",
                         "Okay".into(),
-                        cx.listener(move |this, _, _window, _cx| {
+                        cx.listener(move |this, _, _window, cx| {
                             println!("Clicked Okay");
                             this.dismissed = true;
+                            this.remove(cx);
                         }),
                     )),
             )
@@ -100,7 +115,7 @@ impl Render for ToastItem {
                 Animation::new(Duration::from_millis(200)),
                 move |this, delta| {
                     if dismissed {
-                        this.bottom(px(delta * 75. - up_offset))
+                        this.bottom(px(delta * 75. + up_offset))
                     } else {
                         this.top(px(delta * 75. - down_offset))
                     }
@@ -109,34 +124,38 @@ impl Render for ToastItem {
     }
 }
 
-impl Focusable for ToastItem {
-    fn focus_handle(&self, _cx: &App) -> FocusHandle {
-        self.focus_handle.clone()
-    }
-}
+pub struct Remove {}
 
+impl EventEmitter<Remove> for ToastItem {}
+
+#[derive(Default)]
 pub struct Toast {
     toasts: Vec<Entity<ToastItem>>,
-    _count: usize,
+    count: usize,
 }
 
 impl Toast {
-    pub fn new(cx: &mut Context<Self>) -> Self {
-        Toast {
-            toasts: vec![
-                cx.new(|cx| ToastItem::new(cx, "Longer description of first", 0)),
-                cx.new(|cx| ToastItem::new(cx, "Longer description of second", 1)),
-            ],
-            _count: 2,
+    fn remove(&mut self, _cx: &mut Context<Self>, ix: usize) {
+        if self.count > 0 && ix < self.count {
+            self.toasts.remove(ix);
+            self.count -= 1;
         }
     }
 
-    pub fn _toast(&mut self, cx: &mut Context<Self>, description: &str) {
-        if self._count < _MAX_ITEMS {
-            let id = self._count;
-            let item = cx.new(|cx| ToastItem::new(cx, description, id));
+    pub fn toast(&mut self, cx: &mut Context<Self>, description: &str) {
+        if self.count < MAX_ITEMS {
+            let id = self.count;
+            self.count += 1;
+            let item = cx.new(|cx| ToastItem::new(cx, description, id, self.count));
+
+            cx.subscribe(
+                &item,
+                |this: &mut Toast, _item: Entity<ToastItem>, _event, cx| {
+                    this.remove(cx, this.count - 1);
+                },
+            )
+            .detach();
             self.toasts.push(item);
-            self._count += 1;
         }
         cx.notify();
     }
