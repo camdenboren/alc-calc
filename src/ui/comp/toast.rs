@@ -3,12 +3,17 @@
 
 use crate::ui::{comp::button::text_button, util::theme::ActiveTheme};
 use gpui::{
-    Animation, AnimationExt, ElementId, Entity, EventEmitter, SharedString, Timer, Window, div,
-    prelude::*, px, svg,
+    Animation, AnimationExt, App, ElementId, Entity, EventEmitter, Global, SharedString, Timer,
+    Window, div, prelude::*, px, svg,
 };
 use std::time::Duration;
 
 pub const MAX_ITEMS: usize = 3;
+
+pub fn toast(cx: &mut App, description: &str) {
+    let toast = Toast::global(cx);
+    toast.update(cx, |toast, cx| toast.add(cx, description));
+}
 
 pub struct ToastItem {
     pub description: SharedString,
@@ -56,7 +61,7 @@ impl Render for ToastItem {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let dismissed = self.dismissed;
         let up_offset = -55. + 25. * (self.count - self.id) as f32;
-        let down_offset = 80. + 15. * self.id as f32;
+        let down_offset = -80. + 15. * (self.count - self.id) as f32;
 
         div()
             .flex()
@@ -117,7 +122,7 @@ impl Render for ToastItem {
                     if dismissed {
                         this.bottom(px(delta * 75. + up_offset))
                     } else {
-                        this.top(px(delta * 75. - down_offset))
+                        this.top(px(delta * 75. + down_offset))
                     }
                 },
             )
@@ -128,21 +133,25 @@ pub struct Remove {}
 
 impl EventEmitter<Remove> for ToastItem {}
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Toast {
     toasts: Vec<Entity<ToastItem>>,
     count: usize,
 }
 
 impl Toast {
-    fn remove(&mut self, _cx: &mut Context<Self>, ix: usize) {
+    fn remove(&mut self, cx: &mut Context<Self>, ix: usize) {
         if self.count > 0 && ix < self.count {
             self.toasts.remove(ix);
             self.count -= 1;
+            self.toasts
+                .iter()
+                .for_each(|toast| toast.update(cx, |toast, _cx| toast.count = self.count));
+            cx.notify();
         }
     }
 
-    pub fn toast(&mut self, cx: &mut Context<Self>, description: &str) {
+    fn add(&mut self, cx: &mut Context<Self>, description: &str) {
         if self.count < MAX_ITEMS {
             let id = self.count;
             self.count += 1;
@@ -156,10 +165,26 @@ impl Toast {
             )
             .detach();
             self.toasts.push(item);
+            self.toasts
+                .iter()
+                .for_each(|toast| toast.update(cx, |toast, _cx| toast.count = self.count));
+            cx.notify();
         }
-        cx.notify();
+    }
+
+    pub fn set(cx: &mut App) {
+        let toast = cx.new(|_| Toast::default());
+        cx.set_global(GlobalToast(toast));
+    }
+
+    pub fn global(cx: &App) -> Entity<Self> {
+        cx.global::<GlobalToast>().0.clone()
     }
 }
+
+pub struct GlobalToast(Entity<Toast>);
+
+impl Global for GlobalToast {}
 
 impl Render for Toast {
     fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {

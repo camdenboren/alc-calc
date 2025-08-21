@@ -8,7 +8,7 @@ pub mod view;
 use crate::ui::{
     comp::{
         input::text_input::{Copy, Cut, Paste, SelectAll},
-        toast::Toast,
+        toast::{Toast, toast},
     },
     util::{
         theme::{ActiveTheme, Theme},
@@ -72,12 +72,14 @@ pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
-    toasts: Entity<Toast>,
     focus_handle: FocusHandle,
 }
 
 impl UI {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        Toast::set(cx);
+        toast(cx, "Longer description for first");
+        toast(cx, "Longer description for second");
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
@@ -140,15 +142,10 @@ impl UI {
         #[cfg(not(test))]
         Theme::set(cx);
 
-        let toasts = cx.new(|_| Toast::default());
-        toasts.update(cx, |t, cx| t.toast(cx, "Longer description for first"));
-        toasts.update(cx, |t, cx| t.toast(cx, "Longer description for second"));
-
         UI {
             menu: cx.new(ThemeMenu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
-            toasts,
             focus_handle: cx.focus_handle(),
         }
     }
@@ -264,7 +261,7 @@ impl Render for UI {
                     div()
                         .flex()
                         .justify_center()
-                        .child(deferred(self.toasts.clone()).with_priority(997)),
+                        .child(deferred(Toast::global(cx)).with_priority(997)),
                 )
                 .child(
                     div()
