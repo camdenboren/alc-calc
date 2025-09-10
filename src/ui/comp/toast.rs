@@ -95,6 +95,7 @@ impl Render for ToastItem {
                     )
                     .child(
                         div()
+                            .w_64()
                             .text_color(cx.theme().subtext)
                             .child(self.description.clone()),
                     ),

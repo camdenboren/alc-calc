@@ -80,6 +80,7 @@ impl UI {
         Toast::set(cx);
         toast(cx, "Longer description for first");
         toast(cx, "Longer description for second");
+        toast(cx, "Longer description for third");
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
