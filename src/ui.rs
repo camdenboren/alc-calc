@@ -8,7 +8,7 @@ pub mod view;
 use crate::ui::{
     comp::{
         input::text_input::{Copy, Cut, Paste, SelectAll},
-        toast::{Toast, toast},
+        toast::Toast,
     },
     util::{
         theme::{ActiveTheme, Theme},
@@ -78,9 +78,6 @@ pub struct UI {
 impl UI {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Toast::set(cx);
-        toast(cx, "Longer description for first");
-        toast(cx, "Longer description for second");
-        toast(cx, "Longer description for third");
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
