@@ -12,6 +12,7 @@ use crate::{
             dropdown::Dropdown,
             icon::{Icon, IconSize, IconVariant},
             input::text_input::TextInput,
+            toast::toast,
         },
         util::theme::ActiveTheme,
         view::table::ingredient::{FIELDS, Ingredient, IngredientData},
@@ -153,7 +154,10 @@ impl Table {
         let ingred_data = match calc_weights(&mut ingred_data, num_drinks) {
             Ok(ingred_data) => ingred_data,
             Err(e) => {
-                eprintln!("Failed to calculate ingredient weights due to error: {e}");
+                toast(
+                    cx,
+                    &format!("Failed to calculate ingredient weights due to error: {e}"),
+                );
                 return;
             }
         };

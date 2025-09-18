@@ -6,7 +6,10 @@ pub mod util;
 pub mod view;
 
 use crate::ui::{
-    comp::input::text_input::{Copy, Cut, Paste, SelectAll},
+    comp::{
+        input::text_input::{Copy, Cut, Paste, SelectAll},
+        toast::Toast,
+    },
     util::{
         theme::{ActiveTheme, Theme},
         window::{self, WindowBorder, window_border},
@@ -74,6 +77,7 @@ pub struct UI {
 
 impl UI {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        Toast::set(cx);
         Ctrl::set(cx);
         let ctrl = cx.ctrl();
         cx.bind_keys([
@@ -251,6 +255,12 @@ impl Render for UI {
                     this.child(deferred(self.titlebar.clone()).with_priority(999))
                 })
                 .child(deferred(self.menu.clone()).with_priority(998))
+                .child(
+                    div()
+                        .flex()
+                        .justify_center()
+                        .child(deferred(Toast::global(cx)).with_priority(997)),
+                )
                 .child(
                     div()
                         .flex()

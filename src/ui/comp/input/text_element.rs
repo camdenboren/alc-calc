@@ -70,7 +70,7 @@ impl Element for TextElement {
         let style = window.text_style();
 
         let (display_text, text_color) = if content.is_empty() {
-            (input.placeholder.clone(), cx.theme().subtext)
+            (input.placeholder.clone(), cx.theme().inactivetext)
         } else {
             (content, cx.theme().text)
         };
