@@ -295,25 +295,35 @@ impl Theme {
     }
 }
 
-// todo - fix tests
 #[cfg(test)]
 mod tests {
-    //use super::*;
-    //use gpui::{TestAppContext, VisualTestContext};
+    use super::*;
+    use gpui::TestAppContext;
 
-    /*#[test]
-    fn test_deserialize() {
+    #[gpui::test]
+    fn test_deserialize(cx: &mut TestAppContext) {
+        let cx = cx.add_empty_window();
+        let mut theme = ThemeVariant::Dark;
         let config_content = String::from("theme = \"SolarizedDark\"\n");
-        let theme = Theme::deserialize(config_content);
-        assert!(theme == ThemeVariant::SolarizedDark);
-    }*/
 
-    /*#[gpui::test]
+        cx.update(|_, cx| {
+            theme = Theme::deserialize(cx, config_content);
+        });
+
+        assert!(theme == ThemeVariant::SolarizedDark);
+    }
+
+    #[gpui::test]
     fn test_serialize(cx: &mut TestAppContext) {
         let cx = cx.add_empty_window();
         let theme_str = "RosePineMoon";
+        let mut config_content = String::new();
         let expected = String::from("theme = \"RosePineMoon\"\n");
-        let config_content = Theme::serialize(cx, theme_str);
+
+        cx.update(|_, cx| {
+            config_content = Theme::serialize(cx, theme_str);
+        });
+
         assert_eq!(config_content, expected);
-    }*/
+    }
 }
