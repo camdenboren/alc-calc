@@ -9,7 +9,7 @@ use crate::ui::comp::{
     icon::{Icon, IconSize, IconVariant},
 };
 use crate::ui::util::{theme::ActiveTheme, window::WindowBorder};
-use gpui::{Window, div, prelude::*, px};
+use gpui::{Empty, Window, div, prelude::*, px};
 
 #[cfg(target_os = "linux")]
 const HEIGHT: f32 = 36.;
@@ -67,7 +67,7 @@ impl Render for Titlebar {
             .when(cfg!(target_os = "linux"), |this| {
                 this.child(
                     #[cfg(not(target_os = "linux"))]
-                    div(),
+                    Empty,
                     #[cfg(target_os = "linux")]
                     div()
                         .id("quit-div")

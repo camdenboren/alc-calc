@@ -6,7 +6,13 @@ failed() {
   echo -e "\n\033[1;31mBuild failed.\033[0m"
   exit 1
 }
+interrupted() {
+  echo -e "\n\033[1;33mInterrupted.\033[0m"
+  exit 0
+}
+
 trap 'failed' ERR
+trap 'interrupted' INT
 
 echo -e "\033[1;33mcargo...\033[0m"
 cargo check 2> /dev/null | box
