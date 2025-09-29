@@ -16,6 +16,19 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use crate::ui::comp::toast::toast;
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
+const DEFAULT_CUSTOM_THEME: &str = "theme = \"Custom\"
+text = \"#e6e6e6e6\"
+subtext = \"#cccccc99\"
+inactivetext = \"#80808033\"
+background = \"#3c3c3cff\"
+foreground = \"#282828ff\"
+foreground_inactive = \"#232323ff\"
+field = \"#1d1d1dff\"
+cursor = \"#3311ffff\"
+highlight = \"#3311ff30\"
+border = \"#646464ff\"
+separator = \"#000000ff\"
+";
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -31,8 +44,10 @@ pub enum ThemeVariant {
     RedDark,
     RosePineMoon,
     SolarizedDark,
+    Custom,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Theme {
     pub variant: ThemeVariant,
     pub text: Hsla,
@@ -71,24 +86,27 @@ impl ActiveTheme for App {
 impl Theme {
     pub fn set(cx: &mut App) {
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
-        let config_content = Theme::read(cx, path).unwrap_or(String::from(DEFAULT_THEME));
+        let config_content = Theme::read(cx, path.clone()).unwrap_or(String::from(DEFAULT_THEME));
         let theme = match Theme::deserialize(cx, config_content) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::dark()),
         };
         cx.set_global(theme);
     }
 
     pub fn preview(cx: &mut App, val: &str) {
+        let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let theme = match ThemeVariant::from_str(val).unwrap_or(ThemeVariant::Dark) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::dark()),
         };
         cx.set_global(theme);
     }
@@ -278,6 +296,52 @@ impl Theme {
         match write(path.join("config.toml"), &config_content) {
             Ok(_) => (),
             Err(_) => toast(cx, "Failed to write to config file"),
+        }
+    }
+
+    fn read_theme(cx: &mut App, path: PathBuf) -> Result<Theme, anyhow::Error> {
+        let file_path = path.join("theme.toml");
+        if std::fs::metadata(&file_path).is_err() {
+            Theme::write_theme(cx, path);
+        }
+
+        let mut theme_file = File::open(file_path)?;
+        let mut theme_content = String::new();
+        match theme_file.read_to_string(&mut theme_content) {
+            Ok(_) => (),
+            Err(_) => {
+                theme_content = String::from(DEFAULT_CUSTOM_THEME);
+                toast(
+                    cx,
+                    "Failed to read theme file. Defaulting to default custom theme",
+                );
+            }
+        }
+        match toml::from_str(&theme_content) {
+            Ok(theme) => Ok(theme),
+            Err(_) => {
+                toast(cx, "Failed to deserialize theme. Defaulting to Dark theme");
+                Ok(Theme::dark())
+            }
+        }
+    }
+
+    fn write_theme(cx: &mut App, path: PathBuf) {
+        let mut default_custom_theme = Theme::dark();
+        default_custom_theme.variant = ThemeVariant::Custom;
+        let custom_theme = match toml::to_string(&default_custom_theme) {
+            Ok(custom_theme) => custom_theme,
+            Err(_) => {
+                toast(
+                    cx,
+                    "Failed to serialize default custom theme. Defaulting to hardcoded default custom theme",
+                );
+                String::from(DEFAULT_CUSTOM_THEME)
+            }
+        };
+        match write(path.join("theme.toml"), &custom_theme) {
+            Ok(_) => (),
+            Err(_) => toast(cx, "Failed to write to theme file"),
         }
     }
 
