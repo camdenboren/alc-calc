@@ -3,8 +3,8 @@
 
 use crate::ui::{comp::button::text_button, util::theme::ActiveTheme};
 use gpui::{
-    Animation, AnimationExt, App, ElementId, Entity, EventEmitter, Global, SharedString, Timer,
-    Window, div, prelude::*, px, svg,
+    Animation, AnimationExt, App, ElementId, Entity, EventEmitter, Global, SharedString,
+    TestAppContext, Timer, Window, div, prelude::*, px, svg,
 };
 use std::time::Duration;
 
@@ -174,6 +174,12 @@ impl Toast {
     }
 
     pub fn set(cx: &mut App) {
+        let toast = cx.new(|_| Toast::default());
+        cx.set_global(GlobalToast(toast));
+    }
+
+    // prevents panicking in CI when toasting from theme.rs when config dir is read-only
+    pub fn test(cx: &mut TestAppContext) {
         let toast = cx.new(|_| Toast::default());
         cx.set_global(GlobalToast(toast));
     }

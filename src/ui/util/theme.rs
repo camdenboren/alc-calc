@@ -13,10 +13,29 @@ use std::{
 };
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-use crate::ui::comp::toast::toast;
+use crate::ui::comp::toast::{Toast, toast};
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
-const DEFAULT_CUSTOM_THEME: &str = "theme = \"Custom\"
+#[cfg(target_os = "linux")]
+const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
+text = \"#e6e6e6e6\"
+subtext = \"#cccccc99\"
+inactivetext = \"#80808033\"
+background = \"#3c3c3cff\"
+foreground = \"#282828ff\"
+foreground_inactive = \"#232323ff\"
+field = \"#1d1d1dff\"
+cursor = \"#3311ffff\"
+highlight = \"#3311ff30\"
+border = \"#646464ff\"
+separator = \"#000000ff\"
+close_button = \"#404040ff\"
+close_button_hover = \"#464646ff\"
+close_button_click = \"#505050ff\"
+close_button_inactive = \"#3b3b3bff\"
+";
+#[cfg(not(target_os = "linux"))]
+const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
 text = \"#e6e6e6e6\"
 subtext = \"#cccccc99\"
 inactivetext = \"#80808033\"
@@ -356,6 +375,7 @@ impl Theme {
     #[allow(dead_code)]
     pub fn test(cx: &mut TestAppContext) {
         cx.set_global(Theme::light());
+        Toast::test(cx);
     }
 }
 
