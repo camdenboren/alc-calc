@@ -66,7 +66,7 @@ pub enum ThemeVariant {
     Custom,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, PartialEq)]
 pub struct Theme {
     pub variant: ThemeVariant,
     pub text: Hsla,
@@ -318,6 +318,29 @@ impl Theme {
         }
     }
 
+    fn deserialize_theme(cx: &mut App, theme_content: &str) -> Result<Theme, anyhow::Error> {
+        match toml::from_str(theme_content) {
+            Ok(theme) => Ok(theme),
+            Err(_) => {
+                toast(cx, "Failed to deserialize theme. Defaulting to Dark theme");
+                Ok(Theme::dark())
+            }
+        }
+    }
+
+    fn serialize_theme(cx: &mut App, theme: Theme) -> String {
+        match toml::to_string(&theme) {
+            Ok(custom_theme) => custom_theme,
+            Err(_) => {
+                toast(
+                    cx,
+                    "Failed to serialize default custom theme. Defaulting to hardcoded default custom theme",
+                );
+                String::from(DEFAULT_CUSTOM_THEME)
+            }
+        }
+    }
+
     fn read_theme(cx: &mut App, path: PathBuf) -> Result<Theme, anyhow::Error> {
         let file_path = path.join("theme.toml");
         if std::fs::metadata(&file_path).is_err() {
@@ -336,28 +359,13 @@ impl Theme {
                 );
             }
         }
-        match toml::from_str(&theme_content) {
-            Ok(theme) => Ok(theme),
-            Err(_) => {
-                toast(cx, "Failed to deserialize theme. Defaulting to Dark theme");
-                Ok(Theme::dark())
-            }
-        }
+        Theme::deserialize_theme(cx, &theme_content)
     }
 
     fn write_theme(cx: &mut App, path: PathBuf) {
         let mut default_custom_theme = Theme::dark();
         default_custom_theme.variant = ThemeVariant::Custom;
-        let custom_theme = match toml::to_string(&default_custom_theme) {
-            Ok(custom_theme) => custom_theme,
-            Err(_) => {
-                toast(
-                    cx,
-                    "Failed to serialize default custom theme. Defaulting to hardcoded default custom theme",
-                );
-                String::from(DEFAULT_CUSTOM_THEME)
-            }
-        };
+        let custom_theme = Theme::serialize_theme(cx, default_custom_theme);
         match write(path.join("theme.toml"), &custom_theme) {
             Ok(_) => (),
             Err(_) => toast(cx, "Failed to write to theme file"),
@@ -409,5 +417,41 @@ mod tests {
         });
 
         assert_eq!(config_content, expected);
+    }
+
+    #[gpui::test]
+    fn test_deserialize_theme(cx: &mut TestAppContext) {
+        let cx = cx.add_empty_window();
+        let mut theme = Theme::dark();
+        let mut expected = Theme::dark();
+        expected.variant = ThemeVariant::Custom;
+
+        cx.update(|_, cx| {
+            theme = Theme::deserialize_theme(cx, DEFAULT_CUSTOM_THEME).unwrap();
+
+            // round these particular values due to lossy conversions from hsla -> rgb -> hsla
+            theme.text.l = crate::calc::round_to_place(theme.text.l, 1.0).unwrap();
+            theme.text.a = crate::calc::round_to_place(theme.text.a, 1.0).unwrap();
+            theme.subtext.l = crate::calc::round_to_place(theme.subtext.l, 1.0).unwrap();
+            theme.subtext.a = crate::calc::round_to_place(theme.subtext.a, 1.0).unwrap();
+            theme.inactivetext.l = crate::calc::round_to_place(theme.inactivetext.l, 1.0).unwrap();
+            theme.inactivetext.a = crate::calc::round_to_place(theme.inactivetext.a, 1.0).unwrap();
+        });
+
+        assert_eq!(theme, expected);
+    }
+
+    #[gpui::test]
+    fn test_serialize_theme(cx: &mut TestAppContext) {
+        let cx = cx.add_empty_window();
+        let mut theme = Theme::dark();
+        theme.variant = ThemeVariant::Custom;
+        let mut theme_content = String::new();
+
+        cx.update(|_, cx| {
+            theme_content = Theme::serialize_theme(cx, theme);
+        });
+
+        assert_eq!(theme_content, DEFAULT_CUSTOM_THEME);
     }
 }
