@@ -112,7 +112,7 @@ impl Theme {
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
-            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::dark()),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
     }
@@ -125,7 +125,7 @@ impl Theme {
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
-            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::dark()),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
     }
@@ -257,6 +257,12 @@ impl Theme {
             #[cfg(target_os = "linux")]
             close_button_inactive: rgb(0x093e48),
         }
+    }
+
+    fn custom() -> Self {
+        let mut theme = Theme::dark();
+        theme.variant = ThemeVariant::Custom;
+        theme
     }
 
     fn deserialize(cx: &mut App, config_content: String) -> ThemeVariant {
@@ -423,8 +429,7 @@ mod tests {
     fn test_deserialize_theme(cx: &mut TestAppContext) {
         let cx = cx.add_empty_window();
         let mut theme = Theme::dark();
-        let mut expected = Theme::dark();
-        expected.variant = ThemeVariant::Custom;
+        let expected = Theme::custom();
 
         cx.update(|_, cx| {
             theme = Theme::deserialize_theme(cx, DEFAULT_CUSTOM_THEME).unwrap();
@@ -444,8 +449,7 @@ mod tests {
     #[gpui::test]
     fn test_serialize_theme(cx: &mut TestAppContext) {
         let cx = cx.add_empty_window();
-        let mut theme = Theme::dark();
-        theme.variant = ThemeVariant::Custom;
+        let theme = Theme::custom();
         let mut theme_content = String::new();
 
         cx.update(|_, cx| {
