@@ -16,6 +16,38 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use crate::ui::comp::toast::toast;
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
+#[cfg(target_os = "linux")]
+const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
+text = \"#e6e6e6e6\"
+subtext = \"#cccccc99\"
+inactivetext = \"#80808033\"
+background = \"#3c3c3cff\"
+foreground = \"#282828ff\"
+foreground_inactive = \"#232323ff\"
+field = \"#1d1d1dff\"
+cursor = \"#3311ffff\"
+highlight = \"#3311ff30\"
+border = \"#646464ff\"
+separator = \"#000000ff\"
+close_button = \"#404040ff\"
+close_button_hover = \"#464646ff\"
+close_button_click = \"#505050ff\"
+close_button_inactive = \"#3b3b3bff\"
+";
+#[cfg(not(target_os = "linux"))]
+const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
+text = \"#e6e6e6e6\"
+subtext = \"#cccccc99\"
+inactivetext = \"#80808033\"
+background = \"#3c3c3cff\"
+foreground = \"#282828ff\"
+foreground_inactive = \"#232323ff\"
+field = \"#1d1d1dff\"
+cursor = \"#3311ffff\"
+highlight = \"#3311ff30\"
+border = \"#646464ff\"
+separator = \"#000000ff\"
+";
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -31,8 +63,10 @@ pub enum ThemeVariant {
     RedDark,
     RosePineMoon,
     SolarizedDark,
+    Custom,
 }
 
+#[derive(Serialize, Debug, Deserialize, PartialEq)]
 pub struct Theme {
     pub variant: ThemeVariant,
     pub text: Hsla,
@@ -71,24 +105,27 @@ impl ActiveTheme for App {
 impl Theme {
     pub fn set(cx: &mut App) {
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
-        let config_content = Theme::read(cx, path).unwrap_or(String::from(DEFAULT_THEME));
+        let config_content = Theme::read(cx, path.clone()).unwrap_or(String::from(DEFAULT_THEME));
         let theme = match Theme::deserialize(cx, config_content) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
     }
 
     pub fn preview(cx: &mut App, val: &str) {
+        let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let theme = match ThemeVariant::from_str(val).unwrap_or(ThemeVariant::Dark) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
     }
@@ -222,6 +259,12 @@ impl Theme {
         }
     }
 
+    fn custom() -> Self {
+        let mut theme = Theme::dark();
+        theme.variant = ThemeVariant::Custom;
+        theme
+    }
+
     fn deserialize(cx: &mut App, config_content: String) -> ThemeVariant {
         match toml::from_str(&config_content) {
             Ok(config) => config,
@@ -281,6 +324,65 @@ impl Theme {
         }
     }
 
+    fn deserialize_theme(cx: &mut App, theme_content: &str) -> Result<Theme, anyhow::Error> {
+        match toml::from_str(theme_content) {
+            Ok(theme) => Ok(theme),
+            Err(_) => {
+                toast(cx, "Failed to deserialize theme. Defaulting to Dark theme");
+                Ok(Theme::dark())
+            }
+        }
+    }
+
+    fn serialize_theme(cx: &mut App, theme: Theme) -> String {
+        match toml::to_string(&theme) {
+            Ok(custom_theme) => custom_theme,
+            Err(_) => {
+                toast(
+                    cx,
+                    "Failed to serialize default custom theme. Defaulting to hardcoded default custom theme",
+                );
+                String::from(DEFAULT_CUSTOM_THEME)
+            }
+        }
+    }
+
+    fn read_theme(cx: &mut App, path: PathBuf) -> Result<Theme, anyhow::Error> {
+        let file_path = path.join("theme.toml");
+
+        // prevents fs access on tests (namely, when Custom is selected in Theme::preview())
+        #[cfg(not(test))]
+        if std::fs::metadata(&file_path).is_err() {
+            Theme::write_theme(cx, path);
+        }
+
+        let mut theme_file = File::open(file_path)?;
+        let mut theme_content = String::new();
+        match theme_file.read_to_string(&mut theme_content) {
+            Ok(_) => (),
+            Err(_) => {
+                theme_content = String::from(DEFAULT_CUSTOM_THEME);
+                toast(
+                    cx,
+                    "Failed to read theme file. Defaulting to default custom theme",
+                );
+            }
+        }
+        Theme::deserialize_theme(cx, &theme_content)
+    }
+
+    // RA thinks this is dead code even though it is used
+    #[allow(dead_code)]
+    fn write_theme(cx: &mut App, path: PathBuf) {
+        let mut default_custom_theme = Theme::dark();
+        default_custom_theme.variant = ThemeVariant::Custom;
+        let custom_theme = Theme::serialize_theme(cx, default_custom_theme);
+        match write(path.join("theme.toml"), &custom_theme) {
+            Ok(_) => (),
+            Err(_) => toast(cx, "Failed to write to theme file"),
+        }
+    }
+
     // RA thinks this is dead code even though it is used
     #[allow(dead_code)]
     pub fn update(theme_str: &str, cx: &mut App) {
@@ -325,5 +427,39 @@ mod tests {
         });
 
         assert_eq!(config_content, expected);
+    }
+
+    #[gpui::test]
+    fn test_deserialize_theme(cx: &mut TestAppContext) {
+        let cx = cx.add_empty_window();
+        let mut theme = Theme::dark();
+        let expected = Theme::custom();
+
+        cx.update(|_, cx| {
+            theme = Theme::deserialize_theme(cx, DEFAULT_CUSTOM_THEME).unwrap();
+
+            // round these particular values due to lossy conversions from hsla -> rgb -> hsla
+            theme.text.l = crate::calc::round_to_place(theme.text.l, 1.0).unwrap();
+            theme.text.a = crate::calc::round_to_place(theme.text.a, 1.0).unwrap();
+            theme.subtext.l = crate::calc::round_to_place(theme.subtext.l, 1.0).unwrap();
+            theme.subtext.a = crate::calc::round_to_place(theme.subtext.a, 1.0).unwrap();
+            theme.inactivetext.l = crate::calc::round_to_place(theme.inactivetext.l, 1.0).unwrap();
+            theme.inactivetext.a = crate::calc::round_to_place(theme.inactivetext.a, 1.0).unwrap();
+        });
+
+        assert_eq!(theme, expected);
+    }
+
+    #[gpui::test]
+    fn test_serialize_theme(cx: &mut TestAppContext) {
+        let cx = cx.add_empty_window();
+        let theme = Theme::custom();
+        let mut theme_content = String::new();
+
+        cx.update(|_, cx| {
+            theme_content = Theme::serialize_theme(cx, theme);
+        });
+
+        assert_eq!(theme_content, DEFAULT_CUSTOM_THEME);
     }
 }

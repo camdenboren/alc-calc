@@ -11,7 +11,7 @@ use std::{error::Error, fmt};
 struct EmptyError;
 
 #[derive(Debug)]
-struct CalculationError;
+pub struct CalculationError;
 
 impl fmt::Display for EmptyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -32,7 +32,7 @@ impl Error for EmptyError {}
 
 impl Error for CalculationError {}
 
-fn round_to_place(raw: f32, place: f32) -> Result<f32, CalculationError> {
+pub fn round_to_place(raw: f32, place: f32) -> Result<f32, CalculationError> {
     let base: f32 = 10.;
     let scalar: f32 = base.powf(place);
     Ok((raw * scalar).round() / scalar)

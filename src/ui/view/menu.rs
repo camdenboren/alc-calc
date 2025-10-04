@@ -190,7 +190,7 @@ impl Render for ThemeMenu {
                         .absolute()
                         .top_10()
                         .w_40()
-                        .h(px(168.))
+                        .h(px(202.5))
                         .bg(cx.theme().field)
                         .rounded_md()
                         .p_1()
@@ -249,7 +249,7 @@ mod tests {
     use super::*;
     use gpui::{Entity, TestAppContext, VisualTestContext};
 
-    const MAX_INDEX: usize = 4;
+    const MAX_INDEX: usize = 5;
 
     #[gpui::test]
     fn test_menu_update(cx: &mut TestAppContext) {

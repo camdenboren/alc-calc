@@ -110,7 +110,6 @@ impl Render for ToastItem {
                         "okay",
                         "Okay".into(),
                         cx.listener(move |this, _, _window, cx| {
-                            println!("Clicked Okay");
                             this.dismissed = true;
                             this.remove(cx);
                         }),
