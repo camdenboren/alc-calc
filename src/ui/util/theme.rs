@@ -13,7 +13,7 @@ use std::{
 };
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-use crate::ui::comp::toast::{Toast, toast};
+use crate::ui::comp::toast::toast;
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
 #[cfg(target_os = "linux")]
@@ -349,6 +349,9 @@ impl Theme {
 
     fn read_theme(cx: &mut App, path: PathBuf) -> Result<Theme, anyhow::Error> {
         let file_path = path.join("theme.toml");
+
+        // prevents fs access on tests (namely, when Custom is selected in Theme::preview())
+        #[cfg(not(test))]
         if std::fs::metadata(&file_path).is_err() {
             Theme::write_theme(cx, path);
         }
@@ -368,6 +371,8 @@ impl Theme {
         Theme::deserialize_theme(cx, &theme_content)
     }
 
+    // RA thinks this is dead code even though it is used
+    #[allow(dead_code)]
     fn write_theme(cx: &mut App, path: PathBuf) {
         let mut default_custom_theme = Theme::dark();
         default_custom_theme.variant = ThemeVariant::Custom;
@@ -389,7 +394,6 @@ impl Theme {
     #[allow(dead_code)]
     pub fn test(cx: &mut TestAppContext) {
         cx.set_global(Theme::light());
-        Toast::test(cx);
     }
 }
 
