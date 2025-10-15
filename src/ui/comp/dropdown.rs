@@ -201,28 +201,14 @@ impl Render for Dropdown {
                 .px_2()
                 .py_1()
                 .rounded_md()
-                .child(
-                    div()
-                        .id(format!("dropdown_{}", self.id).into_element())
-                        .flex()
-                        .flex_row()
-                        .size_full()
-                        .items_center()
-                        .justify_between()
-                        .h(px(20. + 4. * 2.))
-                        .child(self.current.clone())
-                        .cursor_pointer()
-                        .on_click(cx.listener(move |this, _, _window, cx| {
-                            this.toggle(cx);
-                        }))
-                        .child(button(
-                            &format!("chevron_{}", self.id),
-                            Icon::new(IconVariant::Chevron, IconSize::Small),
-                            cx.listener(move |this, _, _window, cx| {
-                                this.toggle(cx);
-                            }),
-                        )),
-                )
+                .child(button(
+                    &format!("dropdown_{}", self.id),
+                    self.current.clone(),
+                    Icon::new(IconVariant::Chevron, IconSize::Small),
+                    cx.listener(move |this, _, _window, cx| {
+                        this.toggle(cx);
+                    }),
+                ))
                 .when(self.show, |this| {
                     this.child(
                         div()

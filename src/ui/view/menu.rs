@@ -3,7 +3,7 @@
 
 use crate::ui::{
     comp::{
-        button::{button, text_button},
+        button::{icon_button, text_button},
         icon::{Icon, IconSize, IconVariant},
     },
     util::theme::{ActiveTheme, Theme, ThemeVariant},
@@ -177,7 +177,7 @@ impl Render for ThemeMenu {
             .justify_start()
             .items_end()
             .p_2()
-            .child(button(
+            .child(icon_button(
                 "menu",
                 Icon::new(IconVariant::Theme, IconSize::Medium),
                 cx.listener(move |this, _, _, cx| this.toggle(cx)),

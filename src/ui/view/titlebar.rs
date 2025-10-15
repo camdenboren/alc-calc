@@ -5,7 +5,7 @@
 
 #[cfg(target_os = "linux")]
 use crate::ui::comp::{
-    button::button,
+    button::icon_button,
     icon::{Icon, IconSize, IconVariant},
 };
 use crate::ui::util::{theme::ActiveTheme, window::WindowBorder};
@@ -73,7 +73,7 @@ impl Render for Titlebar {
                     #[cfg(target_os = "linux")]
                     div()
                         .id("quit-div")
-                        .child(button(
+                        .child(icon_button(
                             "quit",
                             Icon::new(IconVariant::Close, IconSize::Medium),
                             |_, window, _| {

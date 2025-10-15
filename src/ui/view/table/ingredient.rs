@@ -5,7 +5,7 @@
 
 use crate::ui::{
     comp::{
-        button::button,
+        button::icon_button,
         dropdown::Dropdown,
         icon::{Icon, IconSize, IconVariant},
         input::text_input::TextInput,
@@ -74,7 +74,7 @@ impl Render for Ingredient {
             .items_center()
             .justify_center()
             .gap_x_4()
-            .child(button(
+            .child(icon_button(
                 "remove",
                 Icon::new(IconVariant::Minus, IconSize::Small),
                 cx.listener(move |this, _, _window, cx| this.remove(cx)),

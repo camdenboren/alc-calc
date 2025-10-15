@@ -8,7 +8,7 @@ use crate::{
     ui::{
         ActiveCtrl,
         comp::{
-            button::button,
+            button::icon_button,
             dropdown::Dropdown,
             icon::{Icon, IconSize, IconVariant},
             input::text_input::TextInput,
@@ -355,13 +355,19 @@ impl Render for Table {
                             .children(self.ingreds.clone()),
                     )
                     // + button
-                    .child(div().pt_2().h_6().w(px(self.width + 78.)).child(button(
-                        "add",
-                        Icon::new(IconVariant::Plus, IconSize::Small),
-                        cx.listener(move |this, _, window, cx| {
-                            this.add(&Add, window, cx);
-                        }),
-                    ))),
+                    .child(
+                        div()
+                            .pt_2()
+                            .h_6()
+                            .w(px(self.width + 78.))
+                            .child(icon_button(
+                                "add",
+                                Icon::new(IconVariant::Plus, IconSize::Small),
+                                cx.listener(move |this, _, window, cx| {
+                                    this.add(&Add, window, cx);
+                                }),
+                            )),
+                    ),
             )
     }
 }
