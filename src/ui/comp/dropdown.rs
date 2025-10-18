@@ -36,7 +36,7 @@ pub struct Dropdown {
 }
 
 impl Dropdown {
-    pub fn new(id: usize, cx: &mut Context<Self>) -> Self {
+    pub fn new(id: usize, cx: &mut Context<Self>, tab_index: isize) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
             KeyBinding::new("enter", Enter, Some(CONTEXT)),
@@ -52,6 +52,7 @@ impl Dropdown {
             .collect();
         let current: SharedString = "Whiskey".into();
         let focused_item = Dropdown::index_of(&types, &current);
+        let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
 
         Self {
             types,
@@ -61,7 +62,7 @@ impl Dropdown {
             count: Type::COUNT,
             id,
             focused_item,
-            focus_handle: cx.focus_handle(),
+            focus_handle,
             scroll_handle: UniformListScrollHandle::new(),
         }
     }
@@ -349,6 +350,6 @@ mod tests {
 
     fn setup_dropdown(cx: &mut TestAppContext) -> (Entity<Dropdown>, &mut VisualTestContext) {
         Theme::test(cx);
-        cx.add_window_view(|_window, cx| Dropdown::new(0, cx))
+        cx.add_window_view(|_window, cx| Dropdown::new(0, cx, 1))
     }
 }

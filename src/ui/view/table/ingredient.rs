@@ -31,10 +31,14 @@ pub struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
+        // we have 3 items per indgred and tab_index 0 is num_drinks_input,
+        // so multiply by 3 and offset by one
         Self {
-            alc_type: cx.new(|cx| Dropdown::new(id, cx)),
-            percentage_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
-            parts_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
+            alc_type: cx.new(|cx| Dropdown::new(id, cx, id as isize * 3 + 1)),
+            percentage_input: cx
+                .new(|cx| TextInput::new(window, cx, "Type here...".into(), id as isize * 3 + 2)),
+            parts_input: cx
+                .new(|cx| TextInput::new(window, cx, "Type here...".into(), id as isize * 3 + 3)),
             weight: "0".into(),
             id,
         }

@@ -59,7 +59,12 @@ pub struct TextInput {
 }
 
 impl TextInput {
-    pub fn new(window: &mut Window, cx: &mut Context<Self>, placeholder: SharedString) -> Self {
+    pub fn new(
+        window: &mut Window,
+        cx: &mut Context<Self>,
+        placeholder: SharedString,
+        tab_index: isize,
+    ) -> Self {
         let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new("backspace", Backspace, Some(CONTEXT)),
@@ -81,7 +86,7 @@ impl TextInput {
             ),
         ]);
 
-        let focus_handle = cx.focus_handle();
+        let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
         let cursor_state = cx.new(|_| CursorState::new());
         let _subscriptions = vec![
             cx.observe(&cursor_state, |_, _, cx| cx.notify()),

@@ -23,7 +23,7 @@ use gpui::{
     prelude::*, px,
 };
 
-actions!(table, [Tab, Add, Delete, Escape, RemoveKey]);
+actions!(table, [Tab, TabPrev, Add, Delete, Escape, RemoveKey]);
 
 pub const CONTEXT: &str = "Table";
 pub const MAX_ITEMS: usize = 10;
@@ -43,6 +43,7 @@ impl Table {
         let ctrl = cx.ctrl();
         cx.bind_keys([
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
+            KeyBinding::new("shift-tab", TabPrev, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-i"), Add, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-d"), Delete, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-r"), RemoveKey, Some(CONTEXT)),
@@ -51,7 +52,7 @@ impl Table {
 
         Self {
             ingreds: vec![],
-            num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into())),
+            num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into(), 0)),
             num_drinks: 0.,
             count: 0,
             width: FIELDS.iter().fold(0., |acc, field| acc + field.1),
@@ -214,48 +215,12 @@ impl Table {
         self.focus_handle.focus(window);
     }
 
-    fn is_focused(&self, window: &mut Window) -> bool {
-        self.focus_handle.is_focused(window)
+    fn on_tab(&mut self, _: &Tab, window: &mut Window, _: &mut Context<Self>) {
+        window.focus_next();
     }
 
-    fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
-        // return early for base cases (e.g. entering or leaving ingreds list)
-        if self.is_focused(window) {
-            self.num_drinks(cx).focus(window);
-            return;
-        }
-        if self.num_drinks(cx).is_focused(window) && self.count > 0 {
-            self.alc_type(0, cx).focus(window);
-            return;
-        }
-        if self.count > 0 && self.parts(self.count - 1, cx).is_focused(window) {
-            self.num_drinks(cx).focus(window);
-            return;
-        }
-
-        // focus next ingred field otw
-        for ix in 0..self.count {
-            if self.alc_type(ix, cx).is_focused(window) {
-                // hide dropdown before focusing input
-                if self.alc_type(ix, cx).show {
-                    self.ingreds
-                        .get(ix)
-                        .unwrap_or(&self.ingreds[0])
-                        .read(cx)
-                        .alc_type
-                        .clone()
-                        .update(cx, |alc_type, cx| alc_type.toggle(cx))
-                }
-                self.percentage(ix, cx).focus(window);
-                break;
-            } else if self.percentage(ix, cx).is_focused(window) {
-                self.parts(ix, cx).focus(window);
-                break;
-            } else if self.count > ix + 1 && self.parts(ix, cx).is_focused(window) {
-                self.alc_type(ix + 1, cx).focus(window);
-                break;
-            }
-        }
+    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, _: &mut Context<Self>) {
+        window.focus_prev();
     }
 }
 
@@ -276,7 +241,8 @@ impl Render for Table {
 
         div()
             .key_context(CONTEXT)
-            .on_action(cx.listener(Self::focus_next))
+            .on_action(cx.listener(Self::on_tab))
+            .on_action(cx.listener(Self::on_tab_prev))
             .on_action(cx.listener(Self::focus))
             .on_action(cx.listener(Self::add))
             .on_action(cx.listener(Self::delete))
