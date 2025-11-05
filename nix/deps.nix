@@ -38,6 +38,7 @@
       rustc
       cargo
       cargo-bundle
+      cargo-edit
       rust-analyzer
       rustfmt
       taplo

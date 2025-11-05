@@ -271,10 +271,13 @@ Update nixpkgs
 nix flake update
 ```
 
-Manually update each cargo dep to the most recent on [crates.io], bump the rev for [GPUI], then update `cargoHash` in [package.nix]
+Update each cargo dep to the most recent on [crates.io] via `cargo-edit`
 
-> [!NOTE]
-> There are probably better ways to update the Cargo deps, but this has worked pretty well for me
+```shell
+cargo upgrade
+```
+
+Manually update `cargoHash` in [package.nix]
 
 Then run the `build` and `format` scripts after fixing any breakages
 
