@@ -11,16 +11,16 @@ description = "alc-calc is a GUI calculator for measuring alcoholic beverages by
 [dependencies]
 strum = { version = "0.27.2", default-features = false }
 strum_macros = { version = "0.27.2", default-features = false }
-gpui = { git = "https://github.com/zed-industries/zed", rev = "fb1f9d12127fe3177cc2231b876095c6850512ae", features = [
+unicode-segmentation = { version = "1.12.0", default-features = false }
+toml = "0.9.8"
+serde = { version = "1.0.228", default-features = false }
+anyhow = { version = "1.0.100", default-features = false }
+rust-embed = { version = "8.9.0", default-features = false }
+dirs = { version = "6.0.0", default-features = false }
+gpui = { version = "0.2.2", default-features = false, features = [
   "test-support",
 ] }
-gpui_macros = { git = "https://github.com/zed-industries/zed", rev = "fb1f9d12127fe3177cc2231b876095c6850512ae" }
-unicode-segmentation = { version = "1.12.0", default-features = false }
-toml = "0.9.5"
-serde = { version = "1.0.219", default-features = false }
-anyhow = { version = "1.0.98", default-features = false }
-rust-embed = { version = "8.7.2", default-features = false }
-dirs = { version = "6.0.0", default-features = false }
+gpui-macros = { version = "0.2.2", default-features = false }
 
 [package.metadata.packager]
 before-packaging-command = "cargo build --release"
