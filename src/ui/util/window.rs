@@ -14,9 +14,9 @@ use gpui::{
 };
 use std::process;
 
-const BORDER_RADIUS: Pixels = Pixels(12.0);
-const BORDER_SIZE: Pixels = Pixels(0.75);
-const SHADOW_SIZE: Pixels = Pixels(12.0);
+const BORDER_RADIUS: Pixels = px(12.0);
+const BORDER_SIZE: Pixels = px(0.75);
+const SHADOW_SIZE: Pixels = px(12.0);
 
 pub fn new_window(cx: &mut App) {
     if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {

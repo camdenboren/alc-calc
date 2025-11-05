@@ -9,7 +9,7 @@
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-JtEPKWL8svgnILLdR3PYTod3qzXJSP4hwNb5i/rbi48=";
+    cargoHash = "sha256-JjQ1221/3GLekx8iaCUVXLW2HRO0AB8HpXPzUwOyQ6Y=";
     buildInputs = deps.build;
     nativeBuildInputs = deps.run;
     buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
