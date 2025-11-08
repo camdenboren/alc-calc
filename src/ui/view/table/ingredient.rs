@@ -15,7 +15,7 @@ use crate::ui::{
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
 pub const FIELDS: [(&str, f32); 4] = [
-    ("alc_type", 148.),
+    ("ingredient", 148.),
     ("percentage", 132.),
     ("parts", 132.),
     ("weight", 72.),
@@ -46,7 +46,7 @@ impl Ingredient {
 
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
         div().w(width).child(match key {
-            "alc_type" => div().child(self.alc_type.clone()),
+            "ingredient" => div().child(self.alc_type.clone()),
             "percentage" => div().child(self.percentage_input.clone()),
             "parts" => div().child(self.parts_input.clone()),
             "weight" => div()
