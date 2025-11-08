@@ -85,7 +85,7 @@ impl Table {
         if self.count > 0 {
             if self.parts(self.count - 1, cx).is_focused(window)
                 || self.percentage(self.count - 1, cx).is_focused(window)
-                || self.alc_type(self.count - 1, cx).is_focused(window)
+                || self.ingred_type(self.count - 1, cx).is_focused(window)
             {
                 self.focus(&Escape, window, cx);
             }
@@ -108,8 +108,8 @@ impl Table {
                 .for_each(|(jx, ingred)| {
                     ingred.update(cx, |ingred, cx| {
                         ingred.id = jx + ix;
-                        ingred.alc_type.update(cx, |alc_type, _cx| {
-                            alc_type.id = jx + ix;
+                        ingred.ingred_type.update(cx, |ingred_type, _cx| {
+                            ingred_type.id = jx + ix;
                         });
                     })
                 });
@@ -118,7 +118,7 @@ impl Table {
 
     fn remove_key(&mut self, _: &RemoveKey, window: &mut Window, cx: &mut Context<Self>) {
         for ix in 0..self.count {
-            if self.alc_type(ix, cx).is_focused(window)
+            if self.ingred_type(ix, cx).is_focused(window)
                 || self.parts(ix, cx).is_focused(window)
                 || self.percentage(ix, cx).is_focused(window)
             {
@@ -145,7 +145,7 @@ impl Table {
     fn calc(&mut self, cx: &mut Context<Self>, num_drinks: f32) {
         let mut ingred_data: Vec<IngredientData> = (0..self.count)
             .map(|ix| IngredientData {
-                alc_type: self.alc_type(ix, cx).current.clone(),
+                ingred_type: self.ingred_type(ix, cx).current.clone(),
                 percentage: self.parse_or_zero(&self.percentage(ix, cx).content),
                 parts: self.parse_or_zero(&self.parts(ix, cx).content),
                 ..Default::default()
@@ -180,12 +180,12 @@ impl Table {
     //   1. an explicit non-empty check, or
     //   2. within a (0..self.count) block, meaning an empty vec produces no calls
 
-    fn alc_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {
+    fn ingred_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {
         self.ingreds
             .get(ix)
             .unwrap_or(&self.ingreds[0])
             .read(cx)
-            .alc_type
+            .ingred_type
             .read(cx)
     }
 
@@ -454,7 +454,7 @@ mod tests {
         table.update_in(cx, |table, window, cx| {
             ingred_focused = table.ingreds[1]
                 .read(cx)
-                .alc_type
+                .ingred_type
                 .read(cx)
                 .is_focused(window)
         });

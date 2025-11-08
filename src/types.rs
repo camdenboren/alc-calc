@@ -33,9 +33,9 @@ pub enum Category {
     Hard,
 }
 
-pub fn match_category(alc_type: &str) -> Category {
-    let alc_type_e: Type = Type::from_str(alc_type).unwrap_or(Type::Whiskey);
-    match alc_type_e {
+pub fn match_category(ingred_type: &str) -> Category {
+    let ingred_type_e: Type = Type::from_str(ingred_type).unwrap_or(Type::Whiskey);
+    match ingred_type_e {
         Type::Hard => Category::Hard,
         Type::Whiskey => Category::Hard,
         Type::Vodka => Category::Hard,

@@ -38,8 +38,8 @@ pub fn round_to_place(raw: f32, place: f32) -> Result<f32, CalculationError> {
     Ok((raw * scalar).round() / scalar)
 }
 
-fn calc_ingred_weight(alc_type: &str, percentage: f32) -> Result<(u32, f32), CalculationError> {
-    let cat: Category = match_category(alc_type);
+fn calc_ingred_weight(ingred_type: &str, percentage: f32) -> Result<(u32, f32), CalculationError> {
+    let cat: Category = match_category(ingred_type);
     Ok(match cat {
         Category::Carbonated => (1, 1772.6 * percentage.powf(-0.996)),
         Category::Liqueur => (2, 235.94 * (percentage * -0.044).exp()),
@@ -47,8 +47,8 @@ fn calc_ingred_weight(alc_type: &str, percentage: f32) -> Result<(u32, f32), Cal
     })
 }
 
-fn calc_volume(alc_type: u32, percentage: f32) -> Result<f32, CalculationError> {
-    Ok(match alc_type {
+fn calc_volume(ingred_type: u32, percentage: f32) -> Result<f32, CalculationError> {
+    Ok(match ingred_type {
         1 => (40. / percentage) * 44.355,
         2 => (40. / percentage) * 44.355,
         3 => (5. / percentage) * 354.84,
@@ -73,7 +73,7 @@ pub fn calc_weights(
 
     if data.len() == 1 {
         // use calc_ingred_weight directly if there's only one ingredient
-        let (_, weight) = calc_ingred_weight(&data[0].alc_type, data[0].percentage)?;
+        let (_, weight) = calc_ingred_weight(&data[0].ingred_type, data[0].percentage)?;
         let scaled_weight = num_drinks * weight;
         data[0].weight = round_to_place(scaled_weight, 1.0).unwrap_or(scaled_weight);
     } else {
@@ -81,9 +81,9 @@ pub fn calc_weights(
         let mut first = &data[0].clone();
         data.iter_mut().enumerate().try_for_each(
             |(ix, item): (usize, &mut IngredientData)| -> Result<(), CalculationError> {
-                let (alc_type, weight) = calc_ingred_weight(&item.alc_type, item.percentage)?;
+                let (ingred_type, weight) = calc_ingred_weight(&item.ingred_type, item.percentage)?;
                 item.weight = weight;
-                item.volume = calc_volume(alc_type, item.percentage)?;
+                item.volume = calc_volume(ingred_type, item.percentage)?;
                 item.density = weight / item.volume;
 
                 if ix == 0 {
@@ -150,7 +150,7 @@ mod tests {
     fn test_calc_weights_single_ingred() {
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData {
-            alc_type: "Kahlua".into(),
+            ingred_type: "Kahlua".into(),
             percentage: 20.,
             ..Default::default()
         });
@@ -163,13 +163,13 @@ mod tests {
     fn test_calc_weights_multiple_ingreds() {
         let mut data: Vec<IngredientData> = Vec::new();
         data.push(IngredientData {
-            alc_type: "Whiskey".into(),
+            ingred_type: "Whiskey".into(),
             parts: 1.5,
             percentage: 40.,
             ..Default::default()
         });
         data.push(IngredientData {
-            alc_type: "Wine".into(),
+            ingred_type: "Wine".into(),
             parts: 1.,
             percentage: 16.5,
             ..Default::default()

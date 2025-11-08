@@ -22,7 +22,7 @@ pub const FIELDS: [(&str, f32); 4] = [
 ];
 
 pub struct Ingredient {
-    pub alc_type: Entity<Dropdown>,
+    pub ingred_type: Entity<Dropdown>,
     pub percentage_input: Entity<TextInput>,
     pub parts_input: Entity<TextInput>,
     pub weight: SharedString,
@@ -34,7 +34,7 @@ impl Ingredient {
         // we have 3 items per indgred and tab_index 0 is num_drinks_input,
         // so multiply by 3 and offset by one
         Self {
-            alc_type: cx.new(|cx| Dropdown::new(id, cx, id as isize * 3 + 1)),
+            ingred_type: cx.new(|cx| Dropdown::new(id, cx, id as isize * 3 + 1)),
             percentage_input: cx
                 .new(|cx| TextInput::new(window, cx, "Type here...".into(), id as isize * 3 + 2)),
             parts_input: cx
@@ -46,7 +46,7 @@ impl Ingredient {
 
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
         div().w(width).child(match key {
-            "ingredient" => div().child(self.alc_type.clone()),
+            "ingredient" => div().child(self.ingred_type.clone()),
             "percentage" => div().child(self.percentage_input.clone()),
             "parts" => div().child(self.parts_input.clone()),
             "weight" => div()
@@ -93,7 +93,7 @@ impl EventEmitter<Remove> for Ingredient {}
 
 #[derive(Clone)]
 pub struct IngredientData {
-    pub alc_type: SharedString,
+    pub ingred_type: SharedString,
     pub percentage: f32,
     pub parts: f32,
     pub density: f32,
@@ -105,7 +105,7 @@ pub struct IngredientData {
 impl Default for IngredientData {
     fn default() -> Self {
         Self {
-            alc_type: "".into(),
+            ingred_type: "".into(),
             percentage: 0.,
             parts: 0.,
             density: 0.,
