@@ -13,6 +13,7 @@ use crate::{
             icon::{Icon, IconSize, IconVariant},
             input::text_input::TextInput,
             toast::toast,
+            tooltip::Tooltip,
         },
         util::theme::ActiveTheme,
         view::table::ingredient::{FIELDS, Ingredient, IngredientData},
@@ -55,7 +56,7 @@ impl Table {
             num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into(), 0)),
             num_drinks: 0.,
             count: 0,
-            width: FIELDS.iter().fold(0., |acc, field| acc + field.1),
+            width: FIELDS.iter().fold(0., |acc, field| acc + field.2),
             init: true,
             focus_handle: cx.focus_handle(),
         }
@@ -275,7 +276,15 @@ impl Render for Table {
                             .justify_start()
                             .w(px(120. + 4. * 2.))
                             .border_color(cx.theme().background)
-                            .child(div().child("Units".to_uppercase()).bottom(px(1.5))),
+                            .child(div().child("Units".to_uppercase()).bottom(px(1.5)))
+                            .id("units_label")
+                            .tooltip(|window, cx| {
+                                Tooltip::new(
+                                    "Total desired number of units of alcohol in the drink".into(),
+                                    None,
+                                )
+                                .build(window, cx)
+                            }),
                     )
                     .child(self.num_drinks_input.clone()),
             )
@@ -302,13 +311,17 @@ impl Render for Table {
                             .left_4()
                             .bottom(px(2.))
                             .text_xs()
-                            .children(FIELDS.map(|(key, width)| {
+                            .children(FIELDS.map(|(key, desc, width)| {
                                 div()
                                     .whitespace_nowrap()
                                     .flex_shrink_0()
                                     .truncate()
                                     .w(px(width))
                                     .child(key.replace("_", " ").to_uppercase())
+                                    .id(format!("{key}_label").into_element())
+                                    .tooltip(|window, cx| {
+                                        Tooltip::new(desc.into(), None).build(window, cx)
+                                    })
                             })),
                     )
                     // ingreds

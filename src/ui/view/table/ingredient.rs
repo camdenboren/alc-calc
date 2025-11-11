@@ -14,11 +14,23 @@ use crate::ui::{
 };
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
-pub const FIELDS: [(&str, f32); 4] = [
-    ("ingredient", 148.),
-    ("percentage", 132.),
-    ("parts", 132.),
-    ("weight", 72.),
+pub const FIELDS: [(&str, &str, f32); 4] = [
+    ("ingredient", "Type of ingredient (e.g., Whiskey)", 148.),
+    (
+        "percentage",
+        "Percentage of alcohol in the ingredient",
+        132.,
+    ),
+    (
+        "parts",
+        "Desired number of parts of this ingredient relative to others",
+        132.,
+    ),
+    (
+        "weight",
+        "Calculated weight (in g) of this ingredient to pour in the drink",
+        72.,
+    ),
 ];
 
 pub struct Ingredient {
@@ -83,7 +95,7 @@ impl Render for Ingredient {
                 Icon::new(IconVariant::Minus, IconSize::Small),
                 cx.listener(move |this, _, _window, cx| this.remove(cx)),
             ))
-            .children(FIELDS.map(|(key, width)| self.render_cell(key, px(width))))
+            .children(FIELDS.map(|(key, _, width)| self.render_cell(key, px(width))))
     }
 }
 
