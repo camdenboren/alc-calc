@@ -345,7 +345,16 @@ impl Render for Table {
                                 cx.listener(move |this, _, window, cx| {
                                     this.add(&Add, window, cx);
                                 }),
-                            )),
+                            ))
+                            .id("add_button")
+                            .tooltip(|window, cx| {
+                                let ctrl = cx.ctrl();
+                                Tooltip::new(
+                                    "Add an Ingredient".into(),
+                                    Some(format!("{ctrl}-i").into()),
+                                )
+                                .build(window, cx)
+                            }),
                     ),
             )
     }

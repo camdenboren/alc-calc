@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::{
+    ActiveCtrl,
     comp::{
         button::{icon_button, text_button},
         icon::{Icon, IconSize, IconVariant},
+        tooltip::Tooltip,
     },
     util::theme::{ActiveTheme, Theme, ThemeVariant},
 };
@@ -182,6 +184,12 @@ impl Render for ThemeMenu {
                 Icon::new(IconVariant::Theme, IconSize::Medium),
                 cx.listener(move |this, _, _, cx| this.toggle(cx)),
             ))
+            .id("menu")
+            .tooltip(|window, cx| {
+                let ctrl = cx.ctrl();
+                Tooltip::new("Theme Menu".into(), Some(format!("{ctrl}-t").into()))
+                    .build(window, cx)
+            })
             .when(self.show, |this| {
                 this.child(
                     div()

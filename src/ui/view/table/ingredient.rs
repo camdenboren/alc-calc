@@ -4,11 +4,13 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
 
 use crate::ui::{
+    ActiveCtrl,
     comp::{
         button::icon_button,
         dropdown::Dropdown,
         icon::{Icon, IconSize, IconVariant},
         input::text_input::TextInput,
+        tooltip::Tooltip,
     },
     util::theme::ActiveTheme,
 };
@@ -81,6 +83,8 @@ impl Ingredient {
 
 impl Render for Ingredient {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let id = self.id;
+
         div()
             .flex()
             .flex_row()
@@ -90,11 +94,24 @@ impl Render for Ingredient {
             .items_center()
             .justify_center()
             .gap_x_4()
-            .child(icon_button(
-                "remove",
-                Icon::new(IconVariant::Minus, IconSize::Small),
-                cx.listener(move |this, _, _window, cx| this.remove(cx)),
-            ))
+            .child(
+                div()
+                    .flex()
+                    .child(icon_button(
+                        "remove",
+                        Icon::new(IconVariant::Minus, IconSize::Small),
+                        cx.listener(move |this, _, _window, cx| this.remove(cx)),
+                    ))
+                    .id(format!("remove_button_{id}").into_element())
+                    .tooltip(|window, cx| {
+                        let ctrl = cx.ctrl();
+                        Tooltip::new(
+                            "Remove this Ingredient".into(),
+                            Some(format!("{ctrl}-r").into()),
+                        )
+                        .build(window, cx)
+                    }),
+            )
             .children(FIELDS.map(|(key, _, width)| self.render_cell(key, px(width))))
     }
 }
