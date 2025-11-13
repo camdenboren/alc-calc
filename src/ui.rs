@@ -5,6 +5,8 @@ mod comp;
 pub mod util;
 pub mod view;
 
+#[cfg(target_os = "macos")]
+use crate::ui::app_menu::{app_dock_menu, app_menu};
 use crate::ui::{
     comp::{
         input::text_input::{Copy, Cut, Paste, SelectAll},
@@ -20,8 +22,6 @@ use gpui::{
     App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, PromptLevel,
     SharedString, Window, actions, deferred, div, prelude::*,
 };
-#[cfg(target_os = "macos")]
-use gpui::{Menu, MenuItem, OsAction};
 
 actions!(
     ui,
@@ -99,42 +99,10 @@ impl UI {
         ]);
 
         #[cfg(target_os = "macos")]
-        cx.set_menus(vec![
-            Menu {
-                name: "alc-calc".into(),
-                items: vec![
-                    MenuItem::action("About alc-calc…", About),
-                    MenuItem::Separator,
-                    MenuItem::action("Hide alc-calc", Hide),
-                    MenuItem::Separator,
-                    MenuItem::action("Quit alc-calc", Quit),
-                ],
-            },
-            Menu {
-                name: "File".into(),
-                items: vec![
-                    MenuItem::action("New Window", NewWindow),
-                    MenuItem::Separator,
-                    MenuItem::action("Close Window", CloseWindow),
-                ],
-            },
-            Menu {
-                name: "Edit".into(),
-                items: vec![
-                    MenuItem::os_action("Cut", Cut, OsAction::Cut),
-                    MenuItem::os_action("Copy", Copy, OsAction::Copy),
-                    MenuItem::os_action("Paste", Paste, OsAction::Paste),
-                    MenuItem::os_action("Select All", SelectAll, OsAction::SelectAll),
-                ],
-            },
-            Menu {
-                name: "Window".into(),
-                items: vec![MenuItem::action("Minimize", Minimize)],
-            },
-        ]);
+        cx.set_menus(app_menu());
 
         #[cfg(target_os = "macos")]
-        cx.set_dock_menu(vec![MenuItem::action("New Window", NewWindow)]);
+        cx.set_dock_menu(app_dock_menu());
 
         // prevents fs access on tests
         #[cfg(not(test))]
