@@ -34,7 +34,6 @@ pub struct Table {
     pub num_drinks_input: Entity<TextInput>,
     num_drinks: f32,
     count: usize,
-    width: f32,
     init: bool,
     focus_handle: FocusHandle,
 }
@@ -56,7 +55,6 @@ impl Table {
             num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into(), 0)),
             num_drinks: 0.,
             count: 0,
-            width: FIELDS.iter().fold(0., |acc, field| acc + field.2),
             init: true,
             focus_handle: cx.focus_handle(),
         }
@@ -294,7 +292,6 @@ impl Render for Table {
                     .flex_col()
                     .flex_1()
                     .p_4()
-                    .items_center()
                     .gap_2()
                     .bg(cx.theme().foreground)
                     .rounded_lg()
@@ -303,12 +300,12 @@ impl Render for Table {
                         div()
                             .flex()
                             .flex_row()
+                            .ml_8()
                             .h_5()
                             .gap_x_4()
                             .overflow_hidden()
                             .text_color(cx.theme().text)
                             .bg(cx.theme().foreground)
-                            .left_4()
                             .bottom(px(2.))
                             .text_xs()
                             .children(FIELDS.map(|(key, desc, width)| {
@@ -335,26 +332,25 @@ impl Render for Table {
                     )
                     // + button
                     .child(
-                        div()
-                            .pt_2()
-                            .h_6()
-                            .w(px(self.width + 78.))
-                            .child(icon_button(
-                                "add",
-                                Icon::new(IconVariant::Plus, IconSize::Small),
-                                cx.listener(move |this, _, window, cx| {
-                                    this.add(&Add, window, cx);
+                        div().flex().pt_2().h_6().child(
+                            div()
+                                .child(icon_button(
+                                    "add",
+                                    Icon::new(IconVariant::Plus, IconSize::Small),
+                                    cx.listener(move |this, _, window, cx| {
+                                        this.add(&Add, window, cx);
+                                    }),
+                                ))
+                                .id("add_button")
+                                .tooltip(|window, cx| {
+                                    let ctrl = cx.ctrl();
+                                    Tooltip::new(
+                                        "Add an Ingredient".into(),
+                                        Some(format!("{ctrl}-i").into()),
+                                    )
+                                    .build(window, cx)
                                 }),
-                            ))
-                            .id("add_button")
-                            .tooltip(|window, cx| {
-                                let ctrl = cx.ctrl();
-                                Tooltip::new(
-                                    "Add an Ingredient".into(),
-                                    Some(format!("{ctrl}-i").into()),
-                                )
-                                .build(window, cx)
-                            }),
+                        ),
                     ),
             )
     }

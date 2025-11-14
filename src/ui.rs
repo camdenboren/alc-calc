@@ -6,7 +6,7 @@ pub mod util;
 pub mod view;
 
 #[cfg(target_os = "macos")]
-use crate::ui::app_menu::{app_dock_menu, app_menu};
+use crate::ui::util::app_menu::{app_dock_menu, app_menu};
 use crate::ui::{
     comp::{
         input::text_input::{Copy, Cut, Paste, SelectAll},

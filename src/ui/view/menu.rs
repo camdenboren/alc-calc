@@ -164,7 +164,7 @@ impl Render for ThemeMenu {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
-            .flex_col()
+            .flex_row()
             .key_context(CONTEXT)
             .when(self.show, |this| {
                 this.on_action(cx.listener(Self::escape_key))
@@ -176,20 +176,22 @@ impl Render for ThemeMenu {
                 this.on_action(cx.listener(Self::show_key))
             })
             .track_focus(&self.focus_handle)
-            .justify_start()
-            .items_end()
+            .justify_end()
             .p_2()
-            .child(icon_button(
-                "menu",
-                Icon::new(IconVariant::Theme, IconSize::Medium),
-                cx.listener(move |this, _, _, cx| this.toggle(cx)),
-            ))
-            .id("menu")
-            .tooltip(|window, cx| {
-                let ctrl = cx.ctrl();
-                Tooltip::new("Theme Menu".into(), Some(format!("{ctrl}-t").into()))
-                    .build(window, cx)
-            })
+            .child(
+                div()
+                    .child(icon_button(
+                        "menu",
+                        Icon::new(IconVariant::Theme, IconSize::Medium),
+                        cx.listener(move |this, _, _, cx| this.toggle(cx)),
+                    ))
+                    .id("menu_button")
+                    .tooltip(|window, cx| {
+                        let ctrl = cx.ctrl();
+                        Tooltip::new("Theme Menu".into(), Some(format!("{ctrl}-t").into()))
+                            .build(window, cx)
+                    }),
+            )
             .when(self.show, |this| {
                 this.child(
                     div()
