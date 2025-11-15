@@ -117,6 +117,18 @@ impl Dropdown {
         cx.notify();
     }
 
+    pub fn hide(&mut self, cx: &mut Context<Self>) {
+        if self.show != false {
+            if self.prev.is_some() {
+                let current = self.prev.clone().unwrap_or("Whiskey".into());
+                self.focused_item = Dropdown::index_of(&self.types, &current);
+                self.current = current;
+            }
+            self.show = false;
+            cx.notify();
+        }
+    }
+
     // types is guaranteed to be non-empty, so default to 0th type to avoid panicking
 
     fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {

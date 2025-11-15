@@ -20,8 +20,8 @@ use crate::{
     },
 };
 use gpui::{
-    App, Entity, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div,
-    prelude::*, px,
+    App, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions,
+    div, prelude::*, px,
 };
 
 actions!(table, [Tab, TabPrev, Add, Delete, Escape, RemoveKey]);
@@ -72,6 +72,28 @@ impl Table {
                     this.remove(ingred.read(cx).id, cx)
                 },
             )
+            .detach();
+
+            // hide dropdown on Tab, TabPrev
+            cx.subscribe_self(|this: &mut Table, Tab, cx| {
+                this.ingreds.iter().for_each(|ingred| {
+                    ingred.update(cx, |ingred, cx| {
+                        ingred
+                            .ingred_type
+                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
+                    });
+                });
+            })
+            .detach();
+            cx.subscribe_self(|this: &mut Table, TabPrev, cx| {
+                this.ingreds.iter().for_each(|ingred| {
+                    ingred.update(cx, |ingred, cx| {
+                        ingred
+                            .ingred_type
+                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
+                    });
+                });
+            })
             .detach();
 
             self.ingreds.push(ingred);
@@ -214,14 +236,19 @@ impl Table {
         self.focus_handle.focus(window);
     }
 
-    fn on_tab(&mut self, _: &Tab, window: &mut Window, _: &mut Context<Self>) {
+    fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_next();
+        cx.emit(Tab {});
     }
 
-    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, _: &mut Context<Self>) {
+    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_prev();
+        cx.emit(TabPrev {});
     }
 }
+
+impl EventEmitter<Tab> for Table {}
+impl EventEmitter<TabPrev> for Table {}
 
 impl Render for Table {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
