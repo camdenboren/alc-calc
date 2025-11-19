@@ -33,7 +33,8 @@ actions!(
         CloseWindow,
         Minimize,
         Toggle,
-        Tab
+        Tab,
+        TabPrev
     ]
 );
 
@@ -86,6 +87,7 @@ impl UI {
             KeyBinding::new(&format!("{ctrl}-n"), NewWindow, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-w"), CloseWindow, Some(CONTEXT)),
             KeyBinding::new("tab", Tab, Some(CONTEXT)),
+            KeyBinding::new("shift-tab", TabPrev, Some(CONTEXT)),
             #[cfg(target_os = "macos")]
             KeyBinding::new(&format!("{ctrl}-h"), Hide, Some(CONTEXT)),
             #[cfg(target_os = "macos")]
@@ -112,7 +114,7 @@ impl UI {
             menu: cx.new(ThemeMenu::new),
             table: cx.new(|cx| Table::new(window, cx)),
             titlebar: cx.new(|_| Titlebar::default()),
-            focus_handle: cx.focus_handle(),
+            focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
         }
     }
 
@@ -184,10 +186,12 @@ impl UI {
         }
     }
 
-    fn focus_next(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
-        if self.focus_handle.is_focused(window) {
-            self.table.read(cx).num_drinks_input.read(cx).focus(window);
-        }
+    fn on_tab(&mut self, _: &Tab, window: &mut Window, _: &mut Context<Self>) {
+        window.focus_next();
+    }
+
+    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, _: &mut Context<Self>) {
+        window.focus_prev();
     }
 }
 
@@ -199,7 +203,8 @@ impl Render for UI {
             div()
                 .key_context(CONTEXT)
                 .on_action(cx.listener(Self::toggle))
-                .on_action(cx.listener(Self::focus_next))
+                .on_action(cx.listener(Self::on_tab))
+                .on_action(cx.listener(Self::on_tab_prev))
                 .on_action(cx.listener(Self::quit))
                 .on_action(cx.listener(Self::close))
                 .on_action(cx.listener(Self::create))

@@ -52,7 +52,7 @@ impl Table {
 
         Self {
             ingreds: vec![],
-            num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into(), 0)),
+            num_drinks_input: cx.new(|cx| TextInput::new(window, cx, "Type here...".into(), 1)),
             num_drinks: 0.,
             count: 0,
             init: true,
@@ -74,7 +74,11 @@ impl Table {
             )
             .detach();
 
+            self.ingreds.push(ingred);
+            self.count += 1;
+
             // hide dropdown on Tab, TabPrev
+            // we have to iterate through all elements anytime we append for this to work
             cx.subscribe_self(|this: &mut Table, Tab, cx| {
                 this.ingreds.iter().for_each(|ingred| {
                     ingred.update(cx, |ingred, cx| {
@@ -95,9 +99,6 @@ impl Table {
                 });
             })
             .detach();
-
-            self.ingreds.push(ingred);
-            self.count += 1;
         }
         cx.notify();
     }
