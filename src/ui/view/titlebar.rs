@@ -80,6 +80,7 @@ impl Render for Titlebar {
                                 window.remove_window();
                             },
                         ))
+                        .block_mouse_except_scroll()
                         .map(|this| match window.is_window_active() {
                             true => this.bg(cx.theme().close_button),
                             false => this.bg(cx.theme().close_button_inactive),
