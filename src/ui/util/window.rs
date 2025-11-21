@@ -20,7 +20,9 @@ const SHADOW_SIZE: Pixels = px(12.0);
 
 pub fn new_window(cx: &mut App) {
     if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
-        cx.new(|cx| UI::new(window, cx))
+        let ui = cx.new(|cx| UI::new(window, cx));
+        ui.update(cx, |ui, cx| ui.init(cx));
+        ui
     }) {
     } else {
         eprintln!("alc-calc failed to open a window");

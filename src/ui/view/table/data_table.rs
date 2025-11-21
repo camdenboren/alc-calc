@@ -30,7 +30,7 @@ pub const CONTEXT: &str = "Table";
 pub const MAX_ITEMS: usize = 10;
 
 pub struct Table {
-    ingreds: Vec<Entity<Ingredient>>,
+    pub ingreds: Vec<Entity<Ingredient>>,
     pub num_drinks_input: Entity<TextInput>,
     num_drinks: f32,
     count: usize,
@@ -77,25 +77,21 @@ impl Table {
             self.ingreds.push(ingred);
             self.count += 1;
 
-            // hide dropdown on Tab, TabPrev
+            // hide dropdown on Tab, TabPrev, and manage cursor responses to tab events
             // we have to iterate through all elements anytime we append for this to work
             cx.subscribe_self(|this: &mut Table, Tab, cx| {
+                this.num_drinks_input
+                    .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
                 this.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| {
-                        ingred
-                            .ingred_type
-                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
-                    });
+                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
                 });
             })
             .detach();
             cx.subscribe_self(|this: &mut Table, TabPrev, cx| {
+                this.num_drinks_input
+                    .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
                 this.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| {
-                        ingred
-                            .ingred_type
-                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
-                    });
+                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
                 });
             })
             .detach();
@@ -240,11 +236,13 @@ impl Table {
     fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_next();
         cx.emit(Tab {});
+        cx.notify();
     }
 
     fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_prev();
         cx.emit(TabPrev {});
+        cx.notify();
     }
 }
 

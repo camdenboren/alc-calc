@@ -76,6 +76,15 @@ impl Ingredient {
         self.weight = weight.to_string().into();
     }
 
+    pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
+        self.ingred_type
+            .update(cx, |ingred_type, cx| ingred_type.hide(cx));
+        self.percentage_input
+            .update(cx, |percentage, cx| percentage.show_cursor(cx));
+        self.parts_input
+            .update(cx, |parts, cx| parts.show_cursor(cx));
+    }
+
     fn remove(&mut self, cx: &mut Context<Self>) {
         cx.emit(Remove {});
     }

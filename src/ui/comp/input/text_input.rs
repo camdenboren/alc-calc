@@ -44,7 +44,7 @@ enum InputEvent {
 const CONTEXT: &str = "TextInput";
 
 pub struct TextInput {
-    cursor_state: Entity<CursorState>,
+    pub cursor_state: Entity<CursorState>,
     pub focus_handle: FocusHandle,
     pub content: SharedString,
     pub placeholder: SharedString,
@@ -87,25 +87,12 @@ impl TextInput {
         ]);
 
         let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
+        cx.on_focus(&focus_handle, window, Self::on_focus).detach();
+        cx.on_blur(&focus_handle, window, Self::on_blur).detach();
         let cursor_state = cx.new(|_| CursorState::new());
-        let _subscriptions = vec![
-            cx.observe(&cursor_state, |_, _, cx| cx.notify()),
-            cx.observe_window_activation(window, |input, window, cx| {
-                if window.is_window_active() {
-                    let focus_handle = input.focus_handle.clone();
-                    if focus_handle.is_focused(window) {
-                        input.cursor_state.update(cx, |cursor_state, cx| {
-                            cursor_state.start(cx);
-                        });
-                    }
-                }
-            }),
-            cx.on_focus(&focus_handle, window, Self::on_focus),
-            cx.on_blur(&focus_handle, window, Self::on_blur),
-        ];
 
-        Self {
-            cursor_state,
+        let input = Self {
+            cursor_state: cursor_state.clone(),
             focus_handle,
             content: "".into(),
             placeholder,
@@ -116,8 +103,23 @@ impl TextInput {
             last_layout: None,
             last_bounds: None,
             is_selecting: false,
-            _subscriptions,
-        }
+            _subscriptions: vec![
+                cx.observe(&cursor_state, |_, _, cx| cx.notify()),
+                cx.observe_window_activation(window, |input, window, cx| {
+                    if window.is_window_active() {
+                        let active = window.is_window_active();
+                        input.cursor_state.update(cx, |blink_manager, cx| {
+                            if active {
+                                blink_manager.enable(cx);
+                            } else {
+                                blink_manager.disable(cx);
+                            }
+                        });
+                    }
+                }),
+            ],
+        };
+        input
     }
 
     pub fn focus(&self, window: &mut Window) {
@@ -130,30 +132,28 @@ impl TextInput {
 
     fn on_focus(&mut self, _: &mut Window, cx: &mut Context<Self>) {
         self.cursor_state.update(cx, |cursor, cx| {
-            cursor.start(cx);
+            cursor.enable(cx);
         });
         cx.emit(InputEvent::Focus);
     }
 
     fn on_blur(&mut self, _: &mut Window, cx: &mut Context<Self>) {
         self.cursor_state.update(cx, |cursor, cx| {
-            cursor.stop(cx);
+            cursor.disable(cx);
         });
         cx.emit(InputEvent::Blur);
     }
 
-    fn pause_blink(&mut self, cx: &mut Context<Self>) {
-        self.cursor_state.update(cx, |cursor, cx| {
-            cursor.pause(cx);
-        });
+    pub fn show_cursor(&self, cx: &mut Context<Self>) {
+        self.cursor_state
+            .update(cx, |cursor, cx| cursor.show_cursor(cx));
     }
 
-    pub fn show_cursor(&self, window: &mut Window, cx: &App) -> bool {
-        self.is_focused(window) && self.cursor_state.read(cx).show()
+    pub fn should_show_cursor(&self, window: &mut Window, cx: &App) -> bool {
+        self.is_focused(window) && self.cursor_state.read(cx).visible()
     }
 
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
-        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
         } else {
@@ -162,7 +162,6 @@ impl TextInput {
     }
 
     fn right(&mut self, _: &Right, _: &mut Window, cx: &mut Context<Self>) {
-        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.next_boundary(self.selected_range.end), cx);
         } else {
@@ -218,12 +217,10 @@ impl TextInput {
     }
 
     fn home(&mut self, _: &Home, _: &mut Window, cx: &mut Context<Self>) {
-        self.pause_blink(cx);
         self.move_to(0, cx);
     }
 
     fn end(&mut self, _: &End, _: &mut Window, cx: &mut Context<Self>) {
-        self.pause_blink(cx);
         self.move_to(self.content.len(), cx);
     }
 
@@ -232,7 +229,6 @@ impl TextInput {
             self.select_to(self.previous_boundary(self.cursor_offset()), cx)
         }
         self.replace_text_in_range(None, "", window, cx);
-        self.pause_blink(cx);
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
@@ -240,12 +236,9 @@ impl TextInput {
             self.select_to(self.next_boundary(self.cursor_offset()), cx)
         }
         self.replace_text_in_range(None, "", window, cx);
-        self.pause_blink(cx);
     }
 
-    fn on_key_down(&mut self, _: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
-        self.pause_blink(cx);
-    }
+    fn on_key_down(&mut self, _: &KeyDownEvent, _: &mut Window, _cx: &mut Context<Self>) {}
 
     fn on_mouse_down(
         &mut self,
@@ -323,7 +316,7 @@ impl TextInput {
 
     fn move_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         self.selected_range = offset..offset;
-        self.pause_blink(cx);
+
         cx.notify()
     }
 

@@ -19,8 +19,8 @@ use crate::ui::{
     view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
-    App, ClipboardItem, Entity, FocusHandle, Focusable, Global, KeyBinding, PromptLevel,
-    SharedString, Window, actions, deferred, div, prelude::*,
+    App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, Global, KeyBinding,
+    PromptLevel, SharedString, Window, actions, deferred, div, prelude::*,
 };
 
 actions!(
@@ -118,6 +118,34 @@ impl UI {
         }
     }
 
+    pub fn init(&mut self, cx: &mut Context<Self>) {
+        // manage cursor responses to tab events
+        cx.subscribe_self(|this: &mut UI, Tab, cx| {
+            this.table.update(cx, |table, cx| {
+                table.num_drinks_input.update(cx, |num_drinks, cx| {
+                    num_drinks
+                        .cursor_state
+                        .update(cx, |cursor, cx| cursor.show_cursor(cx))
+                });
+                table.ingreds.iter().for_each(|ingred| {
+                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
+                });
+            });
+        })
+        .detach();
+        cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
+            this.table.update(cx, |table, cx| {
+                table
+                    .num_drinks_input
+                    .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
+                table.ingreds.iter().for_each(|ingred| {
+                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
+                });
+            });
+        })
+        .detach();
+    }
+
     fn quit(&mut self, _: &Quit, _window: &mut Window, cx: &mut Context<Self>) {
         cx.quit();
     }
@@ -186,14 +214,21 @@ impl UI {
         }
     }
 
-    fn on_tab(&mut self, _: &Tab, window: &mut Window, _: &mut Context<Self>) {
+    fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_next();
+        cx.emit(Tab {});
+        cx.notify();
     }
 
-    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, _: &mut Context<Self>) {
+    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_prev();
+        cx.emit(TabPrev {});
+        cx.notify()
     }
 }
+
+impl EventEmitter<Tab> for UI {}
+impl EventEmitter<TabPrev> for UI {}
 
 impl Render for UI {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
