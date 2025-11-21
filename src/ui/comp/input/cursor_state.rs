@@ -15,6 +15,12 @@ pub struct CursorState {
     enabled: bool,
 }
 
+impl Default for CursorState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CursorState {
     pub fn new() -> Self {
         Self {
@@ -30,10 +36,21 @@ impl CursorState {
         self.blink_epoch
     }
 
-    pub fn show_cursor(&mut self, cx: &mut Context<Self>) {
-        if !self.visible {
-            self.visible = true;
-            cx.notify();
+    pub fn pause_blinking(&mut self, cx: &mut Context<Self>) {
+        self.show_cursor(cx);
+
+        let epoch = self.next_blink_epoch();
+        cx.spawn(async move |this, cx| {
+            Timer::after(Duration::from_millis(INTERVAL)).await;
+            this.update(cx, |this, cx| this.resume_cursor_blinking(epoch, cx))
+        })
+        .detach();
+    }
+
+    fn resume_cursor_blinking(&mut self, epoch: usize, cx: &mut Context<Self>) {
+        if epoch == self.blink_epoch {
+            self.blinking_paused = false;
+            self.blink_cursors(epoch, cx);
         }
     }
 
@@ -51,6 +68,13 @@ impl CursorState {
                 }
             })
             .detach();
+        }
+    }
+
+    pub fn show_cursor(&mut self, cx: &mut Context<Self>) {
+        if !self.visible {
+            self.visible = true;
+            cx.notify();
         }
     }
 

@@ -89,9 +89,9 @@ impl TextInput {
         let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
         cx.on_focus(&focus_handle, window, Self::on_focus).detach();
         cx.on_blur(&focus_handle, window, Self::on_blur).detach();
-        let cursor_state = cx.new(|_| CursorState::new());
+        let cursor_state = cx.new(|_| CursorState::default());
 
-        let input = Self {
+        Self {
             cursor_state: cursor_state.clone(),
             focus_handle,
             content: "".into(),
@@ -118,8 +118,7 @@ impl TextInput {
                     }
                 }),
             ],
-        };
-        input
+        }
     }
 
     pub fn focus(&self, window: &mut Window) {
@@ -144,6 +143,12 @@ impl TextInput {
         cx.emit(InputEvent::Blur);
     }
 
+    fn pause_blink(&mut self, cx: &mut Context<Self>) {
+        self.cursor_state.update(cx, |cursor, cx| {
+            cursor.pause_blinking(cx);
+        });
+    }
+
     pub fn show_cursor(&self, cx: &mut Context<Self>) {
         self.cursor_state
             .update(cx, |cursor, cx| cursor.show_cursor(cx));
@@ -154,6 +159,7 @@ impl TextInput {
     }
 
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.previous_boundary(self.cursor_offset()), cx);
         } else {
@@ -162,6 +168,7 @@ impl TextInput {
     }
 
     fn right(&mut self, _: &Right, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         if self.selected_range.is_empty() {
             self.move_to(self.next_boundary(self.selected_range.end), cx);
         } else {
@@ -217,10 +224,12 @@ impl TextInput {
     }
 
     fn home(&mut self, _: &Home, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         self.move_to(0, cx);
     }
 
     fn end(&mut self, _: &End, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
         self.move_to(self.content.len(), cx);
     }
 
@@ -229,6 +238,7 @@ impl TextInput {
             self.select_to(self.previous_boundary(self.cursor_offset()), cx)
         }
         self.replace_text_in_range(None, "", window, cx);
+        self.pause_blink(cx);
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
@@ -236,9 +246,12 @@ impl TextInput {
             self.select_to(self.next_boundary(self.cursor_offset()), cx)
         }
         self.replace_text_in_range(None, "", window, cx);
+        self.pause_blink(cx);
     }
 
-    fn on_key_down(&mut self, _: &KeyDownEvent, _: &mut Window, _cx: &mut Context<Self>) {}
+    fn on_key_down(&mut self, _: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        self.pause_blink(cx);
+    }
 
     fn on_mouse_down(
         &mut self,
@@ -316,6 +329,7 @@ impl TextInput {
 
     fn move_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         self.selected_range = offset..offset;
+        self.pause_blink(cx);
 
         cx.notify()
     }

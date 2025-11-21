@@ -110,38 +110,50 @@ impl UI {
         #[cfg(not(test))]
         Theme::set(cx);
 
+        let table = cx.new(|cx| Table::new(window, cx));
+        cx.subscribe(&table, |this: &mut UI, _table, _event, cx| this.on_add(cx))
+            .detach();
+
         UI {
             menu: cx.new(ThemeMenu::new),
-            table: cx.new(|cx| Table::new(window, cx)),
+            table,
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
         }
     }
 
+    /// Subscribe menu and table.num_drinks_input to UI's events.
+    /// Both subscribe to Tab, TabPrev, but only num_drinks_input subscribes to Toggle atm
     pub fn init(&mut self, cx: &mut Context<Self>) {
-        // manage cursor responses to tab events
         cx.subscribe_self(|this: &mut UI, Tab, cx| {
-            this.table.update(cx, |table, cx| {
-                table.num_drinks_input.update(cx, |num_drinks, cx| {
-                    num_drinks
-                        .cursor_state
-                        .update(cx, |cursor, cx| cursor.show_cursor(cx))
-                });
-                table.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
-                });
-            });
+            this.menu.update(cx, |menu, cx| menu.hide(cx));
+            this.table
+                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
         })
         .detach();
         cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
-            this.table.update(cx, |table, cx| {
-                table
-                    .num_drinks_input
-                    .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
-                table.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx))
-                });
-            });
+            this.menu.update(cx, |menu, cx| menu.hide(cx));
+            this.table
+                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
+        })
+        .detach();
+        cx.subscribe_self(|this, Toggle, cx| {
+            this.table
+                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
+        })
+        .detach();
+    }
+
+    /// Subscribe new ingreds to UI's Tab, TabPrev events
+    fn on_add(&mut self, cx: &mut Context<Self>) {
+        cx.subscribe_self(|this: &mut UI, Tab, cx| {
+            this.table
+                .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
+        })
+        .detach();
+        cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
+            this.table
+                .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
         })
         .detach();
     }
@@ -212,23 +224,23 @@ impl UI {
             }
             self.table.read(cx).num_drinks_input.read(cx).focus(window);
         }
+        cx.emit(Toggle {});
     }
 
     fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_next();
         cx.emit(Tab {});
-        cx.notify();
     }
 
     fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_prev();
         cx.emit(TabPrev {});
-        cx.notify()
     }
 }
 
 impl EventEmitter<Tab> for UI {}
 impl EventEmitter<TabPrev> for UI {}
+impl EventEmitter<Toggle> for UI {}
 
 impl Render for UI {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -336,7 +348,7 @@ mod tests {
         assert_eq!(true, table_focused)
     }
 
-    fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext, SharedString) {
+    pub fn setup_ui(cx: &mut TestAppContext) -> (Entity<UI>, &mut VisualTestContext, SharedString) {
         Theme::test(cx);
         let mut ctrl: SharedString = "".into();
         cx.update(|cx| {

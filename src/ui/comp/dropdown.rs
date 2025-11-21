@@ -114,6 +114,7 @@ impl Dropdown {
     fn show(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
         self.prev = Some(self.current.clone());
+        self.scroll();
         cx.notify();
     }
 
