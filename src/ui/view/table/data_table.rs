@@ -24,13 +24,13 @@ use gpui::{
     div, prelude::*, px,
 };
 
-actions!(table, [Tab, TabPrev, Add, Delete, Escape, RemoveKey]);
+actions!(table, [Add, Delete, Escape, RemoveKey]);
 
 pub const CONTEXT: &str = "Table";
 pub const MAX_ITEMS: usize = 10;
 
 pub struct Table {
-    ingreds: Vec<Entity<Ingredient>>,
+    pub ingreds: Vec<Entity<Ingredient>>,
     pub num_drinks_input: Entity<TextInput>,
     num_drinks: f32,
     count: usize,
@@ -42,8 +42,6 @@ impl Table {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let ctrl = cx.ctrl();
         cx.bind_keys([
-            KeyBinding::new("tab", Tab, Some(CONTEXT)),
-            KeyBinding::new("shift-tab", TabPrev, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-i"), Add, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-d"), Delete, Some(CONTEXT)),
             KeyBinding::new(&format!("{ctrl}-r"), RemoveKey, Some(CONTEXT)),
@@ -77,28 +75,8 @@ impl Table {
             self.ingreds.push(ingred);
             self.count += 1;
 
-            // hide dropdown on Tab, TabPrev
-            // we have to iterate through all elements anytime we append for this to work
-            cx.subscribe_self(|this: &mut Table, Tab, cx| {
-                this.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| {
-                        ingred
-                            .ingred_type
-                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
-                    });
-                });
-            })
-            .detach();
-            cx.subscribe_self(|this: &mut Table, TabPrev, cx| {
-                this.ingreds.iter().for_each(|ingred| {
-                    ingred.update(cx, |ingred, cx| {
-                        ingred
-                            .ingred_type
-                            .update(cx, |ingred_type, cx| ingred_type.hide(cx))
-                    });
-                });
-            })
-            .detach();
+            // instruct UI to subscribe new ingreds to its Tab, TabPrev events
+            cx.emit(Add {});
         }
         cx.notify();
     }
@@ -150,6 +128,17 @@ impl Table {
             }
         }
         cx.notify();
+    }
+
+    pub fn show_num_drinks_cursor(&mut self, cx: &mut Context<Self>) {
+        self.num_drinks_input
+            .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
+    }
+
+    pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
+        self.ingreds
+            .iter()
+            .for_each(|ingred| ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx)));
     }
 
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
@@ -236,20 +225,9 @@ impl Table {
     fn focus(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
         self.focus_handle.focus(window);
     }
-
-    fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
-        window.focus_next();
-        cx.emit(Tab {});
-    }
-
-    fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
-        window.focus_prev();
-        cx.emit(TabPrev {});
-    }
 }
 
-impl EventEmitter<Tab> for Table {}
-impl EventEmitter<TabPrev> for Table {}
+impl EventEmitter<Add> for Table {}
 
 impl Render for Table {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -268,8 +246,6 @@ impl Render for Table {
 
         div()
             .key_context(CONTEXT)
-            .on_action(cx.listener(Self::on_tab))
-            .on_action(cx.listener(Self::on_tab_prev))
             .on_action(cx.listener(Self::focus))
             .on_action(cx.listener(Self::add))
             .on_action(cx.listener(Self::delete))
@@ -392,7 +368,7 @@ impl Focusable for Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::ui::{ActiveCtrl, Ctrl, util::theme::Theme};
+    use crate::ui::{ActiveCtrl, Ctrl, UI, util::theme::Theme};
 
     use super::*;
     use gpui::{TestAppContext, VisualTestContext};
@@ -436,25 +412,30 @@ mod tests {
 
     #[gpui::test]
     fn test_table_remove_key_when_empty(cx: &mut TestAppContext) {
-        let (table, cx, ctrl) = setup_table(cx);
+        let (ui, cx, ctrl) = setup_ui_and_table(cx);
         let mut num_ingreds = 0;
 
-        cx.focus(&table);
+        cx.focus(&ui);
         cx.simulate_keystrokes(&format!("tab tab {ctrl}-r {ctrl}-r"));
-        table.update(cx, |table, _cx| num_ingreds = table.ingreds.len());
+        ui.update(cx, |ui, cx| {
+            ui.table
+                .update(cx, |table, _cx| num_ingreds = table.ingreds.len());
+        });
 
         assert_eq!(0, num_ingreds);
     }
 
     #[gpui::test]
     fn test_table_calc_single_ingred(cx: &mut TestAppContext) {
-        let (table, cx, _ctrl) = setup_table(cx);
+        let (ui, cx, _ctrl) = setup_ui_and_table(cx);
         let mut weight = SharedString::from("");
 
-        cx.focus(&table);
+        cx.focus(&ui);
         cx.simulate_keystrokes("tab 2 tab tab 4 0");
-        table.update(cx, |table, cx| {
-            weight = table.ingreds[0].read(cx).weight.clone()
+        ui.update(cx, |ui, cx| {
+            ui.table.update(cx, |table, cx| {
+                weight = table.ingreds[0].read(cx).weight.clone();
+            });
         });
 
         assert_eq!(SharedString::from("84.6"), weight);
@@ -462,15 +443,17 @@ mod tests {
 
     #[gpui::test]
     fn test_table_calc_multiple_ingreds(cx: &mut TestAppContext) {
-        let (table, cx, ctrl) = setup_table(cx);
+        let (ui, cx, ctrl) = setup_ui_and_table(cx);
         let mut weight: Vec<SharedString> = vec!["".into(), "".into()];
 
-        cx.focus(&table);
-        cx.simulate_keystrokes(&format!("{ctrl}-i tab 2 tab tab 4 0 tab 1 . 5"));
+        cx.focus(&ui);
+        cx.simulate_keystrokes(&format!("tab {ctrl}-i 2 tab tab 4 0 tab 1 . 5"));
         cx.simulate_keystrokes("tab enter k k k k enter tab 1 6 . 5 tab 1");
-        table.update(cx, |table, cx| {
-            weight[0] = table.ingreds[0].read(cx).weight.clone();
-            weight[1] = table.ingreds[1].read(cx).weight.clone();
+        ui.update(cx, |ui, cx| {
+            ui.table.update(cx, |table, cx| {
+                weight[0] = table.ingreds[0].read(cx).weight.clone();
+                weight[1] = table.ingreds[1].read(cx).weight.clone();
+            });
         });
 
         assert_eq!(SharedString::from("66.3"), weight[0]);
@@ -491,21 +474,42 @@ mod tests {
 
     #[gpui::test]
     fn test_table_focus_next_ingred(cx: &mut TestAppContext) {
-        let (table, cx, ctrl) = setup_table(cx);
+        let (ui, cx, ctrl) = setup_ui_and_table(cx);
         let mut ingred_focused = false;
 
-        cx.focus(&table);
+        cx.focus(&ui);
         cx.simulate_keystrokes(&format!("tab tab {ctrl}-i"));
         (0..3).for_each(|_| cx.simulate_keystrokes(&format!("tab")));
-        table.update_in(cx, |table, window, cx| {
-            ingred_focused = table.ingreds[1]
-                .read(cx)
-                .ingred_type
-                .read(cx)
-                .is_focused(window)
+        ui.update_in(cx, |ui, window, cx| {
+            ui.table.update(cx, |table, cx| {
+                ingred_focused = table.ingreds[1]
+                    .read(cx)
+                    .ingred_type
+                    .read(cx)
+                    .is_focused(window)
+            });
         });
 
         assert_eq!(true, ingred_focused);
+    }
+
+    fn setup_ui_and_table(
+        cx: &mut TestAppContext,
+    ) -> (Entity<UI>, &mut VisualTestContext, SharedString) {
+        Theme::test(cx);
+        let mut ctrl: SharedString = "".into();
+        cx.update(|cx| {
+            Ctrl::set(cx);
+            ctrl = cx.ctrl();
+        });
+
+        let (ui, cx) = cx.add_window_view(|window, cx| UI::new(window, cx));
+        ui.update_in(cx, |ui, window, cx| {
+            ui.init(cx);
+            ui.table = cx.new(|cx| Table::new(window, cx));
+        });
+
+        (ui, cx, ctrl)
     }
 
     fn setup_table(

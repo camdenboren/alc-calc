@@ -87,6 +87,11 @@ impl ThemeMenu {
         }
     }
 
+    pub fn hide(&mut self, cx: &mut Context<Self>) {
+        self.show = false;
+        cx.notify();
+    }
+
     pub fn escape(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.escape_key(&Escape, window, cx);
     }

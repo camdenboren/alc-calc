@@ -44,7 +44,7 @@ enum InputEvent {
 const CONTEXT: &str = "TextInput";
 
 pub struct TextInput {
-    cursor_state: Entity<CursorState>,
+    pub cursor_state: Entity<CursorState>,
     pub focus_handle: FocusHandle,
     pub content: SharedString,
     pub placeholder: SharedString,
@@ -87,25 +87,12 @@ impl TextInput {
         ]);
 
         let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
-        let cursor_state = cx.new(|_| CursorState::new());
-        let _subscriptions = vec![
-            cx.observe(&cursor_state, |_, _, cx| cx.notify()),
-            cx.observe_window_activation(window, |input, window, cx| {
-                if window.is_window_active() {
-                    let focus_handle = input.focus_handle.clone();
-                    if focus_handle.is_focused(window) {
-                        input.cursor_state.update(cx, |cursor_state, cx| {
-                            cursor_state.start(cx);
-                        });
-                    }
-                }
-            }),
-            cx.on_focus(&focus_handle, window, Self::on_focus),
-            cx.on_blur(&focus_handle, window, Self::on_blur),
-        ];
+        cx.on_focus(&focus_handle, window, Self::on_focus).detach();
+        cx.on_blur(&focus_handle, window, Self::on_blur).detach();
+        let cursor_state = cx.new(|_| CursorState::default());
 
         Self {
-            cursor_state,
+            cursor_state: cursor_state.clone(),
             focus_handle,
             content: "".into(),
             placeholder,
@@ -116,7 +103,21 @@ impl TextInput {
             last_layout: None,
             last_bounds: None,
             is_selecting: false,
-            _subscriptions,
+            _subscriptions: vec![
+                cx.observe(&cursor_state, |_, _, cx| cx.notify()),
+                cx.observe_window_activation(window, |input, window, cx| {
+                    if window.is_window_active() {
+                        let active = window.is_window_active();
+                        input.cursor_state.update(cx, |blink_manager, cx| {
+                            if active {
+                                blink_manager.enable(cx);
+                            } else {
+                                blink_manager.disable(cx);
+                            }
+                        });
+                    }
+                }),
+            ],
         }
     }
 
@@ -130,26 +131,31 @@ impl TextInput {
 
     fn on_focus(&mut self, _: &mut Window, cx: &mut Context<Self>) {
         self.cursor_state.update(cx, |cursor, cx| {
-            cursor.start(cx);
+            cursor.enable(cx);
         });
         cx.emit(InputEvent::Focus);
     }
 
     fn on_blur(&mut self, _: &mut Window, cx: &mut Context<Self>) {
         self.cursor_state.update(cx, |cursor, cx| {
-            cursor.stop(cx);
+            cursor.disable(cx);
         });
         cx.emit(InputEvent::Blur);
     }
 
     fn pause_blink(&mut self, cx: &mut Context<Self>) {
         self.cursor_state.update(cx, |cursor, cx| {
-            cursor.pause(cx);
+            cursor.pause_blinking(cx);
         });
     }
 
-    pub fn show_cursor(&self, window: &mut Window, cx: &App) -> bool {
-        self.is_focused(window) && self.cursor_state.read(cx).show()
+    pub fn show_cursor(&self, cx: &mut Context<Self>) {
+        self.cursor_state
+            .update(cx, |cursor, cx| cursor.show_cursor(cx));
+    }
+
+    pub fn should_show_cursor(&self, window: &mut Window, cx: &App) -> bool {
+        self.is_focused(window) && self.cursor_state.read(cx).visible()
     }
 
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
@@ -324,6 +330,7 @@ impl TextInput {
     fn move_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         self.selected_range = offset..offset;
         self.pause_blink(cx);
+
         cx.notify()
     }
 

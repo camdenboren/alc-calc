@@ -120,7 +120,7 @@ impl Element for TextElement {
             (
                 None,
                 // conditionally show cursor based on blink state
-                if self.input.read(cx).show_cursor(window, cx) {
+                if self.input.read(cx).should_show_cursor(window, cx) {
                     Some(fill(
                         Bounds::new(
                             point(bounds.left() + cursor_pos, bounds.top()),
