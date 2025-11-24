@@ -3,5 +3,6 @@
 
 pub mod app_menu;
 pub mod assets;
+pub mod ctrl;
 pub mod theme;
 pub mod window;

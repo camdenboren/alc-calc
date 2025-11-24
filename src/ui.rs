@@ -13,14 +13,15 @@ use crate::ui::{
         toast::Toast,
     },
     util::{
+        ctrl::{ActiveCtrl, Ctrl},
         theme::{ActiveTheme, Theme},
         window::{self, WindowBorder, window_border},
     },
     view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
 };
 use gpui::{
-    App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, Global, KeyBinding,
-    PromptLevel, SharedString, Window, actions, deferred, div, prelude::*,
+    App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, PromptLevel,
+    SharedString, Window, actions, deferred, div, prelude::*,
 };
 
 actions!(
@@ -39,28 +40,6 @@ actions!(
 );
 
 const CONTEXT: &str = "UI";
-
-struct Ctrl {
-    ctrl: SharedString,
-}
-
-impl Ctrl {
-    pub fn set(cx: &mut App) {
-        let is_mac = cfg!(target_os = "macos");
-        let ctrl = (if is_mac { "cmd" } else { "ctrl" }).into();
-        cx.set_global(Ctrl { ctrl });
-    }
-
-    pub fn global(cx: &App) -> SharedString {
-        cx.global::<Ctrl>().ctrl.clone()
-    }
-}
-
-impl Global for Ctrl {}
-
-pub trait ActiveCtrl {
-    fn ctrl(&self) -> SharedString;
-}
 
 impl ActiveCtrl for App {
     fn ctrl(&self) -> SharedString {
