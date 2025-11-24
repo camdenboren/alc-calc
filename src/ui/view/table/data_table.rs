@@ -368,7 +368,7 @@ impl Focusable for Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::ui::{ActiveCtrl, Ctrl, UI, util::theme::Theme};
+    use crate::ui::{ActiveCtrl, Ctrl, UI, tests::setup_ui, util::theme::Theme};
 
     use super::*;
     use gpui::{TestAppContext, VisualTestContext};
@@ -496,17 +496,9 @@ mod tests {
     fn setup_ui_and_table(
         cx: &mut TestAppContext,
     ) -> (Entity<UI>, &mut VisualTestContext, SharedString) {
-        Theme::test(cx);
-        let mut ctrl: SharedString = "".into();
-        cx.update(|cx| {
-            Ctrl::set(cx);
-            ctrl = cx.ctrl();
-        });
-
-        let (ui, cx) = cx.add_window_view(|window, cx| UI::new(window, cx));
+        let (ui, cx, ctrl) = setup_ui(cx);
         ui.update_in(cx, |ui, window, cx| {
-            ui.init(cx);
-            ui.table = cx.new(|cx| Table::new(window, cx));
+            ui.table = cx.new(|cx| Table::new(window, cx))
         });
 
         (ui, cx, ctrl)

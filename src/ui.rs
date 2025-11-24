@@ -21,7 +21,7 @@ use crate::ui::{
 };
 use gpui::{
     App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, PromptLevel,
-    SharedString, Window, actions, deferred, div, prelude::*,
+    SharedString, Subscription, Window, actions, deferred, div, prelude::*,
 };
 
 actions!(
@@ -47,15 +47,29 @@ impl ActiveCtrl for App {
     }
 }
 
-#[derive(Clone)]
 pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
     focus_handle: FocusHandle,
+    _subscriptions: Vec<Subscription>,
 }
 
 impl UI {
+    /// Create the UI's root view, setting up the global:
+    /// - Ctrl
+    /// - Theme
+    /// - Toast
+    ///
+    /// Before setting:
+    /// - Keybinds
+    /// - Menus (on macOS)
+    /// - Subscriptions
+    ///   - menu + table both sub to Tab, TabPrev
+    ///   - table also subs to Toggle
+    ///
+    /// *Note that the UI is notified of new ingredients to create subscriptions for
+    /// by subscribing to Table's Add event*
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Toast::set(cx);
         Ctrl::set(cx);
@@ -98,29 +112,23 @@ impl UI {
             table,
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
+            _subscriptions: vec![
+                cx.subscribe_self(|this: &mut UI, Tab, cx| {
+                    this.menu.update(cx, |menu, cx| menu.hide(cx));
+                    this.table
+                        .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
+                }),
+                cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
+                    this.menu.update(cx, |menu, cx| menu.hide(cx));
+                    this.table
+                        .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
+                }),
+                cx.subscribe_self(|this, Toggle, cx| {
+                    this.table
+                        .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
+                }),
+            ],
         }
-    }
-
-    /// Subscribe menu and table.num_drinks_input to UI's events.
-    /// Both subscribe to Tab, TabPrev, but only num_drinks_input subscribes to Toggle atm
-    pub fn init(&mut self, cx: &mut Context<Self>) {
-        cx.subscribe_self(|this: &mut UI, Tab, cx| {
-            this.menu.update(cx, |menu, cx| menu.hide(cx));
-            this.table
-                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
-        })
-        .detach();
-        cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
-            this.menu.update(cx, |menu, cx| menu.hide(cx));
-            this.table
-                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
-        })
-        .detach();
-        cx.subscribe_self(|this, Toggle, cx| {
-            this.table
-                .update(cx, |table, cx| table.show_num_drinks_cursor(cx))
-        })
-        .detach();
     }
 
     /// Subscribe new ingreds to UI's Tab, TabPrev events

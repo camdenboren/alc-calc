@@ -33,9 +33,7 @@ pub fn new_window(cx: &mut App) {
         })
         .detach();
 
-        let ui = cx.new(|cx| UI::new(window, cx));
-        ui.update(cx, |ui, cx| ui.init(cx));
-        ui
+        cx.new(|cx| UI::new(window, cx))
     }) {
     } else {
         eprintln!("alc-calc failed to open a window");
