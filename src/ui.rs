@@ -52,7 +52,7 @@ pub struct UI {
     table: Entity<Table>,
     titlebar: Entity<Titlebar>,
     focus_handle: FocusHandle,
-    _subscriptions: Vec<Subscription>,
+    subscriptions: Vec<Subscription>,
 }
 
 impl UI {
@@ -65,10 +65,10 @@ impl UI {
     /// - Keybinds
     /// - Menus (on macOS)
     /// - Subscriptions
-    ///   - menu + table both sub to Tab, TabPrev
-    ///   - table also subs to Toggle
+    ///   - menu + table.num_drinks_input both sub to Tab, TabPrev
+    ///   - table.num_drinks_input also subs to Toggle
     ///
-    /// *Note that the UI is notified of new ingredients to create subscriptions for
+    /// *Note that the UI is notified of new ingredients to recreate subscriptions for
     /// by subscribing to Table's Add event*
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Toast::set(cx);
@@ -112,7 +112,7 @@ impl UI {
             table,
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
-            _subscriptions: vec![
+            subscriptions: vec![
                 cx.subscribe_self(|this: &mut UI, Tab, cx| {
                     this.menu.update(cx, |menu, cx| menu.hide(cx));
                     this.table
@@ -131,18 +131,22 @@ impl UI {
         }
     }
 
-    /// Subscribe new ingreds to UI's Tab, TabPrev events
+    /// Refresh ingreds' subscriptions to Tab, TabPrev events when a new one is added
     fn on_add(&mut self, cx: &mut Context<Self>) {
-        cx.subscribe_self(|this: &mut UI, Tab, cx| {
-            this.table
-                .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
-        })
-        .detach();
-        cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
-            this.table
-                .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
-        })
-        .detach();
+        while self.subscriptions.len() > 3 {
+            self.subscriptions.pop();
+        }
+
+        self.subscriptions.append(&mut vec![
+            cx.subscribe_self(|this: &mut UI, Tab, cx| {
+                this.table
+                    .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
+            }),
+            cx.subscribe_self(|this: &mut UI, TabPrev, cx| {
+                this.table
+                    .update(cx, |table, cx| table.show_cursor_and_hide_dd(cx));
+            }),
+        ]);
     }
 
     fn quit(&mut self, _: &Quit, _window: &mut Window, cx: &mut Context<Self>) {
