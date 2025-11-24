@@ -20,6 +20,19 @@ const SHADOW_SIZE: Pixels = px(12.0);
 
 pub fn new_window(cx: &mut App) {
     if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
+        // hacky approach for ensuring cmd-w doesn't prevent us from opening a new window
+        // since a new one is created, just hidden. the "real" solution may be to create
+        // a root layer underneath the UI which isn't closed on cmd-w (which may allow
+        // clicking `New Window` in the dock menu, which is the main UX problem w/ this)
+        #[cfg(target_os = "macos")]
+        cx.on_window_closed(|cx| {
+            if cx.windows().is_empty() {
+                new_window(cx);
+                cx.hide();
+            }
+        })
+        .detach();
+
         let ui = cx.new(|cx| UI::new(window, cx));
         ui.update(cx, |ui, cx| ui.init(cx));
         ui
