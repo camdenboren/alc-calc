@@ -1,12 +1,38 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Adapted from: https://github.com/longbridge/gpui-component/blob/main/crates/ui/src/tooltip.rs
 // Container padding from: https://github.com/zed-industries/zed/blob/main/crates/ui/src/components/tooltip.rs
 
 use crate::ui::util::theme::ActiveTheme;
-use gpui::{AnyView, App, SharedString, Window, div, prelude::*};
+use gpui::{SharedString, Window, div, prelude::*};
 
+/// A Tooltip element that can display text and an optional keybind
+///
+/// The Tooltip will need to be converted to an `AnyView` before passed to `.tooltip()`,
+/// which is only available when the element is a `Stateful<Div>` (hence the `id()`)
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::ui::comp::tooltip::Tooltip;
+/// use gpui::{div, prelude::*};
+///
+/// // Basic Tooltip
+/// div()
+///     .id("id".into_element())
+///     .tooltip(|_window, cx| {
+///         cx.new(|_cx| Tooltip::new("Text")).into()
+///     });
+///
+/// // Tooltip with keybind
+/// div()
+///     .id("id".into_element())
+///     .tooltip(|_window, cx| {
+///         cx.new(|_cx| {
+///             Tooltip::new("Text").keybind("Keybind")
+///         }).into()
+///     });
+/// ```
 #[derive(Default)]
 pub struct Tooltip {
     text: SharedString,
@@ -14,15 +40,18 @@ pub struct Tooltip {
 }
 
 impl Tooltip {
-    pub fn new(text: SharedString, keybind: Option<SharedString>) -> Self {
+    /// Create a Tooltip with text
+    pub fn new(text: &str) -> Self {
         Self {
-            text: text.clone(),
-            keybind: keybind,
+            text: text.to_string().into(),
+            keybind: None,
         }
     }
 
-    pub fn build(self, _window: &mut Window, cx: &mut App) -> AnyView {
-        cx.new(|_| self).into()
+    /// Add a keybind to the Tooltip
+    pub fn keybind(mut self, keybind: &str) -> Self {
+        self.keybind = Some(keybind.to_string().into());
+        self
     }
 }
 

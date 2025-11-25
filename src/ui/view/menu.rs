@@ -191,10 +191,9 @@ impl Render for ThemeMenu {
                         cx.listener(move |this, _, _, cx| this.toggle(cx)),
                     ))
                     .id("menu_button")
-                    .tooltip(|window, cx| {
-                        let ctrl = cx.ctrl();
-                        Tooltip::new("Theme Menu".into(), Some(format!("{ctrl}-t").into()))
-                            .build(window, cx)
+                    .tooltip(|_window, cx| {
+                        cx.new(|cx| Tooltip::new("Theme Menu").keybind(&format!("{}-t", cx.ctrl())))
+                            .into()
                     }),
             )
             .when(self.show, |this| {

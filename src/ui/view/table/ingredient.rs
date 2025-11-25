@@ -112,13 +112,12 @@ impl Render for Ingredient {
                         cx.listener(move |this, _, _window, cx| this.remove(cx)),
                     ))
                     .id(format!("remove_button_{id}").into_element())
-                    .tooltip(|window, cx| {
-                        let ctrl = cx.ctrl();
-                        Tooltip::new(
-                            "Remove this Ingredient".into(),
-                            Some(format!("{ctrl}-r").into()),
-                        )
-                        .build(window, cx)
+                    .tooltip(|_window, cx| {
+                        cx.new(|cx| {
+                            Tooltip::new("Remove this Ingredient")
+                                .keybind(&format!("{}-r", cx.ctrl()))
+                        })
+                        .into()
                     }),
             )
             .children(FIELDS.map(|(key, _, width)| self.render_cell(key, px(width))))

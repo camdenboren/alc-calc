@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-mod comp;
+pub mod comp;
 pub mod util;
 pub mod view;
 

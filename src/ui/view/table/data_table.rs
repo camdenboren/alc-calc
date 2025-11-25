@@ -280,12 +280,13 @@ impl Render for Table {
                             .border_color(cx.theme().background)
                             .child(div().child("Units".to_uppercase()).bottom(px(1.5)))
                             .id("units_label")
-                            .tooltip(|window, cx| {
-                                Tooltip::new(
-                                    "Total desired number of units of alcohol in the drink".into(),
-                                    None,
-                                )
-                                .build(window, cx)
+                            .tooltip(|_window, cx| {
+                                cx.new(|_cx| {
+                                    Tooltip::new(
+                                        "Total desired number of units of alcohol in the drink",
+                                    )
+                                })
+                                .into()
                             }),
                     )
                     .child(self.num_drinks_input.clone()),
@@ -320,9 +321,7 @@ impl Render for Table {
                                     .w(px(width))
                                     .child(key.replace("_", " ").to_uppercase())
                                     .id(format!("{key}_label").into_element())
-                                    .tooltip(|window, cx| {
-                                        Tooltip::new(desc.into(), None).build(window, cx)
-                                    })
+                                    .tooltip(|_window, cx| cx.new(|_cx| Tooltip::new(desc)).into())
                             })),
                     )
                     // ingreds
@@ -346,13 +345,12 @@ impl Render for Table {
                                     }),
                                 ))
                                 .id("add_button")
-                                .tooltip(|window, cx| {
-                                    let ctrl = cx.ctrl();
-                                    Tooltip::new(
-                                        "Add an Ingredient".into(),
-                                        Some(format!("{ctrl}-i").into()),
-                                    )
-                                    .build(window, cx)
+                                .tooltip(|_window, cx| {
+                                    cx.new(|cx| {
+                                        Tooltip::new("Add an Ingredient")
+                                            .keybind(&format!("{}-i", cx.ctrl()))
+                                    })
+                                    .into()
                                 }),
                         ),
                     ),
