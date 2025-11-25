@@ -71,6 +71,8 @@ impl Render for ToastItem {
             .p_2()
             .gap_4()
             .rounded_md()
+            .border_1()
+            .border_color(cx.theme().border)
             .text_sm()
             .justify_center()
             .items_start()
