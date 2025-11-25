@@ -119,7 +119,7 @@ impl Dropdown {
     }
 
     pub fn hide(&mut self, cx: &mut Context<Self>) {
-        if self.show != false {
+        if self.show {
             if self.prev.is_some() {
                 let current = self.prev.clone().unwrap_or("Whiskey".into());
                 self.focused_item = Dropdown::index_of(&self.types, &current);
