@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// Scrollbar from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
+
 use crate::{
     types::Type,
     ui::{
@@ -13,8 +15,9 @@ use crate::{
     },
 };
 use gpui::{
-    App, FocusHandle, Focusable, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle,
-    Window, actions, deferred, div, prelude::*, px, uniform_list,
+    App, Bounds, FocusHandle, Focusable, KeyBinding, MouseDownEvent, MouseMoveEvent, MouseUpEvent,
+    Pixels, Point, ScrollStrategy, SharedString, UniformListScrollHandle, Window, actions, canvas,
+    deferred, div, point, prelude::*, px, uniform_list,
 };
 use std::ops::Range;
 use strum::{EnumCount, IntoEnumIterator};
@@ -22,6 +25,8 @@ use strum::{EnumCount, IntoEnumIterator};
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "Dropdown";
+const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
+const SCROLLBAR_THUMB_HEIGHT: Pixels = px(96.);
 
 pub struct Dropdown {
     types: Vec<SharedString>,
@@ -31,6 +36,7 @@ pub struct Dropdown {
     count: usize,
     pub id: usize,
     focused_item: usize,
+    drag_position: Option<Point<Pixels>>,
     focus_handle: FocusHandle,
     scroll_handle: UniformListScrollHandle,
 }
@@ -62,6 +68,7 @@ impl Dropdown {
             count: Type::COUNT,
             id,
             focused_item,
+            drag_position: None,
             focus_handle,
             scroll_handle: UniformListScrollHandle::new(),
         }
@@ -191,10 +198,109 @@ impl Dropdown {
     fn index_of(types: &[SharedString], val: &SharedString) -> usize {
         types.iter().position(|v| v == val).unwrap_or(0)
     }
+
+    fn render_scrollbar(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let scroll_height = self.scroll_height();
+        let table_bounds = self.table_bounds();
+        let table_height = table_bounds.size.height;
+        if table_height == px(0.) {
+            return div().id(format!("scrollbar-{}", self.id).into_element());
+        }
+
+        let percentage = -self.scroll_top() / scroll_height;
+        let offset_top = (table_height * percentage).clamp(
+            px(4.),
+            (table_height - SCROLLBAR_THUMB_HEIGHT + px(4.)).max(px(4.)),
+        );
+        let entity = cx.entity();
+        let scroll_handle = self.scroll_handle.0.borrow().base_handle.clone();
+
+        div()
+            .id(format!("scrollbar-{}", self.id).into_element())
+            .absolute()
+            .top(offset_top)
+            .right_1()
+            .occlude()
+            .h(SCROLLBAR_THUMB_HEIGHT)
+            .w(SCROLLBAR_THUMB_WIDTH)
+            .bg(cx.theme().foreground)
+            .hover(|this| this.bg(cx.theme().foreground_inactive))
+            .rounded_lg()
+            .child(
+                canvas(
+                    |_, _, _| (),
+                    move |thumb_bounds, _, window, _| {
+                        window.on_mouse_event({
+                            let entity = entity.clone();
+                            move |ev: &MouseDownEvent, _, _, cx| {
+                                if !thumb_bounds.contains(&ev.position) {
+                                    return;
+                                }
+
+                                entity.update(cx, |this, _| {
+                                    this.drag_position = Some(
+                                        ev.position - thumb_bounds.origin - table_bounds.origin,
+                                    );
+                                })
+                            }
+                        });
+                        window.on_mouse_event({
+                            let entity = entity.clone();
+                            move |_: &MouseUpEvent, _, _, cx| {
+                                entity.update(cx, |this, _| {
+                                    this.drag_position = None;
+                                })
+                            }
+                        });
+
+                        window.on_mouse_event(move |ev: &MouseMoveEvent, _, _, cx| {
+                            if !ev.dragging() {
+                                return;
+                            }
+
+                            let Some(drag_pos) = entity.read(cx).drag_position else {
+                                return;
+                            };
+
+                            let inside_offset = drag_pos.y;
+                            let percentage = ((ev.position.y - table_bounds.origin.y
+                                + inside_offset)
+                                / (table_bounds.size.height))
+                                .clamp(0., 1.);
+
+                            let offset_y = ((scroll_height - table_bounds.size.height)
+                                * percentage)
+                                .clamp(px(0.), scroll_height - SCROLLBAR_THUMB_HEIGHT);
+                            scroll_handle.set_offset(point(px(0.), -offset_y));
+                            cx.notify(entity.entity_id());
+                        })
+                    },
+                )
+                .size_full(),
+            )
+    }
+
+    fn table_bounds(&self) -> Bounds<Pixels> {
+        self.scroll_handle.0.borrow().base_handle.bounds()
+    }
+
+    fn scroll_top(&self) -> Pixels {
+        self.scroll_handle.0.borrow().base_handle.offset().y
+    }
+
+    fn scroll_height(&self) -> Pixels {
+        self.scroll_handle
+            .0
+            .borrow()
+            .last_item_size
+            .unwrap_or_default()
+            .contents
+            .height
+    }
 }
 
 impl Render for Dropdown {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         deferred(
             div()
                 .flex()
@@ -280,7 +386,8 @@ impl Render for Dropdown {
                                     this.escape(&Escape, window, cx);
                                 }))
                                 .h_full(),
-                            ),
+                            )
+                            .child(self.render_scrollbar(window, cx)),
                     )
                 }),
         )
