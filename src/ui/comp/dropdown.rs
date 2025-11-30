@@ -223,8 +223,9 @@ impl Dropdown {
             .occlude()
             .h(SCROLLBAR_THUMB_HEIGHT)
             .w(SCROLLBAR_THUMB_WIDTH)
-            .bg(cx.theme().foreground)
-            .hover(|this| this.bg(cx.theme().foreground_inactive))
+            .bg(cx.theme().scrollbar)
+            .hover(|this| this.bg(cx.theme().scrollbar_hover))
+            .active(|this| this.bg(cx.theme().scrollbar))
             .rounded_lg()
             .child(
                 canvas(

@@ -29,6 +29,8 @@ cursor = \"#3311ffff\"
 highlight = \"#3311ff30\"
 border = \"#646464ff\"
 separator = \"#000000ff\"
+scrollbar = \"#606060ff\"
+scrollbar_hover = \"#505050ff\"
 close_button = \"#404040ff\"
 close_button_hover = \"#464646ff\"
 close_button_click = \"#505050ff\"
@@ -47,6 +49,8 @@ cursor = \"#3311ffff\"
 highlight = \"#3311ff30\"
 border = \"#646464ff\"
 separator = \"#000000ff\"
+scrollbar = \"#606060ff\"
+scrollbar_hover = \"#505050ff\"
 ";
 
 #[derive(Serialize, Deserialize)]
@@ -80,6 +84,8 @@ pub struct Theme {
     pub highlight: Rgba,
     pub border: Rgba,
     pub separator: Rgba,
+    pub scrollbar: Rgba,
+    pub scrollbar_hover: Rgba,
     #[cfg(target_os = "linux")]
     pub close_button: Rgba,
     #[cfg(target_os = "linux")]
@@ -148,6 +154,8 @@ impl Theme {
             highlight: rgba(0x3311ff30),
             border: rgba(0x646464ff),
             separator: rgba(0x000000ff),
+            scrollbar: rgba(0x606060ff),
+            scrollbar_hover: rgba(0x505050ff),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x404040),
             #[cfg(target_os = "linux")]
@@ -173,6 +181,8 @@ impl Theme {
             highlight: rgba(0x3311ff30),
             border: rgba(0x969696ff),
             separator: rgba(0x969696ff),
+            scrollbar: rgba(0xc8c8c8ff),
+            scrollbar_hover: rgba(0xd4d4d4ff),
             #[cfg(target_os = "linux")]
             close_button: rgb(0xd0d0d0),
             #[cfg(target_os = "linux")]
@@ -198,6 +208,8 @@ impl Theme {
             highlight: rgba(0xd1272730),
             border: rgba(0x6e2c2fff),
             separator: rgba(0x000000ff),
+            scrollbar: rgba(0xa00000ff),
+            scrollbar_hover: rgba(0x7e0000ff),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x6a0000),
             #[cfg(target_os = "linux")]
@@ -223,6 +235,8 @@ impl Theme {
             highlight: rgba(0x9bced630),
             border: rgba(0x504c68ff),
             separator: rgba(0x000000ff),
+            scrollbar: rgba(0x544e78ff),
+            scrollbar_hover: rgba(0x464166ff),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x3b3754),
             #[cfg(target_os = "linux")]
@@ -248,6 +262,8 @@ impl Theme {
             highlight: rgba(0x278ad130),
             border: rgba(0x2b4e58ff),
             separator: rgba(0x000000ff),
+            scrollbar: rgba(0x0e6478ff),
+            scrollbar_hover: rgba(0x0c5262ff),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x0b434f),
             #[cfg(target_os = "linux")]
