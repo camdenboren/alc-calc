@@ -263,13 +263,13 @@ impl Dropdown {
                             };
 
                             let inside_offset = drag_pos.y;
-                            let percentage = ((ev.position.y - table_bounds.origin.y
+                            let percentage = (((ev.position.y - table_bounds.origin.y
                                 + inside_offset)
-                                / (table_bounds.size.height))
+                                / (table_height))
+                                + 4.)
                                 .clamp(0., 1.);
 
-                            let offset_y = ((scroll_height - table_bounds.size.height)
-                                * percentage)
+                            let offset_y = ((scroll_height - table_height) * percentage)
                                 .clamp(px(0.), scroll_height - SCROLLBAR_THUMB_HEIGHT);
                             scroll_handle.set_offset(point(px(0.), -offset_y));
                             cx.notify(entity.entity_id());
