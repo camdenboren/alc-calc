@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Camden Boren
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// Scrollbar from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/data_table.rs
+
 use crate::{
     types::Type,
     ui::{
@@ -13,8 +15,8 @@ use crate::{
     },
 };
 use gpui::{
-    App, FocusHandle, Focusable, KeyBinding, ScrollStrategy, SharedString, UniformListScrollHandle,
-    Window, actions, deferred, div, prelude::*, px, uniform_list,
+    App, FocusHandle, Focusable, KeyBinding, Pixels, ScrollStrategy, SharedString,
+    UniformListScrollHandle, Window, actions, deferred, div, prelude::*, px, uniform_list,
 };
 use std::ops::Range;
 use strum::{EnumCount, IntoEnumIterator};
@@ -22,6 +24,8 @@ use strum::{EnumCount, IntoEnumIterator};
 actions!(dropdown, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "Dropdown";
+const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
+const SCROLLBAR_THUMB_HEIGHT: Pixels = px(96.);
 
 pub struct Dropdown {
     types: Vec<SharedString>,
@@ -195,6 +199,25 @@ impl Dropdown {
 
 impl Render for Dropdown {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let scroll_handle = self.scroll_handle.0.borrow();
+        let table_bounds = scroll_handle.base_handle.bounds();
+        let table_height = table_bounds.size.height;
+        let scroll_top = scroll_handle.base_handle.offset().y;
+
+        // not sure why px(148.) is needed, but it improves tracking accuracy
+        let scroll_height = scroll_handle
+            .last_item_size
+            .unwrap_or_default()
+            .contents
+            .height
+            + px(148.);
+
+        let percentage = -scroll_top / scroll_height;
+        let offset_top = (table_height * percentage).clamp(
+            px(4.),
+            (table_height - SCROLLBAR_THUMB_HEIGHT + px(4.)).max(px(4.)),
+        );
+
         deferred(
             div()
                 .flex()
@@ -237,6 +260,7 @@ impl Render for Dropdown {
                             .p_1()
                             .w_full()
                             .h_48()
+                            .id(format!("ingreds_list_container_{}", self.id).into_element())
                             .child(
                                 uniform_list(
                                     "ingreds_list",
@@ -280,6 +304,21 @@ impl Render for Dropdown {
                                     this.escape(&Escape, window, cx);
                                 }))
                                 .h_full(),
+                            )
+                            .child(
+                                // scrollbar
+                                div()
+                                    .id(format!("scrollbar-{}", self.id).into_element())
+                                    .absolute()
+                                    .top(offset_top)
+                                    .right_1()
+                                    .block_mouse_except_scroll()
+                                    .h(SCROLLBAR_THUMB_HEIGHT)
+                                    .w(SCROLLBAR_THUMB_WIDTH)
+                                    .bg(cx.theme().scrollbar)
+                                    .hover(|this| this.bg(cx.theme().scrollbar_hover))
+                                    .active(|this| this.bg(cx.theme().scrollbar))
+                                    .rounded_lg(),
                             ),
                     )
                 }),
