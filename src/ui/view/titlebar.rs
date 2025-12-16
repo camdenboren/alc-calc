@@ -34,8 +34,8 @@ impl Render for Titlebar {
             .border_color(cx.theme().separator)
             .map(|this| WindowBorder::titlebar_rounding(this, window.window_decorations()))
             .map(|this| match window.is_window_active() {
-                true => this.bg(cx.theme().foreground),
-                false => this.bg(cx.theme().foreground_inactive),
+                true => this.bg(cx.theme().titlebar),
+                false => this.bg(cx.theme().titlebar_inactive),
             })
             .items_center()
             .justify_end()

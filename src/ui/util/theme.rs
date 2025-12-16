@@ -31,12 +31,32 @@ border = \"#646464ff\"
 separator = \"#000000ff\"
 scrollbar = \"#606060ff\"
 scrollbar_hover = \"#505050ff\"
+titlebar = \"#282828ff\"
+titlebar_inactive = \"#232323ff\"
 close_button = \"#404040ff\"
 close_button_hover = \"#464646ff\"
 close_button_click = \"#505050ff\"
 close_button_inactive = \"#3b3b3bff\"
 ";
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "macos")]
+const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
+text = \"#e6e6e6e6\"
+subtext = \"#cccccc99\"
+inactivetext = \"#80808033\"
+background = \"#3c3c3cff\"
+foreground = \"#282828ff\"
+foreground_inactive = \"#232323ff\"
+field = \"#1d1d1dff\"
+cursor = \"#3311ffff\"
+highlight = \"#3311ff30\"
+border = \"#646464ff\"
+separator = \"#000000ff\"
+scrollbar = \"#606060ff\"
+scrollbar_hover = \"#505050ff\"
+titlebar = \"#282828ff\"
+titlebar_inactive = \"#232323ff\"
+";
+#[cfg(target_os = "windows")]
 const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
 text = \"#e6e6e6e6\"
 subtext = \"#cccccc99\"
@@ -86,6 +106,10 @@ pub struct Theme {
     pub separator: Rgba,
     pub scrollbar: Rgba,
     pub scrollbar_hover: Rgba,
+    #[cfg(not(target_os = "windows"))]
+    pub titlebar: Rgba,
+    #[cfg(not(target_os = "windows"))]
+    pub titlebar_inactive: Rgba,
     #[cfg(target_os = "linux")]
     pub close_button: Rgba,
     #[cfg(target_os = "linux")]
@@ -156,6 +180,10 @@ impl Theme {
             separator: rgba(0x000000ff),
             scrollbar: rgba(0x606060ff),
             scrollbar_hover: rgba(0x505050ff),
+            #[cfg(not(target_os = "windows"))]
+            titlebar: rgb(0x282828),
+            #[cfg(not(target_os = "windows"))]
+            titlebar_inactive: rgb(0x232323),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x404040),
             #[cfg(target_os = "linux")]
@@ -183,6 +211,10 @@ impl Theme {
             separator: rgba(0x969696ff),
             scrollbar: rgba(0xc8c8c8ff),
             scrollbar_hover: rgba(0xd4d4d4ff),
+            #[cfg(not(target_os = "windows"))]
+            titlebar: rgb(0xc0c0c0),
+            #[cfg(not(target_os = "windows"))]
+            titlebar_inactive: rgb(0xd0d0d0),
             #[cfg(target_os = "linux")]
             close_button: rgb(0xd0d0d0),
             #[cfg(target_os = "linux")]
@@ -210,6 +242,10 @@ impl Theme {
             separator: rgba(0x000000ff),
             scrollbar: rgba(0xa00000ff),
             scrollbar_hover: rgba(0x7e0000ff),
+            #[cfg(not(target_os = "windows"))]
+            titlebar: rgb(0x490000),
+            #[cfg(not(target_os = "windows"))]
+            titlebar_inactive: rgb(0x410000),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x6a0000),
             #[cfg(target_os = "linux")]
@@ -237,6 +273,10 @@ impl Theme {
             separator: rgba(0x000000ff),
             scrollbar: rgba(0x544e78ff),
             scrollbar_hover: rgba(0x464166ff),
+            #[cfg(not(target_os = "windows"))]
+            titlebar: rgb(0x2a273f),
+            #[cfg(not(target_os = "windows"))]
+            titlebar_inactive: rgb(0x252038),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x3b3754),
             #[cfg(target_os = "linux")]
@@ -264,6 +304,10 @@ impl Theme {
             separator: rgba(0x000000ff),
             scrollbar: rgba(0x0e6478ff),
             scrollbar_hover: rgba(0x0c5262ff),
+            #[cfg(not(target_os = "windows"))]
+            titlebar: rgb(0x002b36),
+            #[cfg(not(target_os = "windows"))]
+            titlebar_inactive: rgb(0x002631),
             #[cfg(target_os = "linux")]
             close_button: rgb(0x0b434f),
             #[cfg(target_os = "linux")]
