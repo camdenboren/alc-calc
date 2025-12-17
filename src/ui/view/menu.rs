@@ -182,12 +182,14 @@ impl Render for ThemeMenu {
             })
             .track_focus(&self.focus_handle)
             .justify_end()
+            .text_color(cx.theme().field_text)
             .p_2()
             .child(
                 div()
                     .child(icon_button(
                         "menu",
-                        Icon::new(IconVariant::Theme, IconSize::Medium),
+                        Icon::new(cx, IconVariant::Theme, IconSize::Medium)
+                            .color(cx.theme().field_text),
                         cx.listener(move |this, _, _, cx| this.toggle(cx)),
                     ))
                     .id("menu_button")

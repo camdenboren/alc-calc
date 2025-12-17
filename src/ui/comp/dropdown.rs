@@ -232,6 +232,7 @@ impl Render for Dropdown {
                 .when(!self.show, |this| this.on_action(cx.listener(Self::show)))
                 .track_focus(&self.focus_handle)
                 .bg(cx.theme().field)
+                .text_color(cx.theme().field_text)
                 .border_1()
                 .border_color(cx.theme().field)
                 .focus(|this| this.border_color(cx.theme().cursor))
@@ -241,7 +242,8 @@ impl Render for Dropdown {
                 .child(button(
                     &format!("dropdown_{}", self.id),
                     self.current.clone(),
-                    Icon::new(IconVariant::Chevron, IconSize::Small),
+                    Icon::new(cx, IconVariant::Chevron, IconSize::Small)
+                        .color(cx.theme().field_text),
                     cx.listener(move |this, _, _window, cx| {
                         this.toggle(cx);
                     }),

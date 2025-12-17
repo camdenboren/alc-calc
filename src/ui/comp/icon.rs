@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::ui::util::theme::ActiveTheme;
-use gpui::{App, Div, SharedString, Stateful, Window, prelude::*, svg};
+use gpui::{App, Div, Hsla, SharedString, Stateful, Window, prelude::*, svg};
 
 #[derive(PartialEq)]
 pub enum IconVariant {
@@ -44,25 +44,29 @@ impl IconSize {
 pub struct Icon {
     pub variant: IconVariant,
     pub size: IconSize,
+    pub color: Hsla,
     path: SharedString,
 }
 
 impl Icon {
-    pub fn new(variant: IconVariant, size: IconSize) -> Self {
+    pub fn new(cx: &mut App, variant: IconVariant, size: IconSize) -> Self {
         let path = IconVariant::path(&variant);
         Self {
             variant,
             size,
+            color: cx.theme().text,
             path,
         }
+    }
+
+    pub fn color(mut self, color: Hsla) -> Self {
+        self.color = color;
+        self
     }
 }
 
 impl RenderOnce for Icon {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        svg()
-            .path(self.path)
-            .size_full()
-            .text_color(cx.theme().text)
+    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        svg().path(self.path).size_full().text_color(self.color)
     }
 }

@@ -25,6 +25,7 @@ background = \"#3c3c3cff\"
 foreground = \"#282828ff\"
 foreground_inactive = \"#232323ff\"
 field = \"#1d1d1dff\"
+field_text = \"#e6e6e6e6\"
 cursor = \"#3311ffff\"
 highlight = \"#3311ff30\"
 border = \"#646464ff\"
@@ -47,6 +48,7 @@ background = \"#3c3c3cff\"
 foreground = \"#282828ff\"
 foreground_inactive = \"#232323ff\"
 field = \"#1d1d1dff\"
+field_text = \"#e6e6e6e6\"
 cursor = \"#3311ffff\"
 highlight = \"#3311ff30\"
 border = \"#646464ff\"
@@ -65,6 +67,7 @@ background = \"#3c3c3cff\"
 foreground = \"#282828ff\"
 foreground_inactive = \"#232323ff\"
 field = \"#1d1d1dff\"
+field_text = \"#e6e6e6e6\"
 cursor = \"#3311ffff\"
 highlight = \"#3311ff30\"
 border = \"#646464ff\"
@@ -100,6 +103,7 @@ pub struct Theme {
     pub foreground: Rgba,
     pub foreground_inactive: Rgba,
     pub field: Rgba,
+    pub field_text: Hsla,
     pub cursor: Rgba,
     pub highlight: Rgba,
     pub border: Rgba,
@@ -174,6 +178,7 @@ impl Theme {
             foreground: rgb(0x282828),
             foreground_inactive: rgb(0x232323),
             field: rgb(0x1d1d1d),
+            field_text: hsla(0., 0., 0.9, 0.9),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
             border: rgba(0x646464ff),
@@ -205,6 +210,7 @@ impl Theme {
             foreground: rgb(0xc0c0c0),
             foreground_inactive: rgb(0xd0d0d0),
             field: rgb(0xb0b0b0),
+            field_text: hsla(0., 0., 0.1, 0.9),
             cursor: rgb(0x3311ff),
             highlight: rgba(0x3311ff30),
             border: rgba(0x969696ff),
@@ -236,6 +242,7 @@ impl Theme {
             foreground: rgb(0x490000),
             foreground_inactive: rgb(0x410000),
             field: rgb(0x390000),
+            field_text: hsla(0., 0.5, 0.9, 0.9),
             cursor: rgb(0xd12727),
             highlight: rgba(0xd1272730),
             border: rgba(0x6e2c2fff),
@@ -267,6 +274,7 @@ impl Theme {
             foreground: rgb(0x2a273f),
             foreground_inactive: rgb(0x252038),
             field: rgb(0x1e1c31),
+            field_text: hsla(0.7, 0.5, 0.9, 0.9),
             cursor: rgb(0x9bced6),
             highlight: rgba(0x9bced630),
             border: rgba(0x504c68ff),
@@ -298,6 +306,7 @@ impl Theme {
             foreground: rgb(0x002b36),
             foreground_inactive: rgb(0x002631),
             field: rgb(0x00212c),
+            field_text: hsla(0.5, 0.5, 0.9, 0.9),
             cursor: rgb(0x278ad1),
             highlight: rgba(0x278ad130),
             border: rgba(0x2b4e58ff),
@@ -505,6 +514,8 @@ mod tests {
             theme.subtext.a = crate::calc::round_to_place(theme.subtext.a, 1.0).unwrap();
             theme.inactivetext.l = crate::calc::round_to_place(theme.inactivetext.l, 1.0).unwrap();
             theme.inactivetext.a = crate::calc::round_to_place(theme.inactivetext.a, 1.0).unwrap();
+            theme.field_text.l = crate::calc::round_to_place(theme.text.l, 1.0).unwrap();
+            theme.field_text.a = crate::calc::round_to_place(theme.text.a, 1.0).unwrap();
         });
 
         assert_eq!(theme, expected);

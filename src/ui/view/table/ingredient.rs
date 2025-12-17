@@ -108,7 +108,7 @@ impl Render for Ingredient {
                     .flex()
                     .child(icon_button(
                         "remove",
-                        Icon::new(IconVariant::Minus, IconSize::Small),
+                        Icon::new(cx, IconVariant::Minus, IconSize::Small),
                         cx.listener(move |this, _, _window, cx| this.remove(cx)),
                     ))
                     .id(format!("remove_button_{id}").into_element())

@@ -75,7 +75,7 @@ impl Render for Titlebar {
                         .id("quit-div")
                         .child(icon_button(
                             "quit",
-                            Icon::new(IconVariant::Close, IconSize::Medium),
+                            Icon::new(cx, IconVariant::Close, IconSize::Medium),
                             |_, window, _| {
                                 window.remove_window();
                             },
