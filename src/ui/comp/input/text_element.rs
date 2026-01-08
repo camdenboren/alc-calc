@@ -3,12 +3,17 @@
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
-use crate::ui::{comp::input::text_input::TextInput, util::theme::ActiveTheme};
+use crate::ui::{
+    comp::{input::text_input::TextInput, toast::toast},
+    util::theme::ActiveTheme,
+};
 use gpui::{
     App, Bounds, ElementId, ElementInputHandler, Entity, GlobalElementId, LayoutId, PaintQuad,
     Pixels, ShapedLine, Style, TextRun, UnderlineStyle, Window, fill, point, prelude::*, px,
     relative, size,
 };
+
+const MAX_DIGITS: usize = 9;
 
 pub struct TextElement {
     pub input: Entity<TextInput>,
@@ -63,8 +68,24 @@ impl Element for TextElement {
         window: &mut Window,
         cx: &mut App,
     ) -> Self::PrepaintState {
+        let mut content = self.input.read(cx).content.clone();
+        if content.len().gt(&MAX_DIGITS) {
+            toast(
+                cx,
+                &format!("A maximum of {MAX_DIGITS} digits may be entered"),
+            );
+
+            // update input's content and relevant selection vars
+            let mut truncated = content.to_string();
+            truncated.truncate(MAX_DIGITS);
+            content = truncated.clone().into();
+            self.input.update(cx, |input, _cx| {
+                input.content = truncated.into();
+                input.selected_range.start = MAX_DIGITS;
+                input.selected_range.end = MAX_DIGITS;
+            });
+        }
         let input = self.input.read(cx);
-        let content = input.content.clone();
         let selected_range = input.selected_range.clone();
         let cursor = input.cursor_offset();
         let style = window.text_style();
