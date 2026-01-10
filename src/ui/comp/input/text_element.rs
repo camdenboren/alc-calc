@@ -4,7 +4,10 @@
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 
 use crate::ui::{
-    comp::{input::text_input::TextInput, toast::toast},
+    comp::{
+        input::text_input::TextInput,
+        toast::{ToastVariant, toast},
+    },
     util::theme::ActiveTheme,
 };
 use gpui::{
@@ -72,6 +75,7 @@ impl Element for TextElement {
         if content.len().gt(&MAX_DIGITS) {
             toast(
                 cx,
+                ToastVariant::Info,
                 &format!("A maximum of {MAX_DIGITS} digits may be entered"),
             );
 

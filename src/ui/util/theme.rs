@@ -13,7 +13,7 @@ use std::{
 };
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-use crate::ui::comp::toast::toast;
+use crate::ui::comp::toast::{ToastVariant, toast};
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
 #[cfg(target_os = "linux")]
@@ -338,7 +338,11 @@ impl Theme {
         match toml::from_str(&config_content) {
             Ok(config) => config,
             Err(_) => {
-                toast(cx, "Failed to deserialize config. Defaulting to Dark theme");
+                toast(
+                    cx,
+                    ToastVariant::Error,
+                    "Failed to deserialize config. Defaulting to Dark theme",
+                );
                 Config {
                     theme: ThemeVariant::Dark,
                 }
@@ -353,7 +357,11 @@ impl Theme {
         match toml::to_string(&config) {
             Ok(config_content) => config_content,
             Err(_) => {
-                toast(cx, "Failed to serialize config. Defaulting to Dark theme");
+                toast(
+                    cx,
+                    ToastVariant::Error,
+                    "Failed to serialize config. Defaulting to Dark theme",
+                );
                 String::from(DEFAULT_THEME)
             }
         }
@@ -371,7 +379,11 @@ impl Theme {
             Ok(_) => (),
             Err(_) => {
                 config_content = String::from(DEFAULT_THEME);
-                toast(cx, "Failed to read config file. Defaulting to Dark theme");
+                toast(
+                    cx,
+                    ToastVariant::Error,
+                    "Failed to read config file. Defaulting to Dark theme",
+                );
             }
         }
 
@@ -384,12 +396,12 @@ impl Theme {
         if std::fs::metadata(&path).is_err() {
             match std::fs::create_dir(&path) {
                 Ok(_) => (),
-                Err(_) => toast(cx, "Failed to create config directory"),
+                Err(_) => toast(cx, ToastVariant::Error, "Failed to create config directory"),
             }
         }
         match write(path.join("config.toml"), &config_content) {
             Ok(_) => (),
-            Err(_) => toast(cx, "Failed to write to config file"),
+            Err(_) => toast(cx, ToastVariant::Error, "Failed to write to config file"),
         }
     }
 
@@ -397,7 +409,11 @@ impl Theme {
         match toml::from_str(theme_content) {
             Ok(theme) => Ok(theme),
             Err(_) => {
-                toast(cx, "Failed to deserialize theme. Defaulting to Dark theme");
+                toast(
+                    cx,
+                    ToastVariant::Error,
+                    "Failed to deserialize theme. Defaulting to Dark theme",
+                );
                 Ok(Theme::dark())
             }
         }
@@ -409,6 +425,7 @@ impl Theme {
             Err(_) => {
                 toast(
                     cx,
+                    ToastVariant::Error,
                     "Failed to serialize default custom theme. Defaulting to hardcoded default custom theme",
                 );
                 String::from(DEFAULT_CUSTOM_THEME)
@@ -433,6 +450,7 @@ impl Theme {
                 theme_content = String::from(DEFAULT_CUSTOM_THEME);
                 toast(
                     cx,
+                    ToastVariant::Error,
                     "Failed to read theme file. Defaulting to default custom theme",
                 );
             }
@@ -448,7 +466,7 @@ impl Theme {
         let custom_theme = Theme::serialize_theme(cx, default_custom_theme);
         match write(path.join("theme.toml"), &custom_theme) {
             Ok(_) => (),
-            Err(_) => toast(cx, "Failed to write to theme file"),
+            Err(_) => toast(cx, ToastVariant::Error, "Failed to write to theme file"),
         }
     }
 

@@ -10,20 +10,34 @@ use std::time::Duration;
 
 pub const MAX_ITEMS: usize = 3;
 
-pub fn toast(cx: &mut App, description: &str) {
+pub fn toast(cx: &mut App, variant: ToastVariant, description: &str) {
     let toast = Toast::global(cx);
-    toast.update(cx, |toast, cx| toast.add(cx, description));
+    toast.update(cx, |toast, cx| toast.add(cx, variant, description));
+}
+
+#[derive(Clone)]
+pub enum ToastVariant {
+    Info,
+    Error,
 }
 
 pub struct ToastItem {
     pub description: SharedString,
+    path: SharedString,
+    title: SharedString,
     dismissed: bool,
     id: usize,
     count: usize,
 }
 
 impl ToastItem {
-    fn new(cx: &mut Context<Self>, description: &str, id: usize, count: usize) -> Self {
+    fn new(
+        cx: &mut Context<Self>,
+        variant: ToastVariant,
+        description: &str,
+        id: usize,
+        count: usize,
+    ) -> Self {
         cx.spawn(async move |toast, cx| {
             Timer::after(Duration::from_secs(4)).await;
             cx.update(|cx| {
@@ -38,6 +52,8 @@ impl ToastItem {
 
         ToastItem {
             description: description.to_string().into(),
+            path: ToastItem::path(&variant),
+            title: ToastItem::title(&variant),
             dismissed: false,
             id,
             count,
@@ -54,6 +70,22 @@ impl ToastItem {
             })
         })
         .detach();
+    }
+
+    fn path(variant: &ToastVariant) -> SharedString {
+        match variant {
+            ToastVariant::Info => "info.svg",
+            ToastVariant::Error => "x_circle.svg",
+        }
+        .into()
+    }
+
+    fn title(variant: &ToastVariant) -> SharedString {
+        match variant {
+            ToastVariant::Info => "Info",
+            ToastVariant::Error => "Error",
+        }
+        .into()
     }
 }
 
@@ -89,11 +121,11 @@ impl Render for ToastItem {
                             .gap_1()
                             .child(
                                 svg()
-                                    .path("x_circle.svg")
+                                    .path(self.path.clone())
                                     .size_4()
                                     .text_color(cx.theme().text),
                             )
-                            .child(div().text_color(cx.theme().text).child("Error")),
+                            .child(div().text_color(cx.theme().text).child(self.title.clone())),
                     )
                     .child(
                         div()
@@ -153,11 +185,11 @@ impl Toast {
         }
     }
 
-    fn add(&mut self, cx: &mut Context<Self>, description: &str) {
+    fn add(&mut self, cx: &mut Context<Self>, variant: ToastVariant, description: &str) {
         if self.count < MAX_ITEMS {
             let id = self.count;
             self.count += 1;
-            let item = cx.new(|cx| ToastItem::new(cx, description, id, self.count));
+            let item = cx.new(|cx| ToastItem::new(cx, variant, description, id, self.count));
 
             cx.subscribe(
                 &item,

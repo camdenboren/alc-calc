@@ -12,7 +12,7 @@ use crate::{
             dropdown::Dropdown,
             icon::{Icon, IconSize, IconVariant},
             input::text_input::TextInput,
-            toast::toast,
+            toast::{ToastVariant, toast},
             tooltip::Tooltip,
         },
         util::theme::ActiveTheme,
@@ -168,6 +168,7 @@ impl Table {
             Err(e) => {
                 toast(
                     cx,
+                    ToastVariant::Error,
                     &format!("Failed to calculate ingredient weights due to error: {e}"),
                 );
                 return;
