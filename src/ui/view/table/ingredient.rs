@@ -60,15 +60,19 @@ impl Ingredient {
 
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
         div().w(width).child(match key {
-            "ingredient" => div().child(self.ingred_type.clone()),
-            "percentage" => div().child(self.percentage_input.clone()),
-            "parts" => div().child(self.parts_input.clone()),
-            "weight" => div()
-                .flex()
-                .flex_row()
-                .child(self.weight.clone())
-                .when(&self.weight != "--", |this| this.child("g")),
-            _ => div().child("--"),
+            "ingredient" => div().id("").child(self.ingred_type.clone()),
+            "percentage" => div().id("").child(self.percentage_input.clone()),
+            "parts" => div().id("").child(self.parts_input.clone()),
+            "weight" => {
+                let display_weight = self.weight.to_string() + "g";
+                div()
+                    .w(width) // needs to be set again to inform truncate() of width
+                    .truncate()
+                    .child(display_weight.clone())
+                    .id(format!("{}-weight", self.id).into_element())
+                    .tooltip(move |_window, cx| cx.new(|_cx| Tooltip::new(&display_weight)).into())
+            }
+            _ => div().id("").child("--"),
         })
     }
 
