@@ -42,7 +42,7 @@
       rust-analyzer
       rustfmt
       taplo
-      nixfmt-rfc-style
+      nixfmt
       clippy
       build
       format

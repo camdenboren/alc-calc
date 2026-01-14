@@ -213,7 +213,7 @@ nix develop .#bundle
 ```
 
 > [!NOTE]
-> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.89) and create-dmg (v1.2.2), and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.91.1) and create-dmg (v1.2.2), and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
 
 Then executing the script for your current OS
 
@@ -248,7 +248,7 @@ chmod +x ./script/bundle-$CUR_OS
 
 Though cargo-bundle's Windows support is experimental (and broken for me), App bundles for Windows users will also be provided on each release via cargo-packager
 
-You can generate these bundles manually by cloning, installing rustc + cargo (v1.89 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
+You can generate these bundles manually by cloning, installing rustc + cargo (v1.91.1 w/ msvc) and boxes (v2.3.1), then installing cargo-packager and executing the Windows script
 
 ```powershell
 cargo install cargo-packager; .\script\bundle-windows.ps1
@@ -274,7 +274,7 @@ nix flake update
 Update each cargo dep to the most recent on [crates.io] via `cargo-edit`
 
 > [!NOTE]
-> You'll need to install `cargo-edit` (v0.13.7) first if you're not using Nix
+> You'll need to install `cargo-edit` (v0.13.8) first if you're not using Nix
 
 ```shell
 cargo upgrade
