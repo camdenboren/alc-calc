@@ -140,6 +140,9 @@ impl TextInput {
         self.cursor_state.update(cx, |cursor, cx| {
             cursor.disable(cx);
         });
+        if !self.selected_range.is_empty() {
+            self.move_to(0, cx);
+        }
         cx.emit(InputEvent::Blur);
     }
 
