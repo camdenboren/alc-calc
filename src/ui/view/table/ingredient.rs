@@ -17,7 +17,7 @@ use crate::ui::{
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
 pub const FIELDS: [(&str, &str, f32); 4] = [
-    ("ingredient", "Type of ingredient (e.g., Whiskey)", 148.),
+    ("ingredient", "Type of ingredient (e.g., Whiskey)", 158.),
     (
         "percentage",
         "Percentage of alcohol in the ingredient",

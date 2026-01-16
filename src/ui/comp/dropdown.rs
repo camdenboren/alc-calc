@@ -10,7 +10,7 @@ use crate::{
             button::{button, text_button},
             icon::{Icon, IconSize, IconVariant},
         },
-        util::theme::ActiveTheme,
+        util::{str::Spaceable, theme::ActiveTheme},
         view::table::data_table::MAX_ITEMS,
     },
 };
@@ -241,7 +241,7 @@ impl Render for Dropdown {
                 .rounded_md()
                 .child(button(
                     &format!("dropdown_{}", self.id),
-                    self.current.clone(),
+                    self.current.clone().insert_spaces(),
                     Icon::new(cx, IconVariant::Chevron, IconSize::Small)
                         .color(cx.theme().field_text),
                     cx.listener(move |this, _, _window, cx| {
@@ -286,7 +286,7 @@ impl Render for Dropdown {
                                                     })
                                                     .child(text_button(
                                                         &format!("dropdown_item_{ix}"),
-                                                        item.clone(),
+                                                        item.clone().insert_spaces(),
                                                         cx.listener(move |this, _, window, cx| {
                                                             this.update(
                                                                 window,

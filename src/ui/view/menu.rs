@@ -8,7 +8,10 @@ use crate::ui::{
         icon::{Icon, IconSize, IconVariant},
         tooltip::Tooltip,
     },
-    util::theme::{ActiveTheme, Theme, ThemeVariant},
+    util::{
+        str::Spaceable,
+        theme::{ActiveTheme, Theme, ThemeVariant},
+    },
 };
 use gpui::{
     App, FocusHandle, Focusable, KeyBinding, SharedString, Window, actions, div, prelude::*, px,
@@ -205,7 +208,7 @@ impl Render for ThemeMenu {
                         .flex_col()
                         .absolute()
                         .top_10()
-                        .w_40()
+                        .w(px(172.))
                         .h(px(202.5))
                         .bg(cx.theme().field)
                         .rounded_md()
@@ -233,7 +236,7 @@ impl Render for ThemeMenu {
                                                 })
                                                 .child(text_button(
                                                     &format!("theme_item_{ix}"),
-                                                    item.clone(),
+                                                    item.clone().insert_spaces(),
                                                     cx.listener(move |this, _, _window, cx| {
                                                         this.update(item.clone(), cx, true);
                                                     }),
