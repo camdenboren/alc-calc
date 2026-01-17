@@ -7,6 +7,8 @@ pub mod view;
 
 #[cfg(target_os = "macos")]
 use crate::ui::util::app_menu::{app_dock_menu, app_menu};
+#[cfg(not(target_os = "windows"))]
+use crate::ui::view::titlebar::Titlebar;
 use crate::ui::{
     comp::{
         input::text_input::{Copy, Cut, Paste, SelectAll},
@@ -17,8 +19,10 @@ use crate::ui::{
         theme::{ActiveTheme, Theme},
         window::{self, WindowBorder, window_border},
     },
-    view::{menu::ThemeMenu, table::data_table::Table, titlebar::Titlebar},
+    view::{menu::ThemeMenu, table::data_table::Table},
 };
+#[cfg(target_os = "windows")]
+use gpui::Empty;
 use gpui::{
     App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, PromptLevel,
     SharedString, Subscription, Window, actions, deferred, div, prelude::*,
@@ -50,6 +54,7 @@ impl ActiveCtrl for App {
 pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
+    #[cfg(not(target_os = "windows"))]
     titlebar: Entity<Titlebar>,
     focus_handle: FocusHandle,
     subscriptions: Vec<Subscription>,
@@ -110,6 +115,7 @@ impl UI {
         UI {
             menu: cx.new(ThemeMenu::new),
             table,
+            #[cfg(not(target_os = "windows"))]
             titlebar: cx.new(|_| Titlebar::default()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
             subscriptions: vec![
@@ -263,7 +269,12 @@ impl Render for UI {
                 .map(|this| WindowBorder::rounding(this, decorations))
                 .track_focus(&self.focus_handle(cx))
                 .when(cfg!(not(target_os = "windows")), |this| {
-                    this.child(deferred(self.titlebar.clone()).with_priority(999))
+                    #[cfg(not(target_os = "windows"))]
+                    let titlebar = self.titlebar.clone();
+                    #[cfg(target_os = "windows")]
+                    let titlebar = Empty;
+
+                    this.child(deferred(titlebar).with_priority(999))
                 })
                 .child(deferred(self.menu.clone()).with_priority(998))
                 .child(
