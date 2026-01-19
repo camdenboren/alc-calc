@@ -51,6 +51,7 @@ impl ActiveCtrl for App {
     }
 }
 
+pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
     #[cfg(not(target_os = "windows"))]
