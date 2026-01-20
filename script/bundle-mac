@@ -8,8 +8,20 @@ failed() {
 }
 trap 'failed' ERR
 
+# hacky approach for determining whether we're in a nix shell
+# since non-nix macOS builders may not want runtime_shaders
+if [[ $SHLVL = 2 ]]
+then
+    RUNTIME_SHADERS=1
+else
+    RUNTIME_SHADERS=0
+fi
+
 echo -e "\033[1;33mcargo bundle...\033[0m"
-cargo bundle --release 2> /dev/null | xargs | box
+cargo bundle \
+  --release \
+  ${RUNTIME_SHADERS:+--features runtime_shaders} \
+  2> /dev/null | xargs | box
 
 pushd . > /dev/null
 cd target/release/bundle/osx/

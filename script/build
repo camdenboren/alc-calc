@@ -14,8 +14,18 @@ interrupted() {
 trap 'failed' ERR
 trap 'interrupted' INT
 
+# enable runtime shaders for nix users on mac
+if [[ $CUR_OS = "mac" ]]
+then
+    RUNTIME_SHADERS=1
+else
+    RUNTIME_SHADERS=0
+fi
+
 echo -e "\033[1;33mcargo...\033[0m"
-cargo check 2> /dev/null | box
+cargo check \
+  ${RUNTIME_SHADERS:+--features runtime_shaders} \
+  2> /dev/null | box
 
 echo -e "\n\033[1;33mbuild...\033[0m"
 nix build 2> /dev/null | box

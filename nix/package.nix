@@ -12,7 +12,7 @@
     cargoHash = "sha256-jSQe/ZWsYWNxM8IIQMRT5DhcKpd4+q4uJkYsoEDCPEY=";
     buildInputs = deps.build;
     nativeBuildInputs = deps.run;
-    buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "gpui/runtime_shaders" ];
+    buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "runtime_shaders" ];
 
     env.LIBCLANG_PATH =
       with pkgs;

@@ -23,6 +23,9 @@ gpui = { version = "0.2.2", default-features = false, features = [
 ] }
 gpui-macros = { version = "0.2.2", default-features = false }
 
+[features]
+runtime_shaders = ["gpui/runtime_shaders"]
+
 [package.metadata.packager]
 before-packaging-command = "cargo build --release"
 icons = ["img/brand/app-icon.ico"]
