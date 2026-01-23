@@ -177,7 +177,7 @@ impl Table {
 
         self.ingreds.iter().enumerate().for_each(|(ix, ingred)| {
             ingred.update(cx, |ingred, _| {
-                // default to 0th ingred as both vecs are non-empty due to ready check
+                // default to 0th ingred as both vecs are nonempty due to ready check
                 ingred.weight(ingred_data.get(ix).unwrap_or(&ingred_data[0]).weight);
             });
         })
@@ -189,7 +189,7 @@ impl Table {
 
     // default to 0th ingred to prevent panicking due to unexpected missing ingreds
     // there will always be a 0th ingred as these methods are only called w/ either
-    //   1. an explicit non-empty check, or
+    //   1. an explicit nonempty check, or
     //   2. within a (0..self.count) block, meaning an empty vec produces no calls
 
     fn ingred_type<'a>(&'a self, ix: usize, cx: &'a Context<Self>) -> &'a Dropdown {

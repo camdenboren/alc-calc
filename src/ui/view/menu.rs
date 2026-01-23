@@ -119,7 +119,7 @@ impl ThemeMenu {
         cx.notify();
     }
 
-    // variants is guaranteed to be non-empty, so default to 0th variant to avoid panicking
+    // variants is guaranteed to be nonempty, so default to 0th variant to avoid panicking
 
     fn select(&mut self, _: &Select, _window: &mut Window, cx: &mut Context<Self>) {
         self.update(
@@ -220,7 +220,7 @@ impl Render for ThemeMenu {
                                 cx.processor(|this, range: Range<usize>, _window, cx| {
                                     range
                                         .map(|ix| {
-                                            // 0th type is guranteed to exist, so this prevents
+                                            // 0th type is guaranteed to exist, so this prevents
                                             // panicking if underlying uniform_list has a bug
                                             let item = this
                                                 .variants

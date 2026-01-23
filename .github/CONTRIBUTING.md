@@ -25,7 +25,6 @@ All types of contributions are encouraged and valued. See the [Table of Contents
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Build](#Build)
   - [Structure](#Structure)
-  - [ToDo](#todo)
 - [Join The Project Team](#join-the-project-team)
 
 ## Code of Conduct
@@ -43,7 +42,7 @@ If you then still feel the need to ask a question and need clarification, we rec
 
 - Open an [Issue](https://github.com/camdenboren/alc-calc/issues/new).
 - Provide as much context as you can about what you're running into.
-- Provide project and platform versions (nodejs, npm, etc), depending on what seems relevant.
+- Provide project and platform versions (Node.js, npm, etc.), depending on what seems relevant.
 
 We will then take care of the issue as soon as possible.
 
@@ -62,11 +61,11 @@ Depending on how large the project is, you may want to outsource the questioning
 - Forum
 -->
 
-## I Want To Contribute
+## I Want to Contribute
 
 > ### Legal Notice <!-- omit in toc -->
 >
-> When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project licence.
+> When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 
 ### Reporting Bugs
 
@@ -82,7 +81,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 - Also make sure to search the internet (including Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
 - Collect information about the bug:
   - Stack trace (Traceback)
-  - OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
+  - OS, Platform, and Version (Windows, Linux, macOS, x86, ARM)
   - Version of the interpreter, compiler, SDK, runtime environment, package manager, depending on what seems relevant.
   - Possibly your input and the output
   - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
@@ -91,7 +90,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 
 #### How Do I Submit a Good Bug Report?
 
-> You must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be sent to [camdenboren](https://github.com/camdenboren/).
+> You must never report security related issues, vulnerabilities, or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be sent to [camdenboren](https://github.com/camdenboren/).
 
 <!-- You may add a PGP key to allow the messages to be sent encrypted as well. -->
 
@@ -120,7 +119,7 @@ This section guides you through submitting an enhancement suggestion for alc-cal
 
 - Make sure that you are using the latest version.
 - Perform a [search](https://github.com/camdenboren/alc-calc/issues) to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
-- Find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the project's developers of the merits of this feature. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on/plugin library.
+- Find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the project's developers of the merits of this feature. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on or plugin library.
 
 <!-- omit in toc -->
 
@@ -138,7 +137,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/camden
 
 ### Your First Code Contribution
 
-Before submitting a PR, ensure it's addressed by the [ToDo](#todo) or a [GitHub issue](https://github.com/camdenboren/alc-calc/issues). Once you're sure the item is addressed in one (or both) of these locations, follow these steps:
+Before submitting a PR, ensure it's addressed by a [GitHub issue](https://github.com/camdenboren/alc-calc/issues). Once you're sure the item is addressed, follow these steps:
 
 1.  [Fork this repository](https://github.com/camdenboren/alc-calc/fork)
 2.  Check out the source code with:
@@ -198,10 +197,10 @@ cargo install cargo-bundle
 
 > On macOS: preparing the signing certificate (tested on Sequoia v15.5)
 
-- Download imtermediate certificates: WWDR G2-G6 from [Certificate Authority]
-- Create a dev certificate in XCode
+- Download intermediate certificates: WWDR G2-G6 from [Certificate Authority]
+- Create a dev certificate in Xcode
   - `XCode -> Settings -> Accounts -> Manage Certificates -> + -> Apple Development`
-  - Right Click Certificate -> `Export Certificate`
+  - Right-Click Certificate -> `Export Certificate`
 - Import the dev certificate in Keychain Access
   - `File -> Import Items...`
   - The 'Name' field of this cert will be the `$CERT_IDENTITY` in the next step (it can also be added to a `.env` file, which is automatically loaded via the bundle devShell)
@@ -213,7 +212,7 @@ nix develop .#bundle
 ```
 
 > [!NOTE]
-> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.91.1) and create-dmg (v1.2.2), follow the [macOS steps in the GPUI README], and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
+> The devShell is **not** required to build alc-calc, but is convenient if you're used to _the nix way_. On Linux, you'll just need to install boxes (v2.3.1) and set `export CUR_OS="linux"` to execute the following commands and the associated script. On macOS, you'll also need to install rustc + cargo (v1.91.1) and create-dmg (v1.2.2), follow the [macOS steps in the GPUI README], and set both `export CUR_OS="mac"` and `export CERT_IDENTITY="Apple Development: email (ID)"`
 
 Then executing the script for your current OS
 
@@ -242,7 +241,7 @@ chmod +x ./script/bundle-$CUR_OS
 }
 ```
 
-<i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dylibs in `/nix/store/*`, breaking the bundle for non-Nix users</i>
+<i>The bundle scripts are implemented sans-Nix since bundles created w/ cargo-bundle from nixpkgs link to dynamic libraries in `/nix/store/*`, breaking the bundle for non-Nix users</i>
 
 #### App Bundles: Windows
 
@@ -282,7 +281,7 @@ cargo upgrade
 
 Manually update `cargoHash` in [package.nix]
 
-Then run the `build` and `format` scripts after fixing any breakages
+Then run the `build` and `format` scripts after fixing any breakage
 
 ```shell
 {
@@ -299,11 +298,7 @@ format
 
 - `ui` contains the main window, with individual views, components, and utilities delegated to other modules like `ui::comp::table`
 
-### ToDo
-
-- [ ]
-
-## Join The Project Team
+## Join the Project Team
 
 Requests to join the project team may be submitted to the responsible community leaders at [camdenboren](https://github.com/camdenboren/).
 
@@ -313,5 +308,8 @@ Requests to join the project team may be submitted to the responsible community 
 
 This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!
 
+[Certificate Authority]: https://www.apple.com/certificateauthority/
 [macOS steps in the GPUI README]: https://github.com/zed-industries/zed/blob/main/crates/gpui/README.md#macos
 [Garnix]: https://garnix.io/
+[crates.io]: https://crates.io
+[package.nix]: ../nix/package.nix

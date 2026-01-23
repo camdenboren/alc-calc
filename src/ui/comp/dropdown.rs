@@ -134,7 +134,7 @@ impl Dropdown {
         }
     }
 
-    // types is guaranteed to be non-empty, so default to 0th type to avoid panicking
+    // types is guaranteed to be nonempty, so default to 0th type to avoid panicking
 
     fn select(&mut self, _: &Select, window: &mut Window, cx: &mut Context<Self>) {
         self.update(
@@ -270,7 +270,7 @@ impl Render for Dropdown {
                                     cx.processor(|this, range: Range<usize>, _window, cx| {
                                         range
                                             .map(|ix| {
-                                                // 0th type is guranteed to exist, so this prevents
+                                                // 0th type is guaranteed to exist, so this prevents
                                                 // panicking if underlying uniform_list has a bug
                                                 let item = this
                                                     .types

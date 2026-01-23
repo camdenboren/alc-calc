@@ -24,7 +24,7 @@ Weight-based measurement is growing in popularity for many in the kitchen, so wh
 The original project ([Alcohol_Weight_Calculator]) is a dead-simple Python CLI for quickly calculating the weight of ingredients in an alcoholic beverage. It has served me well, but it has notable limitations
 
 - No input validation (shameful, I know)
-- Inability to add non-alcoholic ingredients
+- Inability to add nonalcoholic ingredients
 - An emphasis on broadly categorizing ingredients handicaps precision when an ingredient's actual density is already known
 - No GUI
 
@@ -98,9 +98,5 @@ Until then, the only way to install alc-calc is to first build it from source by
 [Alcohol_Weight_Calculator]: https://github.com/camdenboren/Alcohol_Weight_Calculator
 [GPUI]: https://www.gpui.rs/
 [Releases]: https://github.com/camdenboren/alc-calc/releases
-[Certificate Authority]: https://www.apple.com/certificateauthority/
-[Garnix]: https://garnix.io/
-[crates.io]: https://crates.io
-[package.nix]: nix/package.nix
 [CONTRIBUTING]: .github/CONTRIBUTING.md
 [GPLv3]: COPYING

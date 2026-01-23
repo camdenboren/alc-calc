@@ -45,8 +45,8 @@ pub struct Ingredient {
 
 impl Ingredient {
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        // we have 3 items per indgred and tab_index 1 is num_drinks_input,
-        // so multiply by 3 and offset by two (ui itself is tab_index 0)
+        // we have 3 items per ingred and tab_index 1 is num_drinks_input,
+        // so multiply by 3 and offset by two (UI itself is tab_index 0)
         Self {
             ingred_type: cx.new(|cx| Dropdown::new(id, cx, id as isize * 3 + 2)),
             percentage_input: cx
