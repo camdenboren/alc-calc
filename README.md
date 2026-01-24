@@ -40,6 +40,18 @@ Rust rewrite with an undocumented framework it is :moyai:
 
 ## Install
 
+### Non-Nix
+
+App bundles are uploaded on each commit in the [Actions] page. Sign in, download the correct bundle for your OS, and follow the standard installation procedures
+
+Alternatively, build it from source by following the manual instructions in [CONTRIBUTING]
+
+> [!NOTE]
+> You'll need to whitelist alc-calc before installing since I'm not paying $99 to notarize binaries for something no one else uses. This can be done by attempting to open `alc-calc.dmg` then navigating to: `System Settings -> Privacy and Security -> Security`, and clicking: `Open Anyway`. Repeat this step once you attempt to run alc-calc after installing, and then you should be able to run alc-calc like normal
+
+> [!NOTE]
+> I do not sign `alc-calc_*_x64-setup.exe` for Windows users for the same reason, so you'll need to click `More Info` before installing
+
 ### Nix
 
 Add the following to your `flake.nix`
@@ -75,18 +87,6 @@ home.packages = with pkgs; [
 ];
 ```
 
-### Non-Nix
-
-Once released, app bundles will be distributed in the [Releases] page. Download the correct bundle for your OS/distro and follow the standard installation procedures
-
-Until then, the only way to install alc-calc is to first build it from source by following the manual instructions in [CONTRIBUTING]
-
-> [!NOTE]
-> Though I sign both `alc-calc.app` and `alc-calc.dmg` for macOS users, you'll still need to whitelist alc-calc before installing since I'm not paying $99 to notarize binaries for something no one else uses. This can be done by attempting to open `alc-calc.dmg` then navigating to: `System Settings -> Privacy and Security -> Security`, and clicking: `Open Anyway`. Repeat this step once you attempt to run alc-calc after installing, and then you should be able to run alc-calc like normal
-
-> [!NOTE]
-> I do not sign `alc-calc_*_x64-setup.exe` for Windows users for the same reason, so you'll need to click `More Info` before installing
-
 ## Contributing
 
 [CONTRIBUTING]
@@ -97,6 +97,6 @@ Until then, the only way to install alc-calc is to first build it from source by
 
 [Alcohol_Weight_Calculator]: https://github.com/camdenboren/Alcohol_Weight_Calculator
 [GPUI]: https://www.gpui.rs/
-[Releases]: https://github.com/camdenboren/alc-calc/releases
+[Actions]: https://github.com/camdenboren/alc-calc/action
 [CONTRIBUTING]: .github/CONTRIBUTING.md
 [GPLv3]: COPYING
