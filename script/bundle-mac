@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -o pipefail
-box() { boxes -d ansi -s $(tput cols); }
+box() { boxes -s ${COL:-$(tput cols)}; }
 failed() {
   echo -e "\n\033[1;31mRelease build failed.\033[0m"
   exit 1
@@ -20,14 +20,15 @@ fi
 echo -e "\033[1;33mcargo bundle...\033[0m"
 cargo bundle \
   --release \
-  ${RUNTIME_SHADERS:+--features runtime_shaders} \
-  2> /dev/null | xargs | box
+  ${RUNTIME_SHADERS:+--features runtime_shaders}
 
 pushd . > /dev/null
 cd target/release/bundle/osx/
 
-echo -e "\n\033[1;33msigning app...\033[0m"
-codesign -s "$CERT_IDENTITY" alc-calc.app &> /dev/null
+if [ "$DONT_SIGN" != "true" ]; then
+  echo -e "\n\033[1;33msigning app...\033[0m"
+  codesign -s "$CERT_IDENTITY" alc-calc.app
+fi
 
 if test -f alc-calc.dmg; then
   echo -e "\n\033[1;33mremoving old dmg...\033[0m"
@@ -48,8 +49,10 @@ create-dmg \
 
 readlink -f alc-calc.dmg | box
 
-echo -e "\n\033[1;33msigning dmg...\033[0m"
-codesign -s "$CERT_IDENTITY" alc-calc.dmg &> /dev/null
+if [ "$DONT_SIGN" != "true" ]; then
+  echo -e "\n\033[1;33msigning dmg...\033[0m"
+  codesign -s "$CERT_IDENTITY" alc-calc.dmg
+fi
 
 popd > /dev/null
 

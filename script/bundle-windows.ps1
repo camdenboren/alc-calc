@@ -27,7 +27,7 @@ function Yellow
 }
 
 Write-Output "`ncargo packager..." | Yellow
-& $Cargo packager --release > $null
+& $Cargo packager --release
 Resolve-Path -Path .\target\release\alc-calc_*.exe | boxes -d ansi
 
 if ($?) {

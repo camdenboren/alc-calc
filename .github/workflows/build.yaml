@@ -17,29 +17,110 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install Linux Dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt update
-          sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
-      - name: Cache
+
+      - name: Cargo Cache
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
+            ~/.cargo/bin
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build
-        run: cargo build --verbose --release
-      - name: Run tests
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+
+      - name: Run Tests
         run: cargo test --verbose --release
+
+      - name: Install cargo-bundle
+        continue-on-error: true
+        run: cargo install cargo-bundle
+
+      - name: Build
+        run: COL=80 ./script/bundle-linux
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-bundle
+          path: target/release/bundle/deb/alc-calc_*_amd64.deb
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cargo Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run Tests
+        run: cargo test --verbose --release
+
+      - name: Install Dependencies
+        run: |
+          brew install boxes create-dmg
+
+      - name: Install cargo-bundle
+        continue-on-error: true
+        run: cargo install cargo-bundle
+
+      - name: Build
+        run: COL=80 DONT_SIGN=true ./script/bundle-mac
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-bundle
+          path: target/release/bundle/osx/alc-calc.dmg
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cargo Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run Tests
+        run: cargo test --verbose --release
+
+      - name: Install Dependencies
+        run: choco install boxes.portable
+
+      - name: Install cargo-packager
+        continue-on-error: true
+        run: cargo install cargo-packager
+
+      - name: Build
+        run: ./script/bundle-windows.ps1
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-bundle
+          path: target/release/alc-calc_*_x64-setup.exe
