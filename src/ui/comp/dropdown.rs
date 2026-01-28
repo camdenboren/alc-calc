@@ -27,6 +27,31 @@ const CONTEXT: &str = "Dropdown";
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(96.);
 
+/// A Dropdown element with a scrollbar
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::ui::comp::dropdown::Dropdown;
+/// use gpui::{Entity, prelude::*};
+///
+/// struct UI {
+///     dropdown: Entity<Dropdown>,
+/// }
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         let dropdown = cx.new(|cx| {
+///             let id = 0;
+///             let tab_index = 0 as isize;
+///             Dropdown::new(id, cx, tab_index)
+///         });
+///         UI {
+///             dropdown
+///         }
+///     }
+/// }
+/// ```
 pub struct Dropdown {
     types: Vec<SharedString>,
     pub current: SharedString,

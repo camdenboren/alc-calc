@@ -10,6 +10,36 @@ use std::time::Duration;
 
 pub const MAX_ITEMS: usize = 3;
 
+/// A Toast element that can display info and error messages with an "Okay" button
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::ui::comp::toast::{Toast, ToastVariant, toast};
+/// use gpui::prelude::*;
+///
+/// struct UI {}
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         // Initialize
+///         Toast::set(cx);
+///
+///         // Display an Info toast
+///         toast(cx, ToastVariant::Info, "Message");
+///
+///         // Display an Error toast
+///         toast(cx, ToastVariant::Error, "Message");
+///
+///         UI {}
+///     }
+/// }
+/// ```
+///
+/// # Panics
+///
+/// The Toast will need to be initialized via `Toast::set(cx)` before calling
+/// `toast()`, otherwise your application will panic
 pub fn toast(cx: &mut App, variant: ToastVariant, description: &str) {
     let toast = Toast::global(cx);
     toast.update(cx, |toast, cx| toast.add(cx, variant, description));
