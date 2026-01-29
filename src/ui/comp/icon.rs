@@ -40,6 +40,43 @@ impl IconSize {
     }
 }
 
+/// An Icon element with multiple variants and sizes
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::ui::comp::{
+///     icon::{Icon, IconSize, IconVariant},
+/// };
+/// use gpui::prelude::*;
+///
+/// struct UI {
+///     icon: Icon,
+/// }
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         // Default color (uses `cx.theme.text()`)
+///         let mut icon = Icon::new(
+///             cx,
+///             IconVariant::Chevron,
+///             IconSize::Small,
+///         );
+///
+///         // Specific color
+///         icon = Icon::new(
+///             cx,
+///             IconVariant::Chevron,
+///             IconSize::Small,
+///         )
+///             .color(gpui::black());
+///         
+///         UI {
+///             icon,
+///         }
+///     }
+/// }
+/// ```
 #[derive(IntoElement)]
 pub struct Icon {
     pub variant: IconVariant,
