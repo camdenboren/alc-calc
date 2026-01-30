@@ -38,7 +38,7 @@ pub const MAX_ITEMS: usize = 3;
 ///
 /// # Panics
 ///
-/// The Toast will need to be initialized via `Toast::set(cx)` before calling
+/// The global `Toast` struct will need to be initialized via `Toast::set(cx)` before calling
 /// `toast()`, otherwise your application will panic
 pub fn toast(cx: &mut App, variant: ToastVariant, description: &str) {
     let toast = Toast::global(cx);

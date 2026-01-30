@@ -93,6 +93,35 @@ pub enum ThemeVariant {
     Custom,
 }
 
+/// Theme values and variants accessible across the entire app
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::theme::{
+///     Theme,
+///     ActiveTheme,
+/// };
+/// use gpui::{Div, div, prelude::*};
+///
+/// struct UI {
+///     div: Div,
+/// }
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         Theme::set(cx);
+///
+///         UI {
+///             div: div().bg(cx.theme().background),
+///         }
+///     }
+/// }
+/// ```
+///
+/// # Panics
+///
+/// The global `Theme` struct will need to be initialized via `Theme::set(cx)` before
+/// calling `cx.theme().*`, otherwise your application will panic
 #[derive(Serialize, Debug, Deserialize, PartialEq)]
 pub struct Theme {
     pub variant: ThemeVariant,
@@ -126,6 +155,7 @@ pub struct Theme {
 
 impl Global for Theme {}
 
+/// Trait for making theme values accessible through the app context via `cx.theme().value`
 pub trait ActiveTheme {
     fn theme(&self) -> &Theme;
 }
