@@ -39,6 +39,7 @@
       cargo
       cargo-bundle
       cargo-edit
+      mdbook
       rust-analyzer
       rustfmt
       taplo
