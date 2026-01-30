@@ -43,6 +43,34 @@ enum InputEvent {
 
 const CONTEXT: &str = "TextInput";
 
+/// A text input element with a blinking cursor and basic keyboard and mouse interactivity
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::comp::input::text_input::TextInput;
+/// use gpui::{Entity, Window, prelude::*};
+///
+/// struct UI {
+///     input: Entity<TextInput>,
+/// }
+///
+/// impl UI {
+///     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+///         let input = cx.new(|cx| {
+///             TextInput::new(
+///                 window,
+///                 cx,
+///                 "Placeholder".into(),
+///                 0,
+///             )
+///         });
+///
+///         UI {
+///             input,
+///         }
+///     }
+/// }
+/// ```
 pub struct TextInput {
     pub cursor_state: Entity<CursorState>,
     pub focus_handle: FocusHandle,
