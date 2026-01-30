@@ -2,3 +2,6 @@
 title = "alc-calc docs"
 authors = ["camdenboren"]
 language = "en"
+
+[output.html]
+git-repository-url = "https://github.com/camdenboren/alc-calc"
