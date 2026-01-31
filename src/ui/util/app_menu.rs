@@ -4,6 +4,27 @@
 use crate::ui::{About, CloseWindow, Copy, Cut, Hide, Minimize, NewWindow, Paste, Quit, SelectAll};
 use gpui::{Menu, MenuItem, OsAction, SystemMenuType};
 
+/// Construct the macOS application menu items passed to `cx.set_menus()`
+///
+/// # Examples
+/// ```
+/// #[cfg(target_os = "macos")]
+/// use alc_calc::ui::util::app_menu::{
+///     app_menu,
+/// };
+/// use gpui::{Div, div, prelude::*};
+///
+/// struct UI {}
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         #[cfg(target_os = "macos")]
+///         cx.set_menus(app_menu());
+///
+///         UI {}
+///     }
+/// }
+/// ```
 pub fn app_menu() -> Vec<Menu> {
     vec![
         Menu {
@@ -42,6 +63,27 @@ pub fn app_menu() -> Vec<Menu> {
     ]
 }
 
+/// Construct the macOS dock menu items passed to `cx.set_dock_menu()`
+///
+/// # Examples
+/// ```
+/// #[cfg(target_os = "macos")]
+/// use alc_calc::ui::util::app_menu::{
+///     app_dock_menu,
+/// };
+/// use gpui::{Div, div, prelude::*};
+///
+/// struct UI {}
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         #[cfg(target_os = "macos")]
+///         cx.set_dock_menu(app_dock_menu());
+///
+///         UI {}
+///     }
+/// }
+/// ```
 pub fn app_dock_menu() -> Vec<MenuItem> {
     vec![MenuItem::action("New Window", NewWindow)]
 }
