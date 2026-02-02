@@ -14,7 +14,7 @@ use gpui::{App, Global, SharedString};
 /// };
 /// use gpui::{KeyBinding, actions, prelude::*};
 ///
-/// actions!(ui, [Quit]);
+/// actions!(ui, [AnAction]);
 ///
 /// struct UI {}
 ///
@@ -24,8 +24,8 @@ use gpui::{App, Global, SharedString};
 ///         let ctrl = cx.ctrl();
 ///         cx.bind_keys([
 ///             KeyBinding::new(
-///                 &format!("{ctrl}-q"),
-///                 Quit,
+///                 &format!("{ctrl}-l"),
+///                 AnAction,
 ///                 None,
 ///             ),
 ///         ]);
