@@ -18,6 +18,27 @@ const BORDER_RADIUS: Pixels = px(12.0);
 const BORDER_SIZE: Pixels = px(0.75);
 const SHADOW_SIZE: Pixels = px(12.0);
 
+/// Create a new window for the application, handling platform-specific `WindowOptions`
+/// and `on_window_closed()` behavior before attaching the `UI`
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::window::{
+///     new_window,
+/// };
+/// use gpui::{
+///     App,
+///     Application,
+///     prelude::*,
+/// };
+///
+/// # fn nested() {
+/// Application::new()
+///     .run(|cx: &mut App| {
+///         new_window(cx);
+///     });
+/// # }
+/// ```
 pub fn new_window(cx: &mut App) {
     if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
         // hacky approach for ensuring cmd-w doesn't prevent us from opening a new window
@@ -41,7 +62,8 @@ pub fn new_window(cx: &mut App) {
     };
 }
 
-pub fn window_options(cx: &App) -> WindowOptions {
+/// Construct the `WindowOptions` passed to the application's `cx.open_window()` call
+fn window_options(cx: &App) -> WindowOptions {
     WindowOptions {
         app_id: Some("alc-calc".into()),
         focus: true,
@@ -62,6 +84,32 @@ pub fn window_options(cx: &App) -> WindowOptions {
     }
 }
 
+/// Construct the app's `WindowBorder` with all elements as children
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::window::{
+///     window_border,
+/// };
+/// use gpui::{
+///     Window,
+///     div,
+///     prelude::*,
+/// };
+///
+/// struct UI {}
+///
+/// impl Render for UI {
+///
+///     fn render(
+///         &mut self,
+///         _window: &mut Window,
+///         _cx: &mut Context<Self>,
+///     ) -> impl IntoElement {
+///         window_border().child(div())
+///     }
+/// }
+/// ```
 pub fn window_border() -> WindowBorder {
     WindowBorder::new()
 }
