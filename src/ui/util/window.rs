@@ -121,6 +121,40 @@ pub struct WindowBorder {
 
 #[allow(unused_variables, unreachable_code)]
 impl WindowBorder {
+    /// Apply `BORDER_RADIUS` to the given `Div` when using client-side decorations
+    /// on Linux
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::window::{
+    ///     WindowBorder,
+    /// };
+    /// use gpui::{
+    ///     Window,
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// struct UI {}
+    ///
+    /// impl Render for UI {
+    ///     fn render(
+    ///         &mut self,
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> impl IntoElement {
+    ///         let decorations = window
+    ///             .window_decorations();
+    ///         div()
+    ///             .map(|this| {
+    ///                 WindowBorder::rounding(
+    ///                     this,
+    ///                     decorations,
+    ///                 )
+    ///             })
+    ///     }
+    /// }
+    /// ```
     pub fn rounding(div: Div, decorations: Decorations) -> Div {
         if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
@@ -144,6 +178,44 @@ impl WindowBorder {
         })
     }
 
+    /// Apply `BORDER_RADIUS` to the given `Stateful<Div>` (namely, the titlebar) when
+    /// using client-side decorations on Linux
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::window::{
+    ///     WindowBorder,
+    /// };
+    /// use gpui::{
+    ///     Window,
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// struct UI {}
+    ///
+    /// impl Render for UI {
+    ///     fn render(
+    ///         &mut self,
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> impl IntoElement {
+    ///         let decorations = window
+    ///             .window_decorations();
+    ///
+    ///         let titlebar = div()
+    ///             .id("")
+    ///             .map(|this| {
+    ///                 WindowBorder::titlebar_rounding(
+    ///                     this,
+    ///                     decorations,
+    ///                 )
+    ///             });
+    ///
+    ///         div().child(titlebar)
+    ///     }
+    /// }
+    /// ```
     pub fn titlebar_rounding(div: Stateful<Div>, decorations: Decorations) -> Stateful<Div> {
         if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
@@ -163,7 +235,7 @@ impl WindowBorder {
 }
 
 impl WindowBorder {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             ..Default::default()
         }
@@ -275,6 +347,7 @@ impl RenderOnce for WindowBorder {
     }
 }
 
+/// Determine which edge is being resized based on the mouse location
 fn resize_edge(pos: Point<Pixels>, shadow_size: Pixels, size: Size<Pixels>) -> Option<ResizeEdge> {
     let edge = if pos.y < shadow_size && pos.x < shadow_size {
         ResizeEdge::TopLeft

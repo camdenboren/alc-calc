@@ -32,6 +32,25 @@ pub enum IconSize {
 }
 
 impl IconSize {
+    /// Apply an `IconSize` variant's associated size to the given `Stateful<Div>` (namely, a button)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::icon::{
+    ///     IconSize,
+    /// };
+    /// use gpui::{
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// div()
+    ///     .id("")
+    ///     .map(|this| {
+    ///         IconSize::size(this, &IconSize::Small)
+    ///     });
+    /// ```
     pub fn size(div: Stateful<Div>, size: &IconSize) -> Stateful<Div> {
         div.map(|this| match size {
             IconSize::Small => this.size_4(),
