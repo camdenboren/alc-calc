@@ -51,6 +51,19 @@ impl ActiveCtrl for App {
     }
 }
 
+/// The root view of the application which
+/// - Contains all "views" as GPUI entities, setting these subscriptions
+///   - menu + table.num_drinks_input both sub to Tab, TabPrev
+///   - table.num_drinks_input also subs to Toggle
+/// - Handles window-level keybinds and macOS menus
+/// - Sets up these globals
+///   - Ctrl
+///   - Theme
+///   - Toast
+/// - And handles keyboard navigation between views
+///
+/// *Note that the UI is notified of new ingredients to recreate subscriptions for
+/// by subscribing to Table's Add event*
 pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
@@ -61,20 +74,31 @@ pub struct UI {
 }
 
 impl UI {
-    /// Create the UI's root view, setting up the global:
-    /// - Ctrl
-    /// - Theme
-    /// - Toast
+    /// Create the UI's root view and it's entities, setting globals, keybinds,
+    /// subscriptions, and menus (on macOS)
     ///
-    /// Before setting:
-    /// - Keybinds
-    /// - Menus (on macOS)
-    /// - Subscriptions
-    ///   - menu + table.num_drinks_input both sub to Tab, TabPrev
-    ///   - table.num_drinks_input also subs to Toggle
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::UI;
+    /// use gpui::{
+    ///     App,
+    ///     Application,
+    ///     WindowOptions,
+    ///     prelude::*,
+    /// };
     ///
-    /// *Note that the UI is notified of new ingredients to recreate subscriptions for
-    /// by subscribing to Table's Add event*
+    /// # fn nested() {
+    /// Application::new()
+    ///    .run(|cx: &mut App| {
+    ///        cx.open_window(
+    ///            WindowOptions::default(),
+    ///            |window, cx| {
+    ///                cx.new(|cx| UI::new(window, cx))
+    ///            },
+    ///        ).unwrap();
+    ///    });
+    /// # }
+    /// ```
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Toast::set(cx);
         Ctrl::set(cx);
@@ -175,6 +199,7 @@ impl UI {
         window.minimize_window();
     }
 
+    /// Display the `About alc-calc` menu entry on macOS by spawning a window prompt
     fn about(&mut self, _: &About, window: &mut Window, cx: &mut Context<Self>) {
         let message = "alc-calc";
         let detail = "v0.0.1";
@@ -205,6 +230,7 @@ impl UI {
     fn paste(&mut self, _: &Paste, _window: &mut Window, _cx: &mut Context<Self>) {}
     fn select(&mut self, _: &SelectAll, _window: &mut Window, _cx: &mut Context<Self>) {}
 
+    /// Manage focus toggling between self, the table, and the theme menu
     fn toggle(&mut self, _: &Toggle, window: &mut Window, cx: &mut Context<Self>) {
         if self
             .table
