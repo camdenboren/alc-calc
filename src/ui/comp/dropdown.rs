@@ -27,31 +27,15 @@ const CONTEXT: &str = "Dropdown";
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(96.);
 
-/// A Dropdown element with a scrollbar
+/// A `Dropdown` element containing the ingredient `Type`s with mouse-and-keyboard driven
+/// interactivity as well as a basic scrollbar
 ///
-/// # Examples
+/// The scrollbar provides an adequate visual indicator of vertical progress via both
+/// mouse-wheel and keyboard scrolling, though it doesn't implement drag functionality
 ///
-/// ```
-/// use alc_calc::ui::comp::dropdown::Dropdown;
-/// use gpui::{Entity, prelude::*};
-///
-/// struct UI {
-///     dropdown: Entity<Dropdown>,
-/// }
-///
-/// impl UI {
-///     fn new(cx: &mut Context<Self>) -> Self {
-///         let dropdown = cx.new(|cx| {
-///             let id = 0;
-///             let tab_index = 0 as isize;
-///             Dropdown::new(id, cx, tab_index)
-///         });
-///         UI {
-///             dropdown
-///         }
-///     }
-/// }
-/// ```
+/// The `id` is primarily used for giving ids to child elements like the scrollbar,
+/// though it's also leveraged for ensuring the shown dropdown is always displayed above
+/// others that aren't via deferral
 pub struct Dropdown {
     types: Vec<SharedString>,
     pub current: SharedString,
@@ -65,6 +49,32 @@ pub struct Dropdown {
 }
 
 impl Dropdown {
+    /// Create a `Dropdown` element with keybinds that is populated with the ingredient
+    /// types
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::dropdown::Dropdown;
+    /// use gpui::{Entity, prelude::*};
+    ///
+    /// struct UI {
+    ///     dropdown: Entity<Dropdown>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         let dropdown = cx.new(|cx| {
+    ///             let id = 0;
+    ///             let tab_index = 0 as isize;
+    ///             Dropdown::new(id, cx, tab_index)
+    ///         });
+    ///         UI {
+    ///             dropdown
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(id: usize, cx: &mut Context<Self>, tab_index: isize) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),

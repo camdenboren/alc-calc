@@ -8,31 +8,8 @@ use gpui::{SharedString, Window, div, prelude::*};
 
 /// A Tooltip element that can display text and an optional keybind
 ///
-/// The Tooltip will need to be converted to an `AnyView` before passed to `.tooltip()`,
-/// which is only available when the element is a `Stateful<Div>` (hence the `id()`)
-///
-/// # Examples
-///
-/// ```
-/// use alc_calc::ui::comp::tooltip::Tooltip;
-/// use gpui::{div, prelude::*};
-///
-/// // Basic Tooltip
-/// div()
-///     .id("id".into_element())
-///     .tooltip(|_window, cx| {
-///         cx.new(|_cx| Tooltip::new("Text")).into()
-///     });
-///
-/// // Tooltip with keybind
-/// div()
-///     .id("id".into_element())
-///     .tooltip(|_window, cx| {
-///         cx.new(|_cx| {
-///             Tooltip::new("Text").keybind("Keybind")
-///         }).into()
-///     });
-/// ```
+/// The Tooltip will need to be converted to an `AnyView` before passing to `.tooltip()`,
+/// which is only available when the element is a `Stateful<Div>`
 #[derive(Default)]
 pub struct Tooltip {
     text: SharedString,
@@ -41,6 +18,19 @@ pub struct Tooltip {
 
 impl Tooltip {
     /// Create a Tooltip with text
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::tooltip::Tooltip;
+    /// use gpui::{div, prelude::*};
+    ///
+    /// div()
+    ///     .id("id".into_element())
+    ///     .tooltip(|_window, cx| {
+    ///         cx.new(|_cx| Tooltip::new("Text")).into()
+    ///     });
+    /// ```
     pub fn new(text: &str) -> Self {
         Self {
             text: text.to_string().into(),
@@ -49,6 +39,22 @@ impl Tooltip {
     }
 
     /// Add a keybind to the Tooltip
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::tooltip::Tooltip;
+    /// use gpui::{div, prelude::*};
+    ///
+    /// div()
+    ///     .id("id".into_element())
+    ///     .tooltip(|_window, cx| {
+    ///         cx.new(|_cx| {
+    ///             Tooltip::new("Text")
+    ///                 .keybind("Keybind")
+    ///         }).into()
+    ///     });
+    /// ```
     pub fn keybind(mut self, keybind: &str) -> Self {
         self.keybind = Some(keybind.to_string().into());
         self
