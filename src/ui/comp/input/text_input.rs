@@ -43,34 +43,14 @@ enum InputEvent {
 
 const CONTEXT: &str = "TextInput";
 
-/// A text input element with a blinking cursor and basic keyboard and mouse interactivity
+/// A `TextInput` element with a blinking cursor and basic keyboard and mouse
+/// interactivity
 ///
-/// # Examples
-/// ```
-/// use alc_calc::ui::comp::input::text_input::TextInput;
-/// use gpui::{Entity, Window, prelude::*};
+/// `TextInput` offloads the implementation of `Element` to `TextElement` and relies on
+/// the state and logic in `CursorState` to manage the blinking cursor
 ///
-/// struct UI {
-///     input: Entity<TextInput>,
-/// }
-///
-/// impl UI {
-///     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
-///         let input = cx.new(|cx| {
-///             TextInput::new(
-///                 window,
-///                 cx,
-///                 "Placeholder".into(),
-///                 0,
-///             )
-///         });
-///
-///         UI {
-///             input,
-///         }
-///     }
-/// }
-/// ```
+/// Note that `TextElement` is the parent in terms of _entity ownership_, but `TextInput`
+/// is the parent in terms of _rendering_
 pub struct TextInput {
     pub cursor_state: Entity<CursorState>,
     pub focus_handle: FocusHandle,
@@ -87,6 +67,35 @@ pub struct TextInput {
 }
 
 impl TextInput {
+    /// Create a `TextInput` and bind relevant keys, set the `tab_stop`, then create,
+    /// attach, and observe the `cursor_state`
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::comp::input::text_input::TextInput;
+    /// use gpui::{Entity, Window, prelude::*};
+    ///
+    /// struct UI {
+    ///     input: Entity<TextInput>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+    ///         let input = cx.new(|cx| {
+    ///             TextInput::new(
+    ///                 window,
+    ///                 cx,
+    ///                 "Placeholder".into(),
+    ///                 0,
+    ///             )
+    ///         });
+    ///
+    ///         UI {
+    ///             input,
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(
         window: &mut Window,
         cx: &mut Context<Self>,
@@ -180,11 +189,13 @@ impl TextInput {
         });
     }
 
+    /// Set `visible` to `true` in this `TextInput`'s `cursor_state`
     pub fn show_cursor(&self, cx: &mut Context<Self>) {
         self.cursor_state
             .update(cx, |cursor, cx| cursor.show_cursor(cx));
     }
 
+    /// Whether both the `TextInput` is focused and the cursor should be visible
     pub fn should_show_cursor(&self, window: &mut Window, cx: &App) -> bool {
         self.is_focused(window) && self.cursor_state.read(cx).visible()
     }
