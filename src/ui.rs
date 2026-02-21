@@ -25,7 +25,7 @@ use crate::ui::{
 use gpui::Empty;
 use gpui::{
     App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, PromptLevel,
-    SharedString, Subscription, Window, actions, deferred, div, prelude::*,
+    Subscription, Window, actions, deferred, div, prelude::*,
 };
 
 actions!(
@@ -44,12 +44,6 @@ actions!(
 );
 
 const CONTEXT: &str = "UI";
-
-impl ActiveCtrl for App {
-    fn ctrl(&self) -> SharedString {
-        Ctrl::global(self)
-    }
-}
 
 /// The root view of the application which
 /// - Contains all "views" as GPUI entities, setting these subscriptions
@@ -331,7 +325,7 @@ impl Focusable for UI {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use gpui::{TestAppContext, VisualTestContext};
+    use gpui::{SharedString, TestAppContext, VisualTestContext};
 
     #[gpui::test]
     fn test_ui_toggle_menu(cx: &mut TestAppContext) {
