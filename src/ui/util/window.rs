@@ -114,6 +114,11 @@ pub fn window_border() -> WindowBorder {
     WindowBorder::new()
 }
 
+/// The `WindowBorder` is the top-level component in the app's window, implementing
+/// a draggable border (via `canvas()`) with styling on Linux
+///
+/// As `WindowBorder` implements `ParentElement`, all children are stored in a `Vec`
+/// which implicitly extend this parent (though require explicit rendering via `children()`)
 #[derive(IntoElement, Default)]
 pub struct WindowBorder {
     children: Vec<AnyElement>,
