@@ -93,35 +93,20 @@ pub enum ThemeVariant {
     Custom,
 }
 
-/// Theme values and variants accessible across the entire app
+/// A combined `Theme` and `Config` system that provides per-variant color values for
+/// each component across the entire app (including OS-specific handling, e.g., alc-calc
+/// doesn't implement a custom `Titlebar` component for `Windows` so the corresponding
+/// fields are left out for that OS)
 ///
-/// # Examples
-/// ```
-/// use alc_calc::ui::util::theme::{
-///     Theme,
-///     ActiveTheme,
-/// };
-/// use gpui::{Div, div, prelude::*};
+/// The `Theme` variant (e.g., `ThemeVariant::Dark`) is deserialized from
+/// `OS_CONFIG_DIR/alc-calc/config.toml`. If the variant is `Custom`, a user-provided
+/// theme will also be deserialized from `OS_CONFIG_DIR/alc-calc/theme.toml`. Otherwise,
+/// `Theme` will simply set the relevant `ThemeVariant`'s associated function (e.g.,
+/// `ThemeVariant::Dark` -> `dark()`)
 ///
-/// struct UI {
-///     div: Div,
-/// }
-///
-/// impl UI {
-///     fn new(cx: &mut Context<Self>) -> Self {
-///         Theme::set(cx);
-///
-///         UI {
-///             div: div().bg(cx.theme().background),
-///         }
-///     }
-/// }
-/// ```
-///
-/// # Panics
-///
-/// The global `Theme` struct will need to be initialized via `Theme::set(cx)` before
-/// calling `cx.theme().*`, otherwise your application will panic
+/// Note that `Theme` handles all filesystem access in alc-calc, and thus provides a
+/// testing function (`Theme::test(cx)`) for circumventing access to reduce test
+/// flakiness introduced by the environment
 #[derive(Serialize, Debug, Deserialize, PartialEq)]
 pub struct Theme {
     pub variant: ThemeVariant,
@@ -168,6 +153,34 @@ impl ActiveTheme for App {
 
 impl Theme {
     /// Read the theme from the filesystem, deserialize it, and set the theme globally
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::theme::{
+    ///     Theme,
+    ///     ActiveTheme,
+    /// };
+    /// use gpui::{Div, div, prelude::*};
+    ///
+    /// struct UI {
+    ///     div: Div,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         Theme::set(cx);
+    ///
+    ///         UI {
+    ///             div: div().bg(cx.theme().background),
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// The global `Theme` struct will need to be initialized via `Theme::set(cx)` before
+    /// calling `cx.theme().*`, otherwise your application will panic
     pub fn set(cx: &mut App) {
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let config_content = Theme::read(cx, path.clone()).unwrap_or(String::from(DEFAULT_THEME));
@@ -184,6 +197,29 @@ impl Theme {
 
     /// Set val's corresponding theme globally, only interacting with the filesystem
     /// when `Custom` is selected
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::theme::{
+    ///     Theme,
+    ///     ActiveTheme,
+    /// };
+    /// use gpui::{Div, div, prelude::*};
+    ///
+    /// struct UI {
+    ///     div: Div,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         Theme::preview(cx, "Dark");
+    ///
+    ///         UI {
+    ///             div: div().bg(cx.theme().background),
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn preview(cx: &mut App, val: &str) {
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let theme = match ThemeVariant::from_str(val).unwrap_or(ThemeVariant::Dark) {
@@ -197,7 +233,7 @@ impl Theme {
         cx.set_global(theme);
     }
 
-    pub fn global(cx: &App) -> &Theme {
+    fn global(cx: &App) -> &Theme {
         cx.global::<Theme>()
     }
 
