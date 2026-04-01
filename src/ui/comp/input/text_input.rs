@@ -126,7 +126,7 @@ impl TextInput {
         let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
         cx.on_focus(&focus_handle, window, Self::on_focus).detach();
         cx.on_blur(&focus_handle, window, Self::on_blur).detach();
-        let cursor_state = cx.new(|_| CursorState::default());
+        let cursor_state = cx.new(|_| CursorState::new());
 
         Self {
             cursor_state: cursor_state.clone(),
@@ -145,11 +145,11 @@ impl TextInput {
                 cx.observe_window_activation(window, |input, window, cx| {
                     if window.is_window_active() {
                         let active = window.is_window_active();
-                        input.cursor_state.update(cx, |blink_manager, cx| {
+                        input.cursor_state.update(cx, |cursor_state, cx| {
                             if active {
-                                blink_manager.enable(cx);
+                                cursor_state.enable(cx);
                             } else {
-                                blink_manager.disable(cx);
+                                cursor_state.disable(cx);
                             }
                         });
                     }
