@@ -32,12 +32,17 @@ impl Error for EmptyError {}
 
 impl Error for CalculationError {}
 
+/// Round a number to the nearest given decimal place
 pub fn round_to_place(raw: f32, place: f32) -> Result<f32, CalculationError> {
     let base: f32 = 10.;
     let scalar: f32 = base.powf(place);
     Ok((raw * scalar).round() / scalar)
 }
 
+/// Given the percentage, calculate the weight of an ingredient per alcoholic unit via
+/// pre-calculated trendlines. The first element of the returned tuple corresponds to an
+/// integer representation of the ingredient `Category`, with the second being the actual
+/// weight
 fn calc_ingred_weight(ingred_type: &str, percentage: f32) -> Result<(u32, f32), CalculationError> {
     let cat: Category = match_category(ingred_type);
     Ok(match cat {
@@ -47,6 +52,8 @@ fn calc_ingred_weight(ingred_type: &str, percentage: f32) -> Result<(u32, f32), 
     })
 }
 
+/// Given the percentage, calculate the volume of an ingredient per alcoholic unit via
+/// pre-measured volumes of each ingredient type
 fn calc_volume(ingred_type: u32, percentage: f32) -> Result<f32, CalculationError> {
     Ok(match ingred_type {
         1 => (40. / percentage) * 44.355,
@@ -56,6 +63,8 @@ fn calc_volume(ingred_type: u32, percentage: f32) -> Result<f32, CalculationErro
     })
 }
 
+/// Calculate the scalar value used to normalize relative (aka., intermediate)
+/// ingredient weights against the desired number of drinks
 fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> Result<f32, CalculationError> {
     Ok(num_drinks
         / data
@@ -63,6 +72,39 @@ fn calc_scalar(data: &mut [IngredientData], num_drinks: f32) -> Result<f32, Calc
             .fold(0., |sum, item| sum + item.intermediate_weight / item.weight))
 }
 
+/// Calculate the weight of individual ingredients in an alcoholic beverage based on each
+/// ingredient's type, percentage, and relative parts (if there's more than one ingredient)
+///
+/// This calculation relies on trendlines calculated in the original project that relate
+/// an ingredient's percentage to its mass based on it's corresponding ingredient
+/// `Category`
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::{
+///     calc::calc_weights,
+///     ui::view::table::ingredient::IngredientData
+/// };
+///
+/// let drinks = 1.;
+/// let mut data: Vec<IngredientData> = vec![
+///     IngredientData {
+///         ingred_type: "Whiskey".into(),
+///         percentage: 40.,
+///         parts: 1.,
+///         ..Default::default()
+///     },
+/// ];
+///
+/// let data = match calc_weights(&mut data, drinks) {
+///     Ok(data) => data,
+///     Err(e) => {
+///         eprintln!("{}", e);
+///         return;
+///     }
+/// };
+/// ```
 pub fn calc_weights(
     data: &mut Vec<IngredientData>,
     num_drinks: f32,

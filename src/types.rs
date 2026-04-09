@@ -33,6 +33,16 @@ pub enum Category {
     Hard,
 }
 
+/// Convert the given `str` representation of an ingredient type to it's corresponding
+/// `Type` enum, before matching the `Type` to a broader ingredient `Category`
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::types::{Category, match_category};
+///
+/// let category = match_category("Whiskey");
+/// ```
 pub fn match_category(ingred_type: &str) -> Category {
     let ingred_type_e: Type = Type::from_str(ingred_type).unwrap_or(Type::Whiskey);
     match ingred_type_e {
