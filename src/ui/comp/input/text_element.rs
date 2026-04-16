@@ -18,6 +18,11 @@ use gpui::{
 
 const MAX_DIGITS: usize = 9;
 
+/// An `Element` implementation for `TextInput`, enabling lower-level layout requests,
+/// bounds calculations, and element painting via Taffy (the layout library used by GPUI)
+///
+/// Note that `TextElement` is the parent of `TextInput` in terms of _entity ownership_,
+/// but `TextInput` is the parent in terms of _rendering_
 pub struct TextElement {
     pub input: Entity<TextInput>,
 }
@@ -62,6 +67,12 @@ impl Element for TextElement {
         (window.request_layout(style, [], cx), ())
     }
 
+    /// Construct the `PrepaintState` used to paint the `TextInput` based on the raw text
+    /// content and cursor + selection states of the associated `TextInput` `Entity`
+    ///
+    /// This implementation also ensures that a maximum of `MAX_DIGITS` are displayed in
+    /// any `TextInput` by updating the `TextInput`'s content and selection state (when
+    /// needed) and displaying a `Toast` to the user
     fn prepaint(
         &mut self,
         _id: Option<&GlobalElementId>,
@@ -182,6 +193,12 @@ impl Element for TextElement {
         }
     }
 
+    /// Paint the `line`, `cursor`, and `selection` from `PrepaintState` to the screen
+    /// as quads (where applicable), and handle text input via constructing an
+    /// `ElementInputHandler` via the associated `TextInput`'s `focus_handle`
+    ///
+    /// This implementation also stores the `TextElement`'s `bounds` and `line`/`layout`
+    /// in `TextInput`, which it uses to actually implement `EntityInputHandler`
     fn paint(
         &mut self,
         _id: Option<&GlobalElementId>,
