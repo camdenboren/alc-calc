@@ -100,6 +100,15 @@ impl CursorState {
         }
     }
 
+    /// So long as the cursor is enabled and not paused (and the epoch matches, see below
+    /// for elaboration), recursively toggle cursor visibility and notify observers each
+    /// `INTERVAL` via GPUI's async executor
+    ///
+    /// In addition to the aforementioned requirements, `blink_cursors` will only recurse
+    /// when the given epoch matches what's internally designated as the next one, which
+    /// should prevent opaque edge cases related to simultaneous and contradictory state
+    /// changes. _Ostensibly, this may occur if `pause_blinking` is called (as it's
+    /// publicly accessible) in between the epochs associated w/ each `INTERVAL`_
     fn blink_cursors(&mut self, epoch: usize, cx: &mut Context<Self>) {
         if epoch == self.blink_epoch && self.enabled && !self.blinking_paused {
             self.visible = !self.visible;
