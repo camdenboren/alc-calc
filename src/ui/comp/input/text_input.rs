@@ -231,6 +231,7 @@ impl TextInput {
         self.select_to(self.content.len(), cx)
     }
 
+    ///
     fn select_word(&mut self, offset: usize, window: &mut Window, cx: &mut Context<Self>) {
         let mut start = self.offset_to_utf16(offset);
         let mut end = start;
@@ -295,6 +296,7 @@ impl TextInput {
         self.pause_blink(cx);
     }
 
+    ///
     fn on_mouse_down(
         &mut self,
         event: &MouseDownEvent,
@@ -384,6 +386,7 @@ impl TextInput {
         }
     }
 
+    ///
     fn index_for_mouse_position(&self, position: Point<Pixels>) -> usize {
         if self.content.is_empty() {
             return 0;
@@ -402,6 +405,7 @@ impl TextInput {
         line.closest_index_for_x(position.x - bounds.left())
     }
 
+    ///
     fn select_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         if self.selection_reversed {
             self.selected_range.start = offset
@@ -415,6 +419,7 @@ impl TextInput {
         cx.notify()
     }
 
+    ///
     fn offset_from_utf16(&self, offset: usize) -> usize {
         let mut utf8_offset = 0;
         let mut utf16_count = 0;
@@ -430,6 +435,7 @@ impl TextInput {
         utf8_offset
     }
 
+    ///
     fn offset_to_utf16(&self, offset: usize) -> usize {
         let mut utf16_offset = 0;
         let mut utf8_count = 0;
@@ -453,6 +459,12 @@ impl TextInput {
         self.offset_from_utf16(range_utf16.start)..self.offset_from_utf16(range_utf16.end)
     }
 
+    /// Represent the `TextInput`'s `content` as an iterator of grapheme clusters and
+    /// their associated byte offsets to identify the boundary/index of the previous
+    /// cluster based on the provided offset
+    ///
+    /// See https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries if these
+    /// words mean nothing to you
     fn previous_boundary(&self, offset: usize) -> usize {
         self.content
             .grapheme_indices(true)
@@ -461,6 +473,12 @@ impl TextInput {
             .unwrap_or(0)
     }
 
+    /// Represent the `TextInput`'s `content` as an iterator of grapheme clusters and
+    /// their associated byte offsets to identify the boundary/index of the next
+    /// cluster based on the provided offset
+    ///
+    /// See https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries if these
+    /// words mean nothing to you
     fn next_boundary(&self, offset: usize) -> usize {
         self.content
             .grapheme_indices(true)
@@ -515,6 +533,7 @@ impl EntityInputHandler for TextInput {
         self.marked_range = None;
     }
 
+    ///
     fn replace_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,
@@ -541,6 +560,7 @@ impl EntityInputHandler for TextInput {
         cx.notify();
     }
 
+    ///
     fn replace_and_mark_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,
