@@ -386,7 +386,10 @@ impl TextInput {
         }
     }
 
-    ///
+    /// Identify the index of the closest character boundary for the given mouse position,
+    /// returning early for edge cases related to empty content and positions on the
+    /// input's top/bottom `Bounds` (which are managed by `paint()` in `TextElement`'s
+    /// implementation of `Element`)
     fn index_for_mouse_position(&self, position: Point<Pixels>) -> usize {
         if self.content.is_empty() {
             return 0;
@@ -405,7 +408,8 @@ impl TextInput {
         line.closest_index_for_x(position.x - bounds.left())
     }
 
-    ///
+    /// Extend the `selected_range` to the provided byte offset while accounting for
+    /// (and managing, as needed) the `selection_reversed` state
     fn select_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         if self.selection_reversed {
             self.selected_range.start = offset
@@ -419,7 +423,7 @@ impl TextInput {
         cx.notify()
     }
 
-    ///
+    /// Convert a UTF-16 character offset/index to UTF-8
     fn offset_from_utf16(&self, offset: usize) -> usize {
         let mut utf8_offset = 0;
         let mut utf16_count = 0;
@@ -435,7 +439,7 @@ impl TextInput {
         utf8_offset
     }
 
-    ///
+    /// Convert a UTF-8 character offset/index to UTF-16
     fn offset_to_utf16(&self, offset: usize) -> usize {
         let mut utf16_offset = 0;
         let mut utf8_count = 0;
