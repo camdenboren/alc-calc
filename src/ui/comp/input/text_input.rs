@@ -231,7 +231,10 @@ impl TextInput {
         self.select_to(self.content.len(), cx)
     }
 
-    ///
+    /// Update the `selected_range` + `selected_word_range` to the whitespace-delimited
+    /// word at the given cursor offset. Note that though this `fn` converts the offset to
+    /// UTF-16 for internal processing, the offset passed to this + the resultant ranges
+    /// are UTF-8
     fn select_word(&mut self, offset: usize, window: &mut Window, cx: &mut Context<Self>) {
         let mut start = self.offset_to_utf16(offset);
         let mut end = start;
@@ -296,7 +299,12 @@ impl TextInput {
         self.pause_blink(cx);
     }
 
-    ///
+    /// Handle `MouseDownEvent`s by setting `is_selecting` (which is leveraged by
+    /// `on_mouse_move`) and updating the current selection for the following cases:
+    /// 1. double clicks
+    /// 2. triple clicks
+    /// 3. shift + single clicks
+    /// 4. single clicks
     fn on_mouse_down(
         &mut self,
         event: &MouseDownEvent,
@@ -537,7 +545,12 @@ impl EntityInputHandler for TextInput {
         self.marked_range = None;
     }
 
+    /// Instruct the platform (via GPUI) on how to replace the text in the given UTF-16
+    /// range w/ the given `new_text`, where it will effectively just update the `content`
+    /// + `selected_range`
     ///
+    /// As both `range_utf16` and `marked_range` are `None`, the actual `range` used
+    /// by this `fn` internally is just `selected_range`
     fn replace_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,
@@ -564,7 +577,16 @@ impl EntityInputHandler for TextInput {
         cx.notify();
     }
 
+    /// **Note that this `fn` is not yet actually used by alc-calc**
     ///
+    /// Instruct the platform (via GPUI) on how to replace the text in the given UTF-16
+    /// range w/ the given `new_text`, where it will
+    /// 1. update the `content`
+    /// 2. set `marked_range` from the given range's start to the given text's length
+    /// 3. replace `selected_range` with `new_selected_range_utf16`
+    ///
+    /// As both `range_utf16` and `marked_range` are `None`, the actual `range` used
+    /// by this `fn` internally is just `selected_range`
     fn replace_and_mark_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,
