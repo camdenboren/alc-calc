@@ -8,8 +8,8 @@
         alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume
     </p>
 
-![Static Badge](https://img.shields.io/badge/Platforms-Linux,_macOS,_Windows-forestgreen?style=for-the-badge)
-[![built with garnix](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2Fcamdenboren%2Falc-calc%3Fbranch%3Dmain&style=for-the-badge&color=grey&labelColor=grey)](https://garnix.io/repo/camdenboren/alc-calc)
+![Static Badge](https://img.shields.io/badge/Platforms-Linux,_macOS,_Windows-blue?style=for-the-badge)
+![Dynamic Badge](https://img.shields.io/github/actions/workflow/status/camdenboren/alc-calc/build.yaml?branch=main&style=for-the-badge)
 ![Static Badge](https://img.shields.io/badge/Powered_by_Nix-grey?logo=nixOS&logoColor=white&logoSize=auto&style=for-the-badge)
 
 </div>

@@ -8,8 +8,8 @@
     with pkgs;
     lib.optionals stdenv.hostPlatform.isLinux [
       libxkbcommon
-      xorg.libxcb
-      xorg.libX11
+      libxcb
+      libx11
       wayland
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
@@ -31,25 +31,21 @@
       bundle-linux
     ];
 
-  dev =
-    with pkgs;
-    [
-      boxes
-      rustc
-      cargo
-      cargo-bundle
-      cargo-edit
-      rust-analyzer
-      rustfmt
-      taplo
-      nixfmt
-      clippy
-      build
-      format
-    ]
-    ++ (with nodePackages; [
-      prettier
-    ]);
+  dev = with pkgs; [
+    boxes
+    rustc
+    cargo
+    cargo-bundle
+    cargo-edit
+    rust-analyzer
+    rustfmt
+    taplo
+    nixfmt
+    clippy
+    prettier
+    build
+    format
+  ];
 
   run =
     with pkgs;
