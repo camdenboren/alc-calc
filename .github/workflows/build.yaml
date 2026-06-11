@@ -17,7 +17,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-linux:
+  linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -54,7 +54,7 @@ jobs:
           name: linux-bundle
           path: target/release/bundle/deb/alc-calc_*_amd64.deb
 
-  build-macos:
+  macos:
     runs-on: macos-latest
 
     steps:
@@ -90,7 +90,7 @@ jobs:
           name: macos-bundle
           path: target/release/bundle/osx/alc-calc.dmg
 
-  build-windows:
+  windows:
     runs-on: windows-latest
 
     steps:
@@ -124,3 +124,66 @@ jobs:
         with:
           name: windows-bundle
           path: target/release/alc-calc_*_x64-setup.exe
+
+  nix-package:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: camdenboren
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - run: nix build
+
+  nix-devShell:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: camdenboren
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - run: nix develop
+
+  nix-devShell-bundle:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: camdenboren
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - run: nix develop .#bundle

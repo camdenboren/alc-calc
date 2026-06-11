@@ -255,11 +255,11 @@ cargo install cargo-packager; .\script\bundle-windows.ps1
 
 #### Binary Cache
 
-You can leverage the binary cache by adding [Garnix] to your nix-config
+You can leverage my binary cache by adding [Cachix] to your nix-config
 
 ```nix
-nix.settings.substituters = [ "https://cache.garnix.io" ];
-nix.settings.trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
+nix.settings.substituters = [ "https://camdenboren.cachix.org" ];
+nix.settings.trusted-public-keys = [ "camdenboren.cachix.org-1:gjOBUYw06+i6CJIjfmVJ+ASrVLoEoOOn/2d6XcQkiFA=" ];
 ```
 
 #### Updating Dependencies
@@ -310,6 +310,6 @@ This guide is based on the **contributing-gen**. [Make your own](https://github.
 
 [Certificate Authority]: https://www.apple.com/certificateauthority/
 [macOS steps in the GPUI README]: https://github.com/zed-industries/zed/blob/main/crates/gpui/README.md#macos
-[Garnix]: https://garnix.io/
+[Cachix]: https://www.cachix.org
 [crates.io]: https://crates.io
 [package.nix]: ../nix/package.nix
