@@ -124,6 +124,8 @@ impl Dropdown {
         }
     }
 
+    /// Update `focused_item` and `current` to the passed `val` before (optionally)
+    /// toggling the dropdown
     fn update(
         &mut self,
         window: &mut Window,
@@ -139,6 +141,8 @@ impl Dropdown {
         self.focus_handle.focus(window);
     }
 
+    /// Restore the previously selected item (if applicable) and hide the dropdown element
+    /// before scrolling to the previous view
     fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
         if self.prev.is_some() {
@@ -157,6 +161,10 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Restore the previously selected item (if applicable) and hide the dropdown element
+    ///
+    /// This is used to close the dropdown via `Table` w/o affecting scroll state on `Tab`
+    /// and `TabPrev`
     pub fn hide(&mut self, cx: &mut Context<Self>) {
         if self.show {
             if self.prev.is_some() {
@@ -184,6 +192,9 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Increment the `focused_item`, scroll to it, and update `current` to this item
+    ///
+    /// This doesn't toggle visibility as the user hasn't yet selected the item
     fn next(&mut self, _: &Next, window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item < (self.count - 1) {
             self.focused_item += 1;
@@ -203,6 +214,9 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Decrement the `focused_item`, scroll to it, and update `current` to this item
+    ///
+    /// This doesn't toggle visibility as the user hasn't yet selected the item
     fn prev(&mut self, _: &Prev, window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item == 0 {
             self.focused_item = self.count - 1;
