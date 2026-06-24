@@ -125,7 +125,7 @@ impl Dropdown {
     }
 
     /// Update `focused_item` and `current` to the passed `val` before (optionally)
-    /// toggling the dropdown
+    /// toggling the `Dropdown`
     fn update(
         &mut self,
         window: &mut Window,
@@ -141,7 +141,7 @@ impl Dropdown {
         self.focus_handle.focus(window);
     }
 
-    /// Restore the previously selected item (if applicable) and hide the dropdown element
+    /// Restore the previously selected item (if applicable) and hide the `Dropdown` element
     /// before scrolling to the previous view
     fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
@@ -161,9 +161,9 @@ impl Dropdown {
         cx.notify();
     }
 
-    /// Restore the previously selected item (if applicable) and hide the dropdown element
+    /// Restore the previously selected item (if applicable) and hide the `Dropdown` element
     ///
-    /// This is used to close the dropdown via `Table` w/o affecting scroll state on `Tab`
+    /// This is used to close the `Dropdown` via `Table` w/o affecting scroll state on `Tab`
     /// and `TabPrev`
     pub fn hide(&mut self, cx: &mut Context<Self>) {
         if self.show {
