@@ -24,6 +24,17 @@ actions!(theme_menu, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "ThemeMenu";
 
+/// A dropdown `ThemeMenu` element containing all `ThemeVariant`s with mouse-and-keyboard
+/// driven interactivity
+///
+/// This element leverages the `Theme` and `Config` system to allow users to
+/// - Select one of several included themes (e.g., `Dark`)
+/// - Select a `Custom` theme, which the user can modify
+/// - Preview any of the above via keyboard-interactivity
+///   - Selecting, however, can be accomplished via either mouse-or-keyboard interactions
+///
+/// See `Theme` for additional context re. file system handling, `Theme` schema, and
+/// all available `ThemeVariant`s
 pub struct ThemeMenu {
     variants: Vec<SharedString>,
     prev: Option<SharedString>,
@@ -34,6 +45,27 @@ pub struct ThemeMenu {
 }
 
 impl ThemeMenu {
+    /// Create a `ThemeMenu` element with keybinds that is populated with the theme
+    /// variants
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::view::menu::ThemeMenu;
+    /// use gpui::{Entity, prelude::*};
+    ///
+    /// struct UI {
+    ///     menu: Entity<ThemeMenu>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         UI {
+    ///             menu: cx.new(ThemeMenu::new)
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(cx: &mut Context<Self>) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
