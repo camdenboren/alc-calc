@@ -20,9 +20,43 @@ const HEIGHT: f32 = 36.;
 #[cfg(not(target_os = "linux"))]
 const HEIGHT: f32 = 28.;
 
+/// A simple `Titlebar` element used on Linux and macOS which handles mouse-driven
+/// - Window zoom toggling
+/// - Window-activation-specific colors
+/// - Window movement and it's associated state (e.g., `should_move`)
+/// - Application quitting (via the Gnome-inspired quit `Icon`) on Linux
+///
+/// This entire module is ignored on Windows targets as we instead rely on GPUI's default
+/// titlebar for that target instead
 #[derive(Default)]
 pub struct Titlebar {
     should_move: bool,
+}
+
+impl Titlebar {
+    /// Create a `Titlebar` element
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::view::titlebar::Titlebar;
+    /// use gpui::{Entity, prelude::*};
+    ///
+    /// struct UI {
+    ///     titlebar: Entity<Titlebar>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         UI {
+    ///             titlebar: cx.new(|_| Titlebar::new())
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    pub fn new() -> Self {
+        Titlebar::default()
+    }
 }
 
 impl Render for Titlebar {

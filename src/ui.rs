@@ -134,7 +134,7 @@ impl UI {
             menu: cx.new(ThemeMenu::new),
             table,
             #[cfg(not(target_os = "windows"))]
-            titlebar: cx.new(|_| Titlebar::default()),
+            titlebar: cx.new(|_| Titlebar::new()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
             subscriptions: vec![
                 cx.subscribe_self(|this: &mut UI, Tab, cx| {
