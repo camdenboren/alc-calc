@@ -16,6 +16,7 @@ use crate::ui::{
 };
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
+///
 pub const FIELDS: [(&str, &str, f32); 4] = [
     ("ingredient", "Type of ingredient (e.g., Whiskey)", 158.),
     (
@@ -44,6 +45,7 @@ pub struct Ingredient {
 }
 
 impl Ingredient {
+    ///
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
         // we have 3 items per ingred and tab_index 1 is num_drinks_input,
         // so multiply by 3 and offset by two (UI itself is tab_index 0)
@@ -58,6 +60,7 @@ impl Ingredient {
         }
     }
 
+    ///
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
         div().w(width).child(match key {
             "ingredient" => div().id("").child(self.ingred_type.clone()),
@@ -76,10 +79,12 @@ impl Ingredient {
         })
     }
 
+    ///
     pub fn weight(&mut self, weight: f32) {
         self.weight = weight.to_string().into();
     }
 
+    ///
     pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
         self.ingred_type
             .update(cx, |ingred_type, cx| ingred_type.hide(cx));

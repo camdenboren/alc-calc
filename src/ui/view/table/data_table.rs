@@ -29,6 +29,30 @@ actions!(table, [Add, Delete, Escape, RemoveKey]);
 pub const CONTEXT: &str = "Table";
 pub const MAX_ITEMS: usize = 10;
 
+/// A `Table` element containing a `TextInput` for `num_drinks` and a vector of
+/// `Ingredients` (the latter of which can be added or removed)
+///
+/// Importantly, `Table`
+/// - Serves as the connector between the application's UI and calculation logic, as
+///   it collects the `Ingredient` data (when ready), maps it to the `IngredientData`
+///   model, passes these data to `calc_weights()`, and updates each `Ingredient`'s weight
+///   with the result
+/// - Internally caps the number of `Ingredient`s to `MAX_ITEMS` to prevent both
+///   visual and performance-related issues with massive numbers of `Ingredient`s
+/// - Manages indices for each `Ingredient` to enable removing any given ingredient (not
+///   just the last one)
+///
+/// Finally, as the `Table` intersects the `UI` and most of the lower-level UI
+/// components, there's significant complexity on the parent's side re. the management of
+/// both parent and child events via subscriptions (i.e., `Tab`, `TabPrev`, `Toggle`, and
+/// `Add`)
+///
+/// Particularly:
+/// - When creating the `Table`, you'll need to show the `num_drinks` cursor via a
+///   subscription anytime a `Tab`, `TabPrev`, or `Toggle` event is emitted by `UI`
+/// - Anytime you add an `Ingredient` (which emits `Add`), you'll need to
+///   refresh each `Ingredient`'s subscriptions to `Tab` and `TabPrev` so that the
+///   dropdowns and text inputs respond correctly
 pub struct Table {
     pub ingreds: Vec<Entity<Ingredient>>,
     pub num_drinks_input: Entity<TextInput>,
@@ -39,6 +63,97 @@ pub struct Table {
 }
 
 impl Table {
+    /// Create a `Table` element and bind relevant keys
+    ///
+    /// To properly handle subscriptions to relevant events you'll need to
+    /// - Call `show_num_drinks_cursor()` via subscriptions to `Tab`, `TabPrev`, and
+    ///   `Toggle` events when creating the `Table`
+    /// - Implement `on_add()` by calling `show_cursor_and_hide_dd()` to handle
+    ///   `Ingredient`'s `Add` event
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::view::table::data_table::Table;
+    /// use gpui::{
+    ///     Entity,
+    ///     EventEmitter,
+    ///     Subscription,
+    ///     Window,
+    ///     actions,
+    ///     prelude::*
+    /// };
+    ///
+    /// actions!(doc_ui, [Tab]);
+    ///
+    /// struct UI {
+    ///     table: Entity<Table>,
+    ///     subscriptions: Vec<Subscription>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> Self {
+    ///         let table = cx.new(|cx| {
+    ///             Table::new(window, cx)
+    ///         });
+    ///         cx.subscribe(
+    ///             &table,
+    ///             |this: &mut UI, _table, _event, cx| {
+    ///                 this.on_add(cx)
+    ///             })
+    ///             .detach();
+    ///
+    ///         UI {
+    ///             table,
+    ///             subscriptions: vec![
+    ///                 /// `TabPrev` and `Toggle`
+    ///                 /// omitted for brevity
+    ///                 cx.subscribe_self(|
+    ///                     this: &mut UI,
+    ///                     Tab,
+    ///                     cx
+    ///                 | {
+    ///                     this
+    ///                         .table
+    ///                         .update(
+    ///                             cx,
+    ///                             |table, cx| {
+    ///                                 table
+    ///                                     .show_num_drinks_cursor(cx)
+    ///                             },
+    ///                         )
+    ///                 }),
+    ///             ],
+    ///         }
+    ///     }
+    ///
+    ///     fn on_add(&mut self, cx: &mut Context<Self>) {
+    ///         while self.subscriptions.len() > 3 {
+    ///             self.subscriptions.pop();
+    ///         }
+    ///
+    ///         self.subscriptions.append(&mut vec![
+    ///             // `TabPrev` omitted for brevity
+    ///             cx.subscribe_self(
+    ///                 |this: &mut UI, Tab, cx|
+    ///             {
+    ///                 this
+    ///                     .table
+    ///                     .update(
+    ///                         cx,
+    ///                         |table, cx| {
+    ///                             table.show_cursor_and_hide_dd(cx)
+    ///                         });
+    ///             }),
+    ///         ]);
+    ///     }
+    /// }
+    ///
+    /// impl EventEmitter<Tab> for UI {}
+    /// ```
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let ctrl = cx.ctrl();
         cx.bind_keys([
@@ -58,6 +173,7 @@ impl Table {
         }
     }
 
+    ///
     fn add(&mut self, _: &Add, window: &mut Window, cx: &mut Context<Self>) {
         if self.count < MAX_ITEMS {
             let id = self.count;
@@ -81,6 +197,7 @@ impl Table {
         cx.notify();
     }
 
+    ///
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
         if self.count > 0 {
             if self.parts(self.count - 1, cx).is_focused(window)
@@ -95,6 +212,7 @@ impl Table {
         cx.notify();
     }
 
+    ///
     fn remove(&mut self, ix: usize, cx: &mut Context<Self>) {
         // prevents remove(ix) and ingreds[ix..] from panicking if ix is OOB
         if self.count > 0 && ix < self.count {
@@ -116,6 +234,7 @@ impl Table {
         }
     }
 
+    ///
     fn remove_key(&mut self, _: &RemoveKey, window: &mut Window, cx: &mut Context<Self>) {
         for ix in 0..self.count {
             if self.ingred_type(ix, cx).is_focused(window)
@@ -130,17 +249,20 @@ impl Table {
         cx.notify();
     }
 
+    /// Set the `num_drinks_input` cursor to `visible`
     pub fn show_num_drinks_cursor(&mut self, cx: &mut Context<Self>) {
         self.num_drinks_input
             .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
     }
 
+    ///
     pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
         self.ingreds
             .iter()
             .for_each(|ingred| ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx)));
     }
 
+    ///
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
         if self.ingreds.is_empty() {
             return false;
@@ -153,6 +275,7 @@ impl Table {
         })
     }
 
+    ///
     fn calc(&mut self, cx: &mut Context<Self>, num_drinks: f32) {
         let mut ingred_data: Vec<IngredientData> = (0..self.count)
             .map(|ix| IngredientData {

@@ -80,7 +80,10 @@ impl TextInput {
     /// }
     ///
     /// impl UI {
-    ///     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+    ///     fn new(
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> Self {
     ///         let input = cx.new(|cx| {
     ///             TextInput::new(
     ///                 window,
