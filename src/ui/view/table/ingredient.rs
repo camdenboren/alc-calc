@@ -60,7 +60,11 @@ impl Ingredient {
         }
     }
 
+    /// Render each of `Ingredient`'s child elements as a distinct `div` at the width specified
+    /// in `FIELDS`
     ///
+    /// Weight is truncated to prevent overflowing the `Table` when massive quantities of
+    /// ingredients are entered (the result can instead be seen in the `Tooltip`)
     fn render_cell(&self, key: &str, width: Pixels) -> impl IntoElement {
         div().w(width).child(match key {
             "ingredient" => div().id("").child(self.ingred_type.clone()),
@@ -79,12 +83,17 @@ impl Ingredient {
         })
     }
 
-    ///
+    /// Set `Ingredient`'s `weight` to the stringified input
     pub fn weight(&mut self, weight: f32) {
         self.weight = weight.to_string().into();
     }
 
+    /// Hide the `ingred_type` dropdown and set the associated cursor to `visible` for percentage
+    /// and parts
     ///
+    /// Note that setting a cursor to `visible` does NOT actually cause that cursor to be
+    /// visible on the next render-this can only happen when the associated `TextInput` is
+    /// focused
     pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
         self.ingred_type
             .update(cx, |ingred_type, cx| ingred_type.hide(cx));

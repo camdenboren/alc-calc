@@ -250,19 +250,34 @@ impl Table {
     }
 
     /// Set the `num_drinks_input` cursor to `visible`
+    ///
+    /// Note that setting a cursor to `visible` does NOT actually cause that cursor to be
+    /// visible on the next render-this can only happen when the associated `TextInput` is
+    /// focused
     pub fn show_num_drinks_cursor(&mut self, cx: &mut Context<Self>) {
         self.num_drinks_input
             .update(cx, |num_drinks, cx| num_drinks.show_cursor(cx));
     }
 
+    /// For each `Ingredient`, hide the `ingred_type` dropdown and set the associated cursor
+    /// to `visible` for percentage and parts
     ///
+    /// Note that setting a cursor to `visible` does NOT actually cause that cursor to be
+    /// visible on the next render-this can only happen when the associated `TextInput` is
+    /// focused
     pub fn show_cursor_and_hide_dd(&mut self, cx: &mut Context<Self>) {
         self.ingreds
             .iter()
             .for_each(|ingred| ingred.update(cx, |ingred, cx| ingred.show_cursor_and_hide_dd(cx)));
     }
 
+    /// Determine whether the `Table`'s associated inputs are valid (and thus, ready for
+    /// calculation)
     ///
+    /// As both `calc` and `calc_weights` have robust error-handling, this largely just
+    /// prevents garbage from being displayed in the weight field for ingredients. There's
+    /// likely performance gains as well, however, since, otherwise, significant calculation
+    /// logic could be executed on each render
     fn ready(&mut self, cx: &mut Context<Self>) -> bool {
         if self.ingreds.is_empty() {
             return false;
@@ -275,7 +290,14 @@ impl Table {
         })
     }
 
+    /// Map the `Table`'s associated inputs to the data model (an `IngredientData` vector),
+    /// before passing to `calc_weights()` and updating each `Ingredient`'s weight with the
+    /// result
     ///
+    /// In the unlikely event of receiving an error from `calc_weights()`, an `Error` toast
+    /// will be displayed
+    ///
+    /// This function is effectively the point of intersection between the front-and-back-ends
     fn calc(&mut self, cx: &mut Context<Self>, num_drinks: f32) {
         let mut ingred_data: Vec<IngredientData> = (0..self.count)
             .map(|ix| IngredientData {
