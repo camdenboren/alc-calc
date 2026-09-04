@@ -16,7 +16,11 @@ use crate::ui::{
 };
 use gpui::{Entity, EventEmitter, Pixels, SharedString, Window, div, prelude::*, px};
 
+/// The fields rendered for each ingredient cell in the data table (including the header) w/ their
+/// associated `Tooltip` descriptions and width (in pixels)
 ///
+/// Note that for everything other than `weight`, the `Tooltip` is only displayed in the table
+/// header
 pub const FIELDS: [(&str, &str, f32); 4] = [
     ("ingredient", "Type of ingredient (e.g., Whiskey)", 158.),
     (
@@ -36,6 +40,14 @@ pub const FIELDS: [(&str, &str, f32); 4] = [
     ),
 ];
 
+/// An `Ingredient` element containing children for the `ingred_type` (e.g., whiskey, liqueur,
+/// etc.), `percentage_input`, `parts_input`, and `weight`. As this element collects the vast
+/// majority of user input AND displays the resultant weight of each ingredient, it represents the
+/// core of the UX
+///
+/// Additionally, the `id` is used directly for indexed ingredient removal, though it's also
+/// propagated to `Dropdown` and `TextInput` to manage tab behavior (`Dropdown` also uses it for
+/// deferred rendering)
 pub struct Ingredient {
     pub ingred_type: Entity<Dropdown>,
     pub percentage_input: Entity<TextInput>,
@@ -46,10 +58,10 @@ pub struct Ingredient {
 
 impl Ingredient {
     /// Create an `Ingredient` with the given `id`, propagating it to both the child `Dropdown`
-    /// and `TextInput` elements for managing tab behavior (`Dropdown` also uses it for deferred
-    /// rendering)
+    /// and `TextInput` elements
     ///
-    /// To properly handle indexed ingredient removal and tab behavior you'll need to
+    /// To properly handle indexed ingredient removal and tab behavior, the parent will need to do
+    /// the following (omitted for brevity)
     /// - Subscribe to the `Remove` event when creating the ingredient and drop that particular
     ///   ingredient from the `Vec` when emitted (via mouse-interaction)
     /// - Call `show_cursor_and_hide_dd` for each ingredient when handling `Tab`/`TabPrev`
@@ -182,7 +194,8 @@ pub struct Remove {}
 
 impl EventEmitter<Remove> for Ingredient {}
 
-///
+/// The data model for `Ingredient`, which enables passing all ingredient data primitives to the
+/// calculation logic in a structured manner via a simple `.map().collect()`
 #[derive(Clone)]
 pub struct IngredientData {
     pub ingred_type: SharedString,
