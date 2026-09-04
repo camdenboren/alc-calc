@@ -173,7 +173,8 @@ impl Table {
         }
     }
 
-    ///
+    /// Add an ingredient to the table (capping the total to `MAX_ITEMS`), subscribe the table
+    /// to it's `Remove` event and emit `Add`, then decrement `count`
     fn add(&mut self, _: &Add, window: &mut Window, cx: &mut Context<Self>) {
         if self.count < MAX_ITEMS {
             let id = self.count;
@@ -197,7 +198,9 @@ impl Table {
         cx.notify();
     }
 
-    ///
+    /// Delete the last item in the ingredient `Vec` (after ensuring we can) and decrement
+    /// `count`, while also resetting the focus to the table if this ingredient is currently
+    /// focused
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
         if self.count > 0 {
             if self.parts(self.count - 1, cx).is_focused(window)
@@ -212,7 +215,13 @@ impl Table {
         cx.notify();
     }
 
-    ///
+    /// Remove the ingredient at index `ix` from the ingredient `Vec` (after ensuring we can)
+    /// and decrement `count`, while updating each ingredient's associated `id` (as well as
+    /// it's corresponding dropdown's `id`). Keeping the `id`s synced is essential for
+    /// enabling:
+    /// - Per-ingredient removal triggered by `Ingredient`'s `Remove` event
+    /// - Tab index calculations
+    /// - Dropdown rendering priority
     fn remove(&mut self, ix: usize, cx: &mut Context<Self>) {
         // prevents remove(ix) and ingreds[ix..] from panicking if ix is OOB
         if self.count > 0 && ix < self.count {
@@ -234,7 +243,9 @@ impl Table {
         }
     }
 
-    ///
+    /// Convenience wrapper around `remove()`, handling `Table` focus and accepting the
+    /// `RemoveKey` event to enable keyboard-driven ingredient removal w/o having to pass the
+    /// event externally
     fn remove_key(&mut self, _: &RemoveKey, window: &mut Window, cx: &mut Context<Self>) {
         for ix in 0..self.count {
             if self.ingred_type(ix, cx).is_focused(window)

@@ -45,7 +45,43 @@ pub struct Ingredient {
 }
 
 impl Ingredient {
+    /// Create an `Ingredient` with the given `id`, propagating it to both the child `Dropdown`
+    /// and `TextInput` elements for managing tab behavior (`Dropdown` also uses it for deferred
+    /// rendering)
     ///
+    /// To properly handle indexed ingredient removal and tab behavior you'll need to
+    /// - Subscribe to the `Remove` event when creating the ingredient and drop that particular
+    ///   ingredient from the `Vec` when emitted (via mouse-interaction)
+    /// - Call `show_cursor_and_hide_dd` for each ingredient when handling `Tab`/`TabPrev`
+    /// - Keep the ingredient's `id` synced regardless of ingredient removal
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::view::table::ingredient::Ingredient;
+    /// use gpui::{Entity, Window, prelude::*};
+    ///
+    /// struct Table {
+    ///     ingreds: Vec<Entity<Ingredient>>,
+    /// }
+    ///
+    /// impl Table {
+    ///     fn new(
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> Self {
+    ///         let ingred = cx.new(|cx| Ingredient::new(
+    ///             0,
+    ///             window,
+    ///             cx,
+    ///         ));
+    ///
+    ///         Table {
+    ///             ingreds: vec![ingred],
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(id: usize, window: &mut Window, cx: &mut Context<Self>) -> Self {
         // we have 3 items per ingred and tab_index 1 is num_drinks_input,
         // so multiply by 3 and offset by two (UI itself is tab_index 0)
@@ -146,6 +182,7 @@ pub struct Remove {}
 
 impl EventEmitter<Remove> for Ingredient {}
 
+///
 #[derive(Clone)]
 pub struct IngredientData {
     pub ingred_type: SharedString,
