@@ -24,6 +24,17 @@ actions!(theme_menu, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "ThemeMenu";
 
+/// A dropdown `ThemeMenu` element containing all `ThemeVariant`s with mouse-and-keyboard
+/// driven interactivity
+///
+/// This element leverages the `Theme` and `Config` system to allow users to
+/// - Select one of several included themes (e.g., `Dark`)
+/// - Select a `Custom` theme, which the user can modify
+/// - Preview any of the above via keyboard-interactivity
+///   - Selecting, however, can be accomplished via either mouse-or-keyboard interactions
+///
+/// See `Theme` for additional context re. file system handling, `Theme` schema, and
+/// all available `ThemeVariant`s
 pub struct ThemeMenu {
     variants: Vec<SharedString>,
     prev: Option<SharedString>,
@@ -34,6 +45,27 @@ pub struct ThemeMenu {
 }
 
 impl ThemeMenu {
+    /// Create a `ThemeMenu` element with keybinds that is populated with the theme
+    /// variants
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::view::menu::ThemeMenu;
+    /// use gpui::{Entity, prelude::*};
+    ///
+    /// struct UI {
+    ///     menu: Entity<ThemeMenu>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         UI {
+    ///             menu: cx.new(ThemeMenu::new)
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(cx: &mut Context<Self>) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
@@ -69,6 +101,7 @@ impl ThemeMenu {
         self.focus_handle.is_focused(window)
     }
 
+    /// Update `focused_item` before (optionally) toggling the `ThemeMenu`
     fn update(&mut self, val: SharedString, cx: &mut Context<Self>, toggle: bool) {
         self.focused_item = ThemeMenu::index_of(&self.variants, &val);
 
@@ -90,19 +123,36 @@ impl ThemeMenu {
         }
     }
 
+    /// Hide the `ThemeMenu`
+    ///
+    /// This is used to close the `ThemeMenu` via `Table` on `Tab`/`TabPrev`
     pub fn hide(&mut self, cx: &mut Context<Self>) {
         self.show = false;
         cx.notify();
     }
 
+    /// Close the `ThemeMenu`
+    ///
+    /// This is used to close the `ThemeMenu` via `Table` on `Toggle`
+    ///
+    /// See `escape_key` for the implementation, as it's used by the element's keybinds
+    /// (which requires the associated listener to receive the relevant struct)
     pub fn escape(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.escape_key(&Escape, window, cx);
     }
 
+    /// Show the `ThemeMenu`
+    ///
+    /// This is used to show the `ThemeMenu` via `Table` on `Toggle`
+    ///
+    /// See `show_key` for the implementation, as it's used by the element's keybinds
+    /// (which requires the associated listener to receive the relevant struct)
     pub fn show(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.show_key(&Enter, window, cx);
     }
 
+    /// Hide the `ThemeMenu` and restore the active theme following preview via
+    /// `next`/`prev`
     fn escape_key(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
         if self.prev.is_some() {
@@ -113,6 +163,8 @@ impl ThemeMenu {
         cx.notify();
     }
 
+    /// Show the `ThemeMenu` and store the active theme to enable restoration
+    /// following preview via `next`/`prev`
     fn show_key(&mut self, _: &Enter, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = true;
         self.prev = Some(cx.theme().variant.to_string().into());
@@ -133,6 +185,9 @@ impl ThemeMenu {
         cx.notify();
     }
 
+    /// Increment the `focused_item` and preview the theme `variant`
+    ///
+    /// This doesn't update the current theme as the user hasn't yet selected the item
     fn next(&mut self, _: &Next, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item < (self.count - 1) {
             self.focused_item += 1;
@@ -148,6 +203,9 @@ impl ThemeMenu {
         cx.notify();
     }
 
+    /// Decrement the `focused_item` and preview the theme `variant`
+    ///
+    /// This doesn't update the current theme as the user hasn't yet selected the item
     fn prev(&mut self, _: &Prev, _window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item == 0 {
             self.focused_item = self.count - 1;

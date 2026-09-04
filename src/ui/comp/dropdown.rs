@@ -27,6 +27,15 @@ const CONTEXT: &str = "Dropdown";
 const SCROLLBAR_THUMB_WIDTH: Pixels = px(8.);
 const SCROLLBAR_THUMB_HEIGHT: Pixels = px(96.);
 
+/// A `Dropdown` element containing the ingredient `Type`s with mouse-and-keyboard driven
+/// interactivity as well as a basic scrollbar
+///
+/// The scrollbar provides an adequate visual indicator of vertical progress via both
+/// mouse-wheel and keyboard scrolling, though it doesn't implement drag functionality
+///
+/// The `id` is primarily used for giving ids to child elements like the scrollbar,
+/// though it's also leveraged for ensuring the shown dropdown is always displayed above
+/// others that aren't via deferral
 pub struct Dropdown {
     types: Vec<SharedString>,
     pub current: SharedString,
@@ -40,6 +49,32 @@ pub struct Dropdown {
 }
 
 impl Dropdown {
+    /// Create a `Dropdown` element with keybinds that is populated with the ingredient
+    /// types
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::dropdown::Dropdown;
+    /// use gpui::{Entity, prelude::*};
+    ///
+    /// struct UI {
+    ///     dropdown: Entity<Dropdown>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         let dropdown = cx.new(|cx| {
+    ///             let id = 0;
+    ///             let tab_index = 0 as isize;
+    ///             Dropdown::new(id, cx, tab_index)
+    ///         });
+    ///         UI {
+    ///             dropdown
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(id: usize, cx: &mut Context<Self>, tab_index: isize) -> Self {
         cx.bind_keys([
             KeyBinding::new("escape", Escape, Some(CONTEXT)),
@@ -89,6 +124,8 @@ impl Dropdown {
         }
     }
 
+    /// Update `focused_item` and `current` to the passed `val` before (optionally)
+    /// toggling the `Dropdown`
     fn update(
         &mut self,
         window: &mut Window,
@@ -104,6 +141,8 @@ impl Dropdown {
         self.focus_handle.focus(window);
     }
 
+    /// Restore the previously selected item (if applicable) and hide the `Dropdown` element
+    /// before scrolling to the previous view
     fn escape(&mut self, _: &Escape, _window: &mut Window, cx: &mut Context<Self>) {
         self.show = false;
         if self.prev.is_some() {
@@ -122,6 +161,10 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Restore the previously selected item (if applicable) and hide the `Dropdown` element
+    ///
+    /// This is used to close the `Dropdown` via `Table` w/o affecting scroll state on `Tab`
+    /// and `TabPrev`
     pub fn hide(&mut self, cx: &mut Context<Self>) {
         if self.show {
             if self.prev.is_some() {
@@ -149,6 +192,9 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Increment the `focused_item`, scroll to it, and update `current` to this item
+    ///
+    /// This doesn't toggle visibility as the user hasn't yet selected the item
     fn next(&mut self, _: &Next, window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item < (self.count - 1) {
             self.focused_item += 1;
@@ -168,6 +214,9 @@ impl Dropdown {
         cx.notify();
     }
 
+    /// Decrement the `focused_item`, scroll to it, and update `current` to this item
+    ///
+    /// This doesn't toggle visibility as the user hasn't yet selected the item
     fn prev(&mut self, _: &Prev, window: &mut Window, cx: &mut Context<Self>) {
         if self.focused_item == 0 {
             self.focused_item = self.count - 1;

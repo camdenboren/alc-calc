@@ -32,6 +32,26 @@ pub enum IconSize {
 }
 
 impl IconSize {
+    /// Apply an `IconSize` variant's associated size to the given `Stateful<Div>`
+    /// (namely, a button)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::icon::{
+    ///     IconSize,
+    /// };
+    /// use gpui::{
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// div()
+    ///     .id("")
+    ///     .map(|this| {
+    ///         IconSize::size(this, &IconSize::Small)
+    ///     });
+    /// ```
     pub fn size(div: Stateful<Div>, size: &IconSize) -> Stateful<Div> {
         div.map(|this| match size {
             IconSize::Small => this.size_4(),
@@ -40,6 +60,10 @@ impl IconSize {
     }
 }
 
+/// An Icon element with multiple variants and sizes that can be assigned a specified
+/// color
+///
+/// `Icon` is generally used w/in a `Button` element
 #[derive(IntoElement)]
 pub struct Icon {
     pub variant: IconVariant,
@@ -49,6 +73,35 @@ pub struct Icon {
 }
 
 impl Icon {
+    /// Create an `Icon` from the given `IconVariant` and `IconSize` with the default
+    /// color (uses `cx.theme.text()`)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::{
+    ///     icon::{Icon, IconSize, IconVariant},
+    /// };
+    /// use gpui::prelude::*;
+    ///
+    /// struct UI {
+    ///     icon: Icon,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         let icon = Icon::new(
+    ///             cx,
+    ///             IconVariant::Chevron,
+    ///             IconSize::Small,
+    ///         );
+    ///
+    ///         UI {
+    ///             icon,
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(cx: &mut App, variant: IconVariant, size: IconSize) -> Self {
         let path = IconVariant::path(&variant);
         Self {
@@ -59,6 +112,35 @@ impl Icon {
         }
     }
 
+    /// Specify the color of the given `Icon`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alc_calc::ui::comp::{
+    ///     icon::{Icon, IconSize, IconVariant},
+    /// };
+    /// use gpui::prelude::*;
+    ///
+    /// struct UI {
+    ///     icon: Icon,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(cx: &mut Context<Self>) -> Self {
+    ///         let icon = Icon::new(
+    ///             cx,
+    ///             IconVariant::Chevron,
+    ///             IconSize::Small,
+    ///         )
+    ///             .color(gpui::black());
+    ///
+    ///         UI {
+    ///             icon,
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn color(mut self, color: Hsla) -> Self {
         self.color = color;
         self

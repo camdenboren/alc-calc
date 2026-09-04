@@ -7,6 +7,16 @@ use anyhow::anyhow;
 use gpui::{AssetSource, Result, SharedString};
 use rust_embed::RustEmbed;
 
+/// Load the icon assets from `img/icons` and attach them to the application
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::assets::Assets;
+/// use gpui::Application;
+///
+/// Application::new().with_assets(Assets {});
+/// // followed by `.run(|cx...`
+/// ```
 #[derive(RustEmbed)]
 #[folder = "img/icons"]
 pub struct Assets;

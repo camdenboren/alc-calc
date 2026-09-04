@@ -18,6 +18,27 @@ const BORDER_RADIUS: Pixels = px(12.0);
 const BORDER_SIZE: Pixels = px(0.75);
 const SHADOW_SIZE: Pixels = px(12.0);
 
+/// Create a new window for the application, handling platform-specific `WindowOptions`
+/// and `on_window_closed()` behavior before attaching the `UI`
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::window::{
+///     new_window,
+/// };
+/// use gpui::{
+///     App,
+///     Application,
+///     prelude::*,
+/// };
+///
+/// # fn nested() {
+/// Application::new()
+///     .run(|cx: &mut App| {
+///         new_window(cx);
+///     });
+/// # }
+/// ```
 pub fn new_window(cx: &mut App) {
     if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
         // hacky approach for ensuring cmd-w doesn't prevent us from opening a new window
@@ -41,7 +62,8 @@ pub fn new_window(cx: &mut App) {
     };
 }
 
-pub fn window_options(cx: &App) -> WindowOptions {
+/// Construct the `WindowOptions` passed to the application's `cx.open_window()` call
+fn window_options(cx: &App) -> WindowOptions {
     WindowOptions {
         app_id: Some("alc-calc".into()),
         focus: true,
@@ -62,10 +84,41 @@ pub fn window_options(cx: &App) -> WindowOptions {
     }
 }
 
+/// Construct the app's `WindowBorder` with all elements as children
+///
+/// # Examples
+/// ```
+/// use alc_calc::ui::util::window::{
+///     window_border,
+/// };
+/// use gpui::{
+///     Window,
+///     div,
+///     prelude::*,
+/// };
+///
+/// struct UI {}
+///
+/// impl Render for UI {
+///
+///     fn render(
+///         &mut self,
+///         _window: &mut Window,
+///         _cx: &mut Context<Self>,
+///     ) -> impl IntoElement {
+///         window_border().child(div())
+///     }
+/// }
+/// ```
 pub fn window_border() -> WindowBorder {
     WindowBorder::new()
 }
 
+/// The `WindowBorder` is the top-level component in the app's window, implementing
+/// a draggable border (via `canvas()`) with styling on Linux
+///
+/// As `WindowBorder` implements `ParentElement`, all children are stored in a `Vec`
+/// which implicitly extend this parent (though require explicit rendering via `children()`)
 #[derive(IntoElement, Default)]
 pub struct WindowBorder {
     children: Vec<AnyElement>,
@@ -73,6 +126,40 @@ pub struct WindowBorder {
 
 #[allow(unused_variables, unreachable_code)]
 impl WindowBorder {
+    /// Apply `BORDER_RADIUS` to the given `Div` when using client-side decorations
+    /// on Linux
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::window::{
+    ///     WindowBorder,
+    /// };
+    /// use gpui::{
+    ///     Window,
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// struct UI {}
+    ///
+    /// impl Render for UI {
+    ///     fn render(
+    ///         &mut self,
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> impl IntoElement {
+    ///         let decorations = window
+    ///             .window_decorations();
+    ///         div()
+    ///             .map(|this| {
+    ///                 WindowBorder::rounding(
+    ///                     this,
+    ///                     decorations,
+    ///                 )
+    ///             })
+    ///     }
+    /// }
+    /// ```
     pub fn rounding(div: Div, decorations: Decorations) -> Div {
         if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
@@ -96,6 +183,44 @@ impl WindowBorder {
         })
     }
 
+    /// Apply `BORDER_RADIUS` to the given `Stateful<Div>` (namely, the titlebar) when
+    /// using client-side decorations on Linux
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::util::window::{
+    ///     WindowBorder,
+    /// };
+    /// use gpui::{
+    ///     Window,
+    ///     div,
+    ///     prelude::*,
+    /// };
+    ///
+    /// struct UI {}
+    ///
+    /// impl Render for UI {
+    ///     fn render(
+    ///         &mut self,
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> impl IntoElement {
+    ///         let decorations = window
+    ///             .window_decorations();
+    ///
+    ///         let titlebar = div()
+    ///             .id("")
+    ///             .map(|this| {
+    ///                 WindowBorder::titlebar_rounding(
+    ///                     this,
+    ///                     decorations,
+    ///                 )
+    ///             });
+    ///
+    ///         div().child(titlebar)
+    ///     }
+    /// }
+    /// ```
     pub fn titlebar_rounding(div: Stateful<Div>, decorations: Decorations) -> Stateful<Div> {
         if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
             return div;
@@ -115,7 +240,7 @@ impl WindowBorder {
 }
 
 impl WindowBorder {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             ..Default::default()
         }
@@ -227,6 +352,7 @@ impl RenderOnce for WindowBorder {
     }
 }
 
+/// Determine which edge is being resized based on the mouse location
 fn resize_edge(pos: Point<Pixels>, shadow_size: Pixels, size: Size<Pixels>) -> Option<ResizeEdge> {
     let edge = if pos.y < shadow_size && pos.x < shadow_size {
         ResizeEdge::TopLeft

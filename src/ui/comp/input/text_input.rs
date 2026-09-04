@@ -43,6 +43,14 @@ enum InputEvent {
 
 const CONTEXT: &str = "TextInput";
 
+/// A `TextInput` element with a blinking cursor and basic keyboard and mouse
+/// interactivity
+///
+/// `TextInput` offloads the implementation of `Element` to `TextElement` and relies on
+/// the state and logic in `CursorState` to manage the blinking cursor
+///
+/// Note that `TextElement` is the parent in terms of _entity ownership_, but `TextInput`
+/// is the parent in terms of _rendering_
 pub struct TextInput {
     pub cursor_state: Entity<CursorState>,
     pub focus_handle: FocusHandle,
@@ -59,6 +67,38 @@ pub struct TextInput {
 }
 
 impl TextInput {
+    /// Create a `TextInput` and bind relevant keys, set the `tab_stop`, then create,
+    /// attach, and observe the `cursor_state`
+    ///
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::comp::input::text_input::TextInput;
+    /// use gpui::{Entity, Window, prelude::*};
+    ///
+    /// struct UI {
+    ///     input: Entity<TextInput>,
+    /// }
+    ///
+    /// impl UI {
+    ///     fn new(
+    ///         window: &mut Window,
+    ///         cx: &mut Context<Self>
+    ///     ) -> Self {
+    ///         let input = cx.new(|cx| {
+    ///             TextInput::new(
+    ///                 window,
+    ///                 cx,
+    ///                 "Placeholder".into(),
+    ///                 0,
+    ///             )
+    ///         });
+    ///
+    ///         UI {
+    ///             input,
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn new(
         window: &mut Window,
         cx: &mut Context<Self>,
@@ -89,7 +129,7 @@ impl TextInput {
         let focus_handle = cx.focus_handle().tab_index(tab_index).tab_stop(true);
         cx.on_focus(&focus_handle, window, Self::on_focus).detach();
         cx.on_blur(&focus_handle, window, Self::on_blur).detach();
-        let cursor_state = cx.new(|_| CursorState::default());
+        let cursor_state = cx.new(|_| CursorState::new());
 
         Self {
             cursor_state: cursor_state.clone(),
@@ -108,11 +148,11 @@ impl TextInput {
                 cx.observe_window_activation(window, |input, window, cx| {
                     if window.is_window_active() {
                         let active = window.is_window_active();
-                        input.cursor_state.update(cx, |blink_manager, cx| {
+                        input.cursor_state.update(cx, |cursor_state, cx| {
                             if active {
-                                blink_manager.enable(cx);
+                                cursor_state.enable(cx);
                             } else {
-                                blink_manager.disable(cx);
+                                cursor_state.disable(cx);
                             }
                         });
                     }
@@ -152,11 +192,13 @@ impl TextInput {
         });
     }
 
+    /// Set `visible` to `true` in this `TextInput`'s `cursor_state`
     pub fn show_cursor(&self, cx: &mut Context<Self>) {
         self.cursor_state
             .update(cx, |cursor, cx| cursor.show_cursor(cx));
     }
 
+    /// Whether both the `TextInput` is focused and the cursor should be visible
     pub fn should_show_cursor(&self, window: &mut Window, cx: &App) -> bool {
         self.is_focused(window) && self.cursor_state.read(cx).visible()
     }
@@ -192,6 +234,10 @@ impl TextInput {
         self.select_to(self.content.len(), cx)
     }
 
+    /// Update the `selected_range` + `selected_word_range` to the whitespace-delimited
+    /// word at the given cursor offset. Note that though this `fn` converts the offset to
+    /// UTF-16 for internal processing, the offset passed to this + the resultant ranges
+    /// are UTF-8
     fn select_word(&mut self, offset: usize, window: &mut Window, cx: &mut Context<Self>) {
         let mut start = self.offset_to_utf16(offset);
         let mut end = start;
@@ -256,6 +302,12 @@ impl TextInput {
         self.pause_blink(cx);
     }
 
+    /// Handle `MouseDownEvent`s by setting `is_selecting` (which is leveraged by
+    /// `on_mouse_move`) and updating the current selection for the following cases:
+    /// 1. double clicks
+    /// 2. triple clicks
+    /// 3. shift + single clicks
+    /// 4. single clicks
     fn on_mouse_down(
         &mut self,
         event: &MouseDownEvent,
@@ -345,6 +397,10 @@ impl TextInput {
         }
     }
 
+    /// Identify the index of the closest character boundary for the given mouse position,
+    /// returning early for edge cases related to empty content and positions on the
+    /// input's top/bottom `Bounds` (which are managed by `paint()` in `TextElement`'s
+    /// implementation of `Element`)
     fn index_for_mouse_position(&self, position: Point<Pixels>) -> usize {
         if self.content.is_empty() {
             return 0;
@@ -363,6 +419,8 @@ impl TextInput {
         line.closest_index_for_x(position.x - bounds.left())
     }
 
+    /// Extend the `selected_range` to the provided byte offset while accounting for
+    /// (and managing, as needed) the `selection_reversed` state
     fn select_to(&mut self, offset: usize, cx: &mut Context<Self>) {
         if self.selection_reversed {
             self.selected_range.start = offset
@@ -376,6 +434,7 @@ impl TextInput {
         cx.notify()
     }
 
+    /// Convert a UTF-16 character offset/index to UTF-8
     fn offset_from_utf16(&self, offset: usize) -> usize {
         let mut utf8_offset = 0;
         let mut utf16_count = 0;
@@ -391,6 +450,7 @@ impl TextInput {
         utf8_offset
     }
 
+    /// Convert a UTF-8 character offset/index to UTF-16
     fn offset_to_utf16(&self, offset: usize) -> usize {
         let mut utf16_offset = 0;
         let mut utf8_count = 0;
@@ -414,6 +474,12 @@ impl TextInput {
         self.offset_from_utf16(range_utf16.start)..self.offset_from_utf16(range_utf16.end)
     }
 
+    /// Represent the `TextInput`'s `content` as an iterator of grapheme clusters and
+    /// their associated byte offsets to identify the boundary/index of the previous
+    /// cluster based on the provided offset
+    ///
+    /// See https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries if these
+    /// words mean nothing to you
     fn previous_boundary(&self, offset: usize) -> usize {
         self.content
             .grapheme_indices(true)
@@ -422,6 +488,12 @@ impl TextInput {
             .unwrap_or(0)
     }
 
+    /// Represent the `TextInput`'s `content` as an iterator of grapheme clusters and
+    /// their associated byte offsets to identify the boundary/index of the next
+    /// cluster based on the provided offset
+    ///
+    /// See https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries if these
+    /// words mean nothing to you
     fn next_boundary(&self, offset: usize) -> usize {
         self.content
             .grapheme_indices(true)
@@ -476,6 +548,12 @@ impl EntityInputHandler for TextInput {
         self.marked_range = None;
     }
 
+    /// Instruct the platform (via GPUI) on how to replace the text in the given UTF-16
+    /// range w/ the given `new_text`, where it will effectively just update the `content`
+    /// + `selected_range`
+    ///
+    /// As both `range_utf16` and `marked_range` are `None`, the actual `range` used
+    /// by this `fn` internally is just `selected_range`
     fn replace_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,
@@ -502,6 +580,16 @@ impl EntityInputHandler for TextInput {
         cx.notify();
     }
 
+    /// **Note that this `fn` is not yet actually used by alc-calc**
+    ///
+    /// Instruct the platform (via GPUI) on how to replace the text in the given UTF-16
+    /// range w/ the given `new_text`, where it will
+    /// 1. update the `content`
+    /// 2. set `marked_range` from the given range's start to the given text's length
+    /// 3. replace `selected_range` with `new_selected_range_utf16`
+    ///
+    /// As both `range_utf16` and `marked_range` are `None`, the actual `range` used
+    /// by this `fn` internally is just `selected_range`
     fn replace_and_mark_text_in_range(
         &mut self,
         range_utf16: Option<Range<usize>>,

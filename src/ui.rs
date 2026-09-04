@@ -25,7 +25,7 @@ use crate::ui::{
 use gpui::Empty;
 use gpui::{
     App, ClipboardItem, Entity, EventEmitter, FocusHandle, Focusable, KeyBinding, PromptLevel,
-    SharedString, Subscription, Window, actions, deferred, div, prelude::*,
+    Subscription, Window, actions, deferred, div, prelude::*,
 };
 
 actions!(
@@ -45,12 +45,19 @@ actions!(
 
 const CONTEXT: &str = "UI";
 
-impl ActiveCtrl for App {
-    fn ctrl(&self) -> SharedString {
-        Ctrl::global(self)
-    }
-}
-
+/// The root view of the application which
+/// - Contains all "views" as GPUI entities, setting these subscriptions
+///   - menu + table.num_drinks_input both sub to Tab, TabPrev
+///   - table.num_drinks_input also subs to Toggle
+/// - Handles window-level keybinds and macOS menus
+/// - Sets up these globals
+///   - Ctrl
+///   - Theme
+///   - Toast
+/// - And handles keyboard navigation between views
+///
+/// *Note that the UI is notified of new ingredients to recreate subscriptions for
+/// by subscribing to Table's Add event*
 pub struct UI {
     menu: Entity<ThemeMenu>,
     table: Entity<Table>,
@@ -61,20 +68,31 @@ pub struct UI {
 }
 
 impl UI {
-    /// Create the UI's root view, setting up the global:
-    /// - Ctrl
-    /// - Theme
-    /// - Toast
+    /// Create the UI's root view and it's entities, setting globals, keybinds,
+    /// subscriptions, and menus (on macOS)
     ///
-    /// Before setting:
-    /// - Keybinds
-    /// - Menus (on macOS)
-    /// - Subscriptions
-    ///   - menu + table.num_drinks_input both sub to Tab, TabPrev
-    ///   - table.num_drinks_input also subs to Toggle
+    /// # Examples
+    /// ```
+    /// use alc_calc::ui::UI;
+    /// use gpui::{
+    ///     App,
+    ///     Application,
+    ///     WindowOptions,
+    ///     prelude::*,
+    /// };
     ///
-    /// *Note that the UI is notified of new ingredients to recreate subscriptions for
-    /// by subscribing to Table's Add event*
+    /// # fn nested() {
+    /// Application::new()
+    ///    .run(|cx: &mut App| {
+    ///        cx.open_window(
+    ///            WindowOptions::default(),
+    ///            |window, cx| {
+    ///                cx.new(|cx| UI::new(window, cx))
+    ///            },
+    ///        ).unwrap();
+    ///    });
+    /// # }
+    /// ```
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         Toast::set(cx);
         Ctrl::set(cx);
@@ -116,7 +134,7 @@ impl UI {
             menu: cx.new(ThemeMenu::new),
             table,
             #[cfg(not(target_os = "windows"))]
-            titlebar: cx.new(|_| Titlebar::default()),
+            titlebar: cx.new(|_| Titlebar::new()),
             focus_handle: cx.focus_handle().tab_index(0).tab_stop(false),
             subscriptions: vec![
                 cx.subscribe_self(|this: &mut UI, Tab, cx| {
@@ -175,6 +193,7 @@ impl UI {
         window.minimize_window();
     }
 
+    /// Display the `About alc-calc` menu entry on macOS by spawning a window prompt
     fn about(&mut self, _: &About, window: &mut Window, cx: &mut Context<Self>) {
         let message = "alc-calc";
         let detail = "v0.0.1";
@@ -205,6 +224,7 @@ impl UI {
     fn paste(&mut self, _: &Paste, _window: &mut Window, _cx: &mut Context<Self>) {}
     fn select(&mut self, _: &SelectAll, _window: &mut Window, _cx: &mut Context<Self>) {}
 
+    /// Manage focus toggling between self, the table, and the theme menu
     fn toggle(&mut self, _: &Toggle, window: &mut Window, cx: &mut Context<Self>) {
         if self
             .table
@@ -305,7 +325,7 @@ impl Focusable for UI {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use gpui::{TestAppContext, VisualTestContext};
+    use gpui::{SharedString, TestAppContext, VisualTestContext};
 
     #[gpui::test]
     fn test_ui_toggle_menu(cx: &mut TestAppContext) {

@@ -9,7 +9,47 @@ use gpui::{
 use std::time::Duration;
 
 pub const MAX_ITEMS: usize = 3;
+const AUTO_REMOVAL: u64 = 4;
+const REMOVAL_DELAY: u64 = 200;
 
+/// Creates a Toast element that can display info and error messages with an "Okay" button
+///
+/// # Examples
+///
+/// ```
+/// use alc_calc::ui::comp::toast::{
+///     Toast,
+///     ToastVariant,
+///     toast,
+/// };
+/// use gpui::{Div, div, prelude::*};
+///
+/// struct UI {
+///     div: Div,
+/// }
+///
+/// impl UI {
+///     fn new(cx: &mut Context<Self>) -> Self {
+///         // Initialize
+///         Toast::set(cx);
+///
+///         // Display an Info toast
+///         toast(cx, ToastVariant::Info, "Message");
+///
+///         // Display an Error toast
+///         toast(cx, ToastVariant::Error, "Message");
+///
+///         UI {
+///             div: div().child(Toast::global(cx)),
+///         }
+///     }
+/// }
+/// ```
+///
+/// # Panics
+///
+/// The global `Toast` struct will need to be initialized via `Toast::set(cx)` before calling
+/// `toast()`, otherwise your application will panic
 pub fn toast(cx: &mut App, variant: ToastVariant, description: &str) {
     let toast = Toast::global(cx);
     toast.update(cx, |toast, cx| toast.add(cx, variant, description));
@@ -21,7 +61,7 @@ pub enum ToastVariant {
     Error,
 }
 
-pub struct ToastItem {
+struct ToastItem {
     pub description: SharedString,
     path: SharedString,
     title: SharedString,
@@ -31,6 +71,8 @@ pub struct ToastItem {
 }
 
 impl ToastItem {
+    /// Create a Toast Item and spawn a detached timer which calls `toast.remove()` after
+    /// `AUTO_REMOVAL` secs
     fn new(
         cx: &mut Context<Self>,
         variant: ToastVariant,
@@ -39,7 +81,7 @@ impl ToastItem {
         count: usize,
     ) -> Self {
         cx.spawn(async move |toast, cx| {
-            Timer::after(Duration::from_secs(4)).await;
+            Timer::after(Duration::from_secs(AUTO_REMOVAL)).await;
             cx.update(|cx| {
                 toast.update(cx, |toast, cx| {
                     toast.dismissed = true;
@@ -60,9 +102,10 @@ impl ToastItem {
         }
     }
 
+    /// Emit a `Remove` event from the `ToastItem` after `REMOVAL_DELAY` millis
     fn remove(&mut self, cx: &mut Context<Self>) {
         cx.spawn(async move |item, cx| {
-            Timer::after(Duration::from_millis(200)).await;
+            Timer::after(Duration::from_millis(REMOVAL_DELAY)).await;
             cx.update(|cx| {
                 if let Some(item) = item.upgrade() {
                     item.update(cx, |_item, cx| cx.emit(Remove {}));
@@ -167,6 +210,11 @@ pub struct Remove {}
 
 impl EventEmitter<Remove> for ToastItem {}
 
+/// A global `Toast` element which contains and manages a vector of GPUI-owned `ToastItem`'s and
+/// can be added as a child to the root entity
+///
+/// `Toast` subscribes to each `ToastItem`'s `Remove` event, meaning the "Okay" button triggers
+/// a removal via GPUI's subscription system
 #[derive(Default, Clone)]
 pub struct Toast {
     toasts: Vec<Entity<ToastItem>>,
@@ -185,6 +233,7 @@ impl Toast {
         }
     }
 
+    /// Add a new `ToastItem` entity to `Toast` and subscribe to its `Remove` event + update the `count`
     fn add(&mut self, cx: &mut Context<Self>, variant: ToastVariant, description: &str) {
         if self.count < MAX_ITEMS {
             let id = self.count;
@@ -206,17 +255,19 @@ impl Toast {
         }
     }
 
+    /// Create a `Toast` element and set it globally
     pub fn set(cx: &mut App) {
         let toast = cx.new(|_| Toast::default());
         cx.set_global(GlobalToast(toast));
     }
 
+    /// Return the global `Toast`
     pub fn global(cx: &App) -> Entity<Self> {
         cx.global::<GlobalToast>().0.clone()
     }
 }
 
-pub struct GlobalToast(Entity<Toast>);
+struct GlobalToast(Entity<Toast>);
 
 impl Global for GlobalToast {}
 
