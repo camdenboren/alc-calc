@@ -76,13 +76,13 @@ impl UI {
     /// use alc_calc::ui::UI;
     /// use gpui::{
     ///     App,
-    ///     Application,
     ///     WindowOptions,
     ///     prelude::*,
     /// };
+    /// use gpui_platform_gpui_unofficial::application;
     ///
     /// # fn nested() {
-    /// Application::new()
+    /// application()
     ///    .run(|cx: &mut App| {
     ///        cx.open_window(
     ///            WindowOptions::default(),
@@ -210,8 +210,7 @@ impl UI {
                 let content = format!("{message}\n{detail}");
                 cx.update(|cx| {
                     cx.write_to_clipboard(ClipboardItem::new_string(content));
-                })
-                .ok();
+                });
             }
         })
         .detach();
@@ -233,24 +232,30 @@ impl UI {
             .contains_focused(window, cx)
             || self.focus_handle.is_focused(window)
         {
-            self.menu.read(cx).focus(window);
-            self.menu.update(cx, |menu, cx| menu.show(window, cx));
+            self.menu.update(cx, |menu, cx| {
+                menu.focus(window, cx);
+                menu.show(window, cx);
+            });
         } else if self.menu.read(cx).is_focused(window) {
             if self.menu.read(cx).show {
                 self.menu.update(cx, |menu, cx| menu.escape(window, cx));
             }
-            self.table.read(cx).num_drinks_input.read(cx).focus(window);
+            self.table.update(cx, |table, cx| {
+                table.num_drinks_input.update(cx, |input, cx| {
+                    input.focus(window, cx);
+                })
+            });
         }
         cx.emit(Toggle {});
     }
 
     fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
-        window.focus_next();
+        window.focus_next(cx);
         cx.emit(Tab {});
     }
 
     fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
-        window.focus_prev();
+        window.focus_prev(cx);
         cx.emit(TabPrev {});
     }
 }

@@ -38,6 +38,7 @@ pub fn app_menu() -> Vec<Menu> {
                 MenuItem::Separator,
                 MenuItem::action("Quit alc-calc", Quit),
             ],
+            disabled: false,
         },
         Menu {
             name: "File".into(),
@@ -46,6 +47,7 @@ pub fn app_menu() -> Vec<Menu> {
                 MenuItem::Separator,
                 MenuItem::action("Close Window", CloseWindow),
             ],
+            disabled: false,
         },
         Menu {
             name: "Edit".into(),
@@ -55,10 +57,12 @@ pub fn app_menu() -> Vec<Menu> {
                 MenuItem::os_action("Paste", Paste, OsAction::Paste),
                 MenuItem::os_action("Select All", SelectAll, OsAction::SelectAll),
             ],
+            disabled: false,
         },
         Menu {
             name: "Window".into(),
             items: vec![MenuItem::action("Minimize", Minimize)],
+            disabled: false,
         },
     ]
 }

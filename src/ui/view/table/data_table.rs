@@ -379,8 +379,8 @@ impl Table {
         content.trim().parse().unwrap_or(0.)
     }
 
-    fn focus(&mut self, _: &Escape, window: &mut Window, _cx: &mut Context<Self>) {
-        self.focus_handle.focus(window);
+    fn focus(&mut self, _: &Escape, window: &mut Window, cx: &mut Context<Self>) {
+        self.focus_handle.focus(window, cx);
     }
 }
 
@@ -391,7 +391,8 @@ impl Render for Table {
         // focus num_drinks_input and add ingred on launch
         if self.init {
             self.add(&Add, window, cx);
-            self.num_drinks(cx).focus(window);
+            self.num_drinks_input
+                .update(cx, |input, cx| input.focus(window, cx));
             self.init = false;
         }
 
@@ -418,7 +419,7 @@ impl Render for Table {
                 div()
                     .flex()
                     .flex_col()
-                    .flex_shrink()
+                    .flex_shrink(1.)
                     .p_4()
                     .justify_center()
                     .items_center()

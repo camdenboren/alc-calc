@@ -36,7 +36,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+          sudo apt install -y pkg-config libx11-dev libx11-xcb-dev libxkbcommon-x11-dev libfontconfig-dev
 
       - name: Run Tests
         run: cargo test --verbose --release

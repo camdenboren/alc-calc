@@ -28,12 +28,12 @@ const SHADOW_SIZE: Pixels = px(12.0);
 /// };
 /// use gpui::{
 ///     App,
-///     Application,
 ///     prelude::*,
 /// };
+/// use gpui_platform_gpui_unofficial::application;
 ///
 /// # fn nested() {
-/// Application::new()
+/// application()
 ///     .run(|cx: &mut App| {
 ///         new_window(cx);
 ///     });
@@ -46,7 +46,7 @@ pub fn new_window(cx: &mut App) {
         // a root layer underneath the UI which isn't closed on cmd-w (which may allow
         // clicking `New Window` in the dock menu, which is the main UX problem w/ this)
         #[cfg(target_os = "macos")]
-        cx.on_window_closed(|cx| {
+        cx.on_window_closed(|cx, _id| {
             if cx.windows().is_empty() {
                 new_window(cx);
                 cx.hide();
@@ -339,6 +339,7 @@ impl RenderOnce for WindowBorder {
                                     blur_radius: SHADOW_SIZE / 2.,
                                     spread_radius: px(0.),
                                     offset: point(px(0.0), px(0.0)),
+                                    inset: false,
                                 }])
                             }),
                     })

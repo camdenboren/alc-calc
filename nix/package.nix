@@ -9,7 +9,7 @@
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-jSQe/ZWsYWNxM8IIQMRT5DhcKpd4+q4uJkYsoEDCPEY=";
+    cargoHash = "sha256-nlYDAIVv7/SGjnn9aJrB6eD6jAryBaUEGzigTEaObNs=";
     buildInputs = deps.build;
     nativeBuildInputs = deps.run;
     buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "runtime_shaders" ];

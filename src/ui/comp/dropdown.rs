@@ -106,8 +106,8 @@ impl Dropdown {
         }
     }
 
-    pub fn focus(&self, window: &mut Window) {
-        self.focus_handle.focus(window)
+    pub fn focus(&self, window: &mut Window, cx: &mut Context<Self>) {
+        self.focus_handle.focus(window, cx)
     }
 
     pub fn is_focused(&self, window: &mut Window) -> bool {
@@ -138,7 +138,7 @@ impl Dropdown {
         if toggle {
             self.toggle(cx);
         }
-        self.focus_handle.focus(window);
+        self.focus_handle.focus(window, cx);
     }
 
     /// Restore the previously selected item (if applicable) and hide the `Dropdown` element
@@ -349,7 +349,7 @@ impl Render for Dropdown {
                                             .collect()
                                     }),
                                 )
-                                .track_scroll(self.scroll_handle.clone())
+                                .track_scroll(&self.scroll_handle)
                                 .on_mouse_down_out(cx.listener(|this, _, window, cx| {
                                     cx.stop_propagation();
                                     this.escape(&Escape, window, cx);

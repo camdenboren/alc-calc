@@ -3,7 +3,7 @@
 
 // Adapted from: https://github.com/zed-industries/zed/blob/main/crates/editor/src/blink_manager.rs
 
-use gpui::{Context, Timer};
+use gpui::Context;
 use std::time::Duration;
 
 const INTERVAL: u64 = 500;
@@ -87,7 +87,9 @@ impl CursorState {
 
         let epoch = self.next_blink_epoch();
         cx.spawn(async move |this, cx| {
-            Timer::after(Duration::from_millis(INTERVAL)).await;
+            cx.background_executor()
+                .timer(Duration::from_millis(INTERVAL))
+                .await;
             this.update(cx, |this, cx| this.resume_cursor_blinking(epoch, cx))
         })
         .detach();
@@ -116,10 +118,11 @@ impl CursorState {
 
             let epoch = self.next_blink_epoch();
             cx.spawn(async move |this, cx| {
-                Timer::after(Duration::from_millis(INTERVAL)).await;
+                cx.background_executor()
+                    .timer(Duration::from_millis(INTERVAL))
+                    .await;
                 if let Some(this) = this.upgrade() {
-                    this.update(cx, |this, cx| this.blink_cursors(epoch, cx))
-                        .ok();
+                    this.update(cx, |this, cx| this.blink_cursors(epoch, cx));
                 }
             })
             .detach();

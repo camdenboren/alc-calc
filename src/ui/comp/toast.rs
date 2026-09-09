@@ -3,8 +3,8 @@
 
 use crate::ui::{comp::button::text_button, util::theme::ActiveTheme};
 use gpui::{
-    Animation, AnimationExt, App, ElementId, Entity, EventEmitter, Global, SharedString, Timer,
-    Window, div, prelude::*, px, svg,
+    Animation, AnimationExt, App, ElementId, Entity, EventEmitter, Global, SharedString, Window,
+    div, prelude::*, px, svg,
 };
 use std::time::Duration;
 
@@ -81,7 +81,9 @@ impl ToastItem {
         count: usize,
     ) -> Self {
         cx.spawn(async move |toast, cx| {
-            Timer::after(Duration::from_secs(AUTO_REMOVAL)).await;
+            cx.background_executor()
+                .timer(Duration::from_secs(AUTO_REMOVAL))
+                .await;
             cx.update(|cx| {
                 toast.update(cx, |toast, cx| {
                     toast.dismissed = true;
@@ -105,7 +107,9 @@ impl ToastItem {
     /// Emit a `Remove` event from the `ToastItem` after `REMOVAL_DELAY` millis
     fn remove(&mut self, cx: &mut Context<Self>) {
         cx.spawn(async move |item, cx| {
-            Timer::after(Duration::from_millis(REMOVAL_DELAY)).await;
+            cx.background_executor()
+                .timer(Duration::from_millis(REMOVAL_DELAY))
+                .await;
             cx.update(|cx| {
                 if let Some(item) = item.upgrade() {
                     item.update(cx, |_item, cx| cx.emit(Remove {}));

@@ -161,8 +161,8 @@ impl TextInput {
         }
     }
 
-    pub fn focus(&self, window: &mut Window) {
-        self.focus_handle.focus(window)
+    pub fn focus(&self, window: &mut Window, cx: &mut Context<Self>) {
+        self.focus_handle.focus(window, cx)
     }
 
     pub fn is_focused(&self, window: &mut Window) -> bool {

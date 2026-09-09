@@ -219,8 +219,15 @@ impl Element for TextElement {
             window.paint_quad(selection)
         }
         let line = prepaint.line.take().unwrap_or_default();
-        line.paint(bounds.origin, window.line_height(), window, cx)
-            .unwrap_or_default();
+        line.paint(
+            bounds.origin,
+            window.line_height(),
+            gpui::TextAlign::Left,
+            None,
+            window,
+            cx,
+        )
+        .unwrap_or_default();
 
         if focus_handle.is_focused(window)
             && let Some(cursor) = prepaint.cursor.take()

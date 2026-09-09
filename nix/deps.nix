@@ -7,6 +7,7 @@
   build =
     with pkgs;
     lib.optionals stdenv.hostPlatform.isLinux [
+      fontconfig
       libxkbcommon
       libxcb
       libx11

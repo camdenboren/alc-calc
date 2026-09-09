@@ -12,9 +12,9 @@ use rust_embed::RustEmbed;
 /// # Examples
 /// ```
 /// use alc_calc::ui::util::assets::Assets;
-/// use gpui::Application;
+/// use gpui_platform_gpui_unofficial::application;
 ///
-/// Application::new().with_assets(Assets {});
+/// application().with_assets(Assets {});
 /// // followed by `.run(|cx...`
 /// ```
 #[derive(RustEmbed)]
