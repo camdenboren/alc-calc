@@ -125,7 +125,7 @@ jobs:
           name: windows-bundle
           path: target/release/alc-calc_*_x64-setup.exe
 
-  nix-package:
+  package:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -146,7 +146,7 @@ jobs:
 
       - run: nix build
 
-  nix-devShell:
+  devShell:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -167,7 +167,7 @@ jobs:
 
       - run: nix develop
 
-  nix-devShell-bundle:
+  devShell-bundle:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
