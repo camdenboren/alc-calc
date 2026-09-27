@@ -23,13 +23,19 @@ use strum::{EnumCount, IntoEnumIterator};
 actions!(theme_menu, [Escape, Enter, Next, Prev, Select]);
 
 const CONTEXT: &str = "ThemeMenu";
+// Dropdown height fits all variants: 6 on native, 5 on wasm (no `Custom`)
+#[cfg(not(target_family = "wasm"))]
+const MENU_HEIGHT: f32 = 202.5;
+#[cfg(target_family = "wasm")]
+const MENU_HEIGHT: f32 = 168.75;
 
 /// A dropdown `ThemeMenu` element containing all `ThemeVariant`s with mouse-and-keyboard
 /// driven interactivity
 ///
 /// This element leverages the `Theme` and `Config` system to allow users to
 /// - Select one of several included themes (e.g., `Dark`)
-/// - Select a `Custom` theme, which the user can modify
+/// - Select a `Custom` theme on native platforms, which the user can modify
+///   (unavailable on `wasm`)
 /// - Preview any of the above via keyboard-interactivity
 ///   - Selecting, however, can be accomplished via either mouse-or-keyboard interactions
 ///
@@ -267,7 +273,7 @@ impl Render for ThemeMenu {
                         .absolute()
                         .top_10()
                         .w(px(172.))
-                        .h(px(202.5))
+                        .h(px(MENU_HEIGHT))
                         .bg(cx.theme().field)
                         .rounded_md()
                         .p_1()
@@ -359,7 +365,7 @@ mod tests {
         });
 
         assert_eq!(1, result);
-        assert_eq!(false, show)
+        assert!(!show)
     }
 
     #[gpui::test]

@@ -3,23 +3,26 @@
 
 { pkgs, deps }:
 
+let
+  rustPlatformNightly = pkgs.makeRustPlatform {
+    cargo = deps.rustNightly;
+    rustc = deps.rustNightly;
+  };
+in
 {
   default = pkgs.rustPlatform.buildRustPackage {
     pname = "alc-calc";
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-nlYDAIVv7/SGjnn9aJrB6eD6jAryBaUEGzigTEaObNs=";
-    buildInputs = deps.build;
-    nativeBuildInputs = deps.run;
+    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
+    buildInputs = deps.build.os;
+    nativeBuildInputs = deps.run.os;
     buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "runtime_shaders" ];
 
     env.LIBCLANG_PATH =
       with pkgs;
       lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
-
-    # darwin ci checks are flaky due to missing ScreenCaptureKit
-    doCheck = (!pkgs.stdenv.hostPlatform.isDarwin);
 
     # simplified adaptation of zed's installPhase
     # https://github.com/NixOS/nixpkgs/blob/50b354db88ed70cf031b6986a516fd5564559ea1/pkgs/by-name/ze/zed-editor/package.nix
@@ -57,5 +60,33 @@
         patchelf --add-rpath ${wayland}/lib $out/bin/*
         patchelf --add-rpath ${vulkan-loader}/lib $out/bin/*
       '';
+  };
+
+  web = rustPlatformNightly.buildRustPackage {
+    pname = "alc-calc";
+    version = "0.1.0";
+    src = ../.;
+
+    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
+    buildInputs = deps.build.web;
+    nativeBuildInputs = deps.run.web;
+
+    buildPhase = ''
+      runHook preBuild
+      export TRUNK_OFFLINE=true
+      export TRUNK_TOOLS_WASM_OPT="version_${pkgs.binaryen.version}"
+      trunk build --release --offline
+      runHook postBuild
+    '';
+
+    # unit tests target the host and can't execute as wasm
+    doCheck = false;
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out
+      cp -r target/wasm32-unknown-unknown/dist/* $out/
+      runHook postInstall
+    '';
   };
 }

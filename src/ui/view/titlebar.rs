@@ -3,7 +3,7 @@
 
 // Move-by-mouse from: https://github.com/zed-industries/zed/blob/main/crates/title_bar/src/title_bar.rs
 
-#![cfg(not(target_os = "windows"))]
+#![cfg(all(not(target_os = "windows"), not(target_family = "wasm")))]
 
 #[cfg(target_os = "linux")]
 use crate::ui::comp::{

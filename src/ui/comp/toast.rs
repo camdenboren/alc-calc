@@ -84,13 +84,14 @@ impl ToastItem {
             cx.background_executor()
                 .timer(Duration::from_secs(AUTO_REMOVAL))
                 .await;
-            cx.update(|cx| {
-                toast.update(cx, |toast, cx| {
-                    toast.dismissed = true;
-                    toast.remove(cx);
-                    cx.notify();
-                })
-            })
+            // `toast.update` returns an Err instead of panicking if the
+            // entity (or app) was released while the timer was pending,
+            // e.g. the window was closed. Ignored: teardown is not an error.
+            let _ = toast.update(cx, |toast, cx| {
+                toast.dismissed = true;
+                toast.remove(cx);
+                cx.notify();
+            });
         })
         .detach();
 
@@ -110,11 +111,9 @@ impl ToastItem {
             cx.background_executor()
                 .timer(Duration::from_millis(REMOVAL_DELAY))
                 .await;
-            cx.update(|cx| {
-                if let Some(item) = item.upgrade() {
-                    item.update(cx, |_item, cx| cx.emit(Remove {}));
-                }
-            })
+            if let Some(item) = item.upgrade() {
+                item.update(cx, |_item, cx| cx.emit(Remove {}));
+            }
         })
         .detach();
     }

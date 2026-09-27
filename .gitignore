@@ -1,6 +1,7 @@
 /target
 **/result*
 **/*.DS_Store
+**/__pycache__
 .env
 .idea
 .vscode

@@ -1,0 +1,36 @@
+{
+    "name": "alc-calc",
+    "short_name": "alc-calc",
+    "description": "alc-calc is a GUI calculator for measuring alcoholic beverages by weight, not volume",
+    "start_url": ".",
+    "scope": ".",
+    "display": "standalone",
+    "background_color": "#3c3c3c",
+    "theme_color": "#3c3c3c",
+    "icons": [
+        {
+            "src": "favicon-android.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "app-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "favicon-android-maskable.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "app-icon-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

@@ -625,7 +625,7 @@ mod tests {
         cx.simulate_keystrokes(&format!("{ctrl}-d"));
         table.update(cx, |table, cx| ready = table.ready(cx));
 
-        assert_eq!(false, ready);
+        assert!(!ready);
     }
 
     #[gpui::test]
@@ -635,7 +635,7 @@ mod tests {
 
         cx.focus(&ui);
         cx.simulate_keystrokes(&format!("tab tab {ctrl}-i"));
-        (0..3).for_each(|_| cx.simulate_keystrokes(&format!("tab")));
+        (0..3).for_each(|_| cx.simulate_keystrokes("tab"));
         ui.update_in(cx, |ui, window, cx| {
             ui.table.update(cx, |table, cx| {
                 ingred_focused = table.ingreds[1]
@@ -646,7 +646,7 @@ mod tests {
             });
         });
 
-        assert_eq!(true, ingred_focused);
+        assert!(ingred_focused);
     }
 
     fn setup_ui_and_table(
@@ -670,7 +670,7 @@ mod tests {
             ctrl = cx.ctrl();
         });
 
-        let (table, cx) = cx.add_window_view(|window, cx| Table::new(window, cx));
+        let (table, cx) = cx.add_window_view(Table::new);
         (table, cx, ctrl)
     }
 }

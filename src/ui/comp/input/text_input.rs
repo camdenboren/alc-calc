@@ -332,6 +332,9 @@ impl TextInput {
         } else {
             self.move_to(self.index_for_mouse_position(event.position), cx)
         }
+
+        // ensures the keyboard shows on repeated input selection for iOS
+        window.request_virtual_keyboard();
     }
 
     fn on_mouse_up(&mut self, _: &MouseUpEvent, _window: &mut Window, _: &mut Context<Self>) {

@@ -18,6 +18,6 @@ echo -e "\n\033[1;33mnix...\033[0m"
 nixfmt flake.nix **/*.nix | box
 
 echo -e "\n\033[1;33mprettier...\033[0m"
-prettier --write "**/*.md" "**/*.yaml" | box
+prettier --write "**/*.md" "**/*.yaml" "**/*.html" | box
 
 echo -e "\n\033[1;32mFormat succeeded.\033[0m"

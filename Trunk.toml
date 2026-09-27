@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: Camden Boren
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[build]
+target = "web/index.html"
+dist = "target/wasm32-unknown-unknown/dist"
+filehash = false

@@ -10,10 +10,14 @@
     nixpkgs = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { nixpkgs, ... }:
+    { nixpkgs, rust-overlay, ... }:
     let
       supportedSystems = [
         "x86_64-linux"
@@ -25,7 +29,13 @@
         nixpkgs.lib.genAttrs supportedSystems (
           system:
           function rec {
-            pkgs = nixpkgs.legacyPackages.${system}.extend (import ./nix/overlay.nix);
+            pkgs = import nixpkgs {
+              inherit system;
+              overlays = [
+                (import ./nix/overlay.nix)
+                (import rust-overlay)
+              ];
+            };
             deps = (import ./nix/deps.nix { inherit pkgs; });
           }
         );
