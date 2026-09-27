@@ -125,6 +125,42 @@ jobs:
           name: windows-bundle
           path: target/release/alc-calc_*_x64-setup.exe
 
+  web:
+    runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cargo Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            target
+          key: Web-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust nightly with wasm target
+        run: |
+          rustup toolchain install nightly --profile minimal \
+            --target wasm32-unknown-unknown --component rust-src
+
+      - name: Install trunk
+        continue-on-error: true
+        run: cargo install trunk
+
+      - name: Build
+        run: trunk build
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-bundle
+          path: target/wasm32-unknown-unknown/dist
+
   package:
     strategy:
       matrix:
@@ -146,6 +182,27 @@ jobs:
 
       - run: nix build
 
+  package-web:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: camdenboren
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - run: nix build .#web
+
   devShell:
     strategy:
       matrix:
@@ -166,6 +223,27 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - run: nix develop
+
+  devShell-web:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: camdenboren
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - run: nix develop .#web
 
   devShell-bundle:
     strategy:

@@ -5,9 +5,9 @@
 
 {
   default = pkgs.mkShell {
-    packages = deps.dev;
-    buildInputs = deps.build;
-    nativeBuildInputs = deps.run;
+    packages = deps.dev.os;
+    buildInputs = deps.build.os;
+    nativeBuildInputs = deps.run.os;
     LD_LIBRARY_PATH =
       with pkgs;
       lib.optionals stdenv.hostPlatform.isLinux (
@@ -31,8 +31,28 @@
     '';
   };
 
+  web = pkgs.mkShell {
+    packages = deps.dev.web;
+    buildInputs = deps.build.web;
+    nativeBuildInputs = deps.run.web;
+    env.RUST_SRC_PATH = "${deps.rustNightly}/lib/rustlib/src/rust/library";
+    env.TRUNK_TOOLS_WASM_OPT = "version_${pkgs.binaryen.version}";
+
+    shellHook = ''
+      echo -e "\nalc-calc web DevShell via Nix Flake\n"
+
+      echo -e "┌────────────────────────┐"
+      echo -e "│    Useful Commands     │"
+      echo -e "├────────┬───────────────┤"
+      echo -e "│ Build  │ $ trunk build │"
+      echo -e "│ Serve  │ $ trunk serve │"
+      echo -e "│ Clean  │ $ trunk clean │"
+      echo -e "└────────┴───────────────┘"
+    '';
+  };
+
   bundle = pkgs.mkShell {
-    packages = deps.bundle;
+    packages = deps.dev.bundle;
     env.CUR_OS = if pkgs.stdenv.hostPlatform.isDarwin then "mac" else "linux";
 
     shellHook = ''

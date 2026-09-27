@@ -1,0 +1,49 @@
+<!-- SPDX-FileCopyrightText: Camden Boren -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="favicon-android.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      type="image/png"
+      sizes="180x180"
+      href="favicon-apple.png"
+    />
+    <meta name="theme-color" content="#282828" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="alc-calc" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=0"
+    />
+    <title>alc-calc</title>
+    <link
+      data-trunk
+      rel="rust"
+      href="../Cargo.toml"
+      data-bin="alc-calc"
+      data-wasm-opt="z"
+    />
+    <link data-trunk rel="copy-file" href="manifest.webmanifest" />
+    <link data-trunk rel="copy-file" href="../img/brand/favicon.png" />
+    <link data-trunk rel="copy-file" href="../img/brand/favicon-android.png" />
+    <link data-trunk rel="copy-file" href="../img/brand/favicon-apple.png" />
+    <link data-trunk rel="copy-file" href="../img/brand/app-icon.png" />
+  </head>
+  <body style="margin: 0; width: 100vw; height: 100vh; overflow: hidden"></body>
+</html>

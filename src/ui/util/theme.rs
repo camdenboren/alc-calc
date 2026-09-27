@@ -3,20 +3,25 @@
 
 // ActiveTheme adapted from https://github.com/zed-industries/zed/blob/main/crates/theme/src/theme.rs
 
-use gpui::{App, Global, Hsla, Rgba, TestAppContext, hsla, rgb, rgba};
+#[cfg(not(target_family = "wasm"))]
+use gpui::TestAppContext;
+use gpui::{App, Global, Hsla, Rgba, hsla, rgb, rgba};
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+#[cfg(not(target_family = "wasm"))]
 use std::{
     fs::{File, write},
     io::Read,
     path::PathBuf,
-    str::FromStr,
 };
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 use crate::ui::comp::toast::{ToastVariant, toast};
 
 const DEFAULT_THEME: &str = "theme = \"Dark\"\n";
-#[cfg(target_os = "linux")]
+#[cfg(target_family = "wasm")]
+const STORAGE_KEY: &str = "alc-calc-theme";
+#[cfg(all(not(target_family = "wasm"), target_os = "linux"))]
 const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
 text = \"#e6e6e6e6\"
 subtext = \"#cccccc99\"
@@ -39,7 +44,7 @@ close_button_hover = \"#464646ff\"
 close_button_click = \"#505050ff\"
 close_button_inactive = \"#3b3b3bff\"
 ";
-#[cfg(target_os = "macos")]
+#[cfg(all(not(target_family = "wasm"), target_os = "macos"))]
 const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
 text = \"#e6e6e6e6\"
 subtext = \"#cccccc99\"
@@ -58,7 +63,7 @@ scrollbar_hover = \"#505050ff\"
 titlebar = \"#282828ff\"
 titlebar_inactive = \"#232323ff\"
 ";
-#[cfg(target_os = "windows")]
+#[cfg(all(not(target_family = "wasm"), target_os = "windows"))]
 const DEFAULT_CUSTOM_THEME: &str = "variant = \"Custom\"
 text = \"#e6e6e6e6\"
 subtext = \"#cccccc99\"
@@ -90,6 +95,7 @@ pub enum ThemeVariant {
     RedDark,
     RosePineMoon,
     SolarizedDark,
+    #[cfg(not(target_family = "wasm"))]
     Custom,
 }
 
@@ -99,10 +105,15 @@ pub enum ThemeVariant {
 /// fields are left out for that OS)
 ///
 /// The `Theme` variant (e.g., `ThemeVariant::Dark`) is deserialized from
-/// `OS_CONFIG_DIR/alc-calc/config.toml`. If the variant is `Custom`, a user-provided
-/// theme will also be deserialized from `OS_CONFIG_DIR/alc-calc/theme.toml`. Otherwise,
-/// `Theme` will simply set the relevant `ThemeVariant`'s associated function (e.g.,
+/// `OS_CONFIG_DIR/alc-calc/config.toml` on native platforms, or from the
+/// browser's `localStorage` on `wasm`. If the variant is `Custom` (native
+/// only), a user-provided theme will also be deserialized from
+/// `OS_CONFIG_DIR/alc-calc/theme.toml`. Otherwise, `Theme` will simply set
+/// the relevant `ThemeVariant`'s associated function (e.g.,
 /// `ThemeVariant::Dark` -> `dark()`)
+///
+/// On `wasm` there is no `Custom` variant. When no stored theme exists, the
+/// theme defaults to the browser's `prefers-color-scheme` (`Light` or `Dark`).
 ///
 /// Note that `Theme` handles all filesystem access in alc-calc, and thus provides a
 /// testing function (`Theme::test(cx)`) for circumventing access to reduce test
@@ -181,18 +192,42 @@ impl Theme {
     ///
     /// The global `Theme` struct will need to be initialized via `Theme::set(cx)` before
     /// calling `cx.theme().*`, otherwise your application will panic
+    ///
+    /// On `wasm` the theme is read from the browser's `localStorage`, falling
+    /// back to the browser's `prefers-color-scheme` preference
     pub fn set(cx: &mut App) {
+        #[cfg(not(target_family = "wasm"))]
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
+        #[cfg(not(target_family = "wasm"))]
         let config_content = Theme::read(cx, path.clone()).unwrap_or(String::from(DEFAULT_THEME));
+        #[cfg(target_family = "wasm")]
+        let config_content =
+            Theme::read(cx).unwrap_or(Theme::serialize(cx, &Theme::system_theme().to_string()));
         let theme = match Theme::deserialize(cx, config_content) {
             ThemeVariant::Dark => Theme::dark(),
             ThemeVariant::Light => Theme::light(),
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            #[cfg(not(target_family = "wasm"))]
             ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
+    }
+
+    /// Query the browser's `prefers-color-scheme` media query, defaulting to
+    /// `Dark` when unavailable (e.g., old browsers, privacy modes)
+    #[cfg(target_family = "wasm")]
+    fn system_theme() -> ThemeVariant {
+        let prefers_light = web_sys::window()
+            .and_then(|window| window.match_media("(prefers-color-scheme: light)").ok())
+            .flatten()
+            .is_some_and(|query| query.matches());
+        if prefers_light {
+            ThemeVariant::Light
+        } else {
+            ThemeVariant::Dark
+        }
     }
 
     /// Set val's corresponding theme globally, only interacting with the filesystem
@@ -221,6 +256,7 @@ impl Theme {
     /// }
     /// ```
     pub fn preview(cx: &mut App, val: &str) {
+        #[cfg(not(target_family = "wasm"))]
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
         let theme = match ThemeVariant::from_str(val).unwrap_or(ThemeVariant::Dark) {
             ThemeVariant::Dark => Theme::dark(),
@@ -228,6 +264,7 @@ impl Theme {
             ThemeVariant::RedDark => Theme::red_dark(),
             ThemeVariant::RosePineMoon => Theme::rose_pine_moon(),
             ThemeVariant::SolarizedDark => Theme::solarized_dark(),
+            #[cfg(not(target_family = "wasm"))]
             ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
         cx.set_global(theme);
@@ -397,6 +434,7 @@ impl Theme {
         }
     }
 
+    #[cfg(not(target_family = "wasm"))]
     fn custom() -> Self {
         let mut theme = Theme::dark();
         theme.variant = ThemeVariant::Custom;
@@ -404,18 +442,29 @@ impl Theme {
     }
 
     /// Deserialize the raw configuration content into a specific theme variant,
-    /// defaulting to `Dark` if an error is encountered
+    /// defaulting to `Dark` (with an error toast) on native platforms or to
+    /// the browser's preferred theme on `wasm` if an error is encountered
     fn deserialize(cx: &mut App, config_content: String) -> ThemeVariant {
         match toml::from_str(&config_content) {
             Ok(config) => config,
             Err(_) => {
-                toast(
-                    cx,
-                    ToastVariant::Error,
-                    "Failed to deserialize config. Defaulting to Dark theme",
-                );
-                Config {
-                    theme: ThemeVariant::Dark,
+                #[cfg(not(target_family = "wasm"))]
+                {
+                    toast(
+                        cx,
+                        ToastVariant::Error,
+                        "Failed to deserialize config. Defaulting to Dark theme",
+                    );
+                    Config {
+                        theme: ThemeVariant::Dark,
+                    }
+                }
+                #[cfg(target_family = "wasm")]
+                {
+                    let _ = cx;
+                    Config {
+                        theme: Theme::system_theme(),
+                    }
                 }
             }
         }
@@ -442,6 +491,7 @@ impl Theme {
 
     /// Read the raw configuration content at the given path, creating the file if needed.
     /// Defaults to the `Dark` theme
+    #[cfg(not(target_family = "wasm"))]
     fn read(cx: &mut App, path: PathBuf) -> Result<String, anyhow::Error> {
         let file_path = path.join("config.toml");
         if std::fs::metadata(&file_path).is_err() {
@@ -465,8 +515,22 @@ impl Theme {
         Ok(config_content)
     }
 
+    /// Read the raw configuration content from the browser's `localStorage`.
+    /// Returns an `Err` when no theme is stored (or storage is unavailable),
+    /// in which case callers fall back to the browser's preferred theme.
+    #[cfg(target_family = "wasm")]
+    fn read(_cx: &mut App) -> Result<String, anyhow::Error> {
+        web_sys::window()
+            .and_then(|window| window.local_storage().ok())
+            .flatten()
+            .and_then(|storage| storage.get_item(STORAGE_KEY).ok())
+            .flatten()
+            .ok_or_else(|| anyhow::anyhow!("no stored theme in localStorage"))
+    }
+
     /// Write the given theme variant's associated configuration content to the
     /// config file
+    #[cfg(not(target_family = "wasm"))]
     fn write(cx: &mut App, theme_str: &str) {
         let config_content = Theme::serialize(cx, theme_str);
         let path = dirs::config_dir().unwrap_or_default().join("alc-calc");
@@ -482,7 +546,21 @@ impl Theme {
         }
     }
 
+    /// Persist the given theme variant's associated configuration content to
+    /// the browser's `localStorage`
+    #[cfg(target_family = "wasm")]
+    fn write(cx: &mut App, theme_str: &str) {
+        let config_content = Theme::serialize(cx, theme_str);
+        if let Some(storage) = web_sys::window()
+            .and_then(|window| window.local_storage().ok())
+            .flatten()
+        {
+            let _ = storage.set_item(STORAGE_KEY, &config_content);
+        }
+    }
+
     /// Deserialize the raw theme theme content into a specific theme, defaulting to `Dark`
+    #[cfg(not(target_family = "wasm"))]
     fn deserialize_theme(cx: &mut App, theme_content: &str) -> Result<Theme, anyhow::Error> {
         match toml::from_str(theme_content) {
             Ok(theme) => Ok(theme),
@@ -499,6 +577,7 @@ impl Theme {
 
     /// Serialize the given theme into raw theme content, defaulting to the hardcoded
     /// custom theme (`Dark`)
+    #[cfg(not(target_family = "wasm"))]
     fn serialize_theme(cx: &mut App, theme: Theme) -> String {
         match toml::to_string(&theme) {
             Ok(custom_theme) => custom_theme,
@@ -515,6 +594,7 @@ impl Theme {
 
     /// Read the raw theme content at the given path, creating the file if needed.
     /// Defaults to the hardcoded custom theme (`Dark`)
+    #[cfg(not(target_family = "wasm"))]
     fn read_theme(cx: &mut App, path: PathBuf) -> Result<Theme, anyhow::Error> {
         let file_path = path.join("theme.toml");
 
@@ -544,6 +624,7 @@ impl Theme {
     /// theme file
     // RA thinks this is dead code even though it is used
     #[allow(dead_code)]
+    #[cfg(not(target_family = "wasm"))]
     fn write_theme(cx: &mut App, path: PathBuf) {
         let mut default_custom_theme = Theme::dark();
         default_custom_theme.variant = ThemeVariant::Custom;
@@ -556,6 +637,9 @@ impl Theme {
 
     /// Write the given theme variant's associated config content to the config file
     /// before reading it and setting globally
+    ///
+    /// On `wasm` the config content is persisted to the browser's
+    /// `localStorage` instead of the filesystem.
     // RA thinks this is dead code even though it is used
     #[allow(dead_code)]
     pub fn update(theme_str: &str, cx: &mut App) {
@@ -566,6 +650,7 @@ impl Theme {
     /// Test helper for simulating `Theme::set(cx)` w/o accessing the filesystem
     // RA thinks this is dead code even though it is used in tests
     #[allow(dead_code)]
+    #[cfg(not(target_family = "wasm"))]
     pub fn test(cx: &mut TestAppContext) {
         cx.set_global(Theme::light());
     }
