@@ -15,6 +15,8 @@ use std::{
     path::PathBuf,
 };
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+#[cfg(target_family = "wasm")]
+use wasm_bindgen::JsCast;
 
 use crate::ui::comp::toast::{ToastVariant, toast};
 
@@ -212,6 +214,8 @@ impl Theme {
             #[cfg(not(target_family = "wasm"))]
             ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
+        #[cfg(target_family = "wasm")]
+        theme.sync_chrome();
         cx.set_global(theme);
     }
 
@@ -228,6 +232,78 @@ impl Theme {
         } else {
             ThemeVariant::Dark
         }
+    }
+
+    /// Sync the browser chrome with the in-app theme (`body` background for
+    /// iOS Safari, `meta[name=theme-color]` elsewhere), live after the static
+    /// first paint in `index.html`
+    #[cfg(target_family = "wasm")]
+    fn sync_chrome(&self) {
+        let color = Self::to_hex(self.background);
+        let Some(window) = web_sys::window() else {
+            return Self::log_missing("sync browser chrome: no window");
+        };
+        let Some(document) = window.document() else {
+            return Self::log_missing("sync browser chrome: no document");
+        };
+
+        // set background color of `root` and `body`
+        match document.document_element() {
+            Some(root) => Self::log_set(
+                root.set_attribute("style", &format!("background: {color};")),
+                "sync document background",
+            ),
+            None => Self::log_missing("sync browser chrome: no document element"),
+        }
+        match document.body() {
+            Some(body) => {
+                Self::log_set(
+                    body.style().set_property("background", &color),
+                    "sync body background",
+                );
+                Self::log_set(
+                    body.style().set_property("background-color", &color),
+                    "sync body background",
+                );
+            }
+            None => Self::log_missing("sync browser chrome: no body"),
+        }
+
+        // set `theme-color`
+        let list = match document.query_selector_all("meta[name=\"theme-color\"]") {
+            Ok(list) => list,
+            Err(error) => return Self::log_set(Err(error), "sync theme-color"),
+        };
+        for i in 0..list.length() {
+            let Some(el) = list
+                .get(i)
+                .and_then(|node| node.dyn_into::<web_sys::Element>().ok())
+            else {
+                continue;
+            };
+            Self::log_set(el.set_attribute("content", &color), "sync theme-color");
+            Self::log_set(el.remove_attribute("media"), "sync theme-color");
+        }
+    }
+
+    #[cfg(any(target_family = "wasm", test))]
+    fn to_hex(background: Rgba) -> String {
+        let r = (background.r * 255.0).round().clamp(0.0, 255.0) as u8;
+        let g = (background.g * 255.0).round().clamp(0.0, 255.0) as u8;
+        let b = (background.b * 255.0).round().clamp(0.0, 255.0) as u8;
+        format!("#{r:02x}{g:02x}{b:02x}")
+    }
+
+    #[cfg(target_family = "wasm")]
+    fn log_set(result: Result<(), impl core::fmt::Debug>, context: &str) {
+        if let Err(error) = result {
+            web_sys::console::error_1(&format!("alc-calc failed to {context}: {error:?}").into());
+        }
+    }
+
+    #[cfg(target_family = "wasm")]
+    fn log_missing(context: &str) {
+        web_sys::console::error_1(&format!("alc-calc failed to {context}").into());
     }
 
     /// Set val's corresponding theme globally, only interacting with the filesystem
@@ -267,6 +343,8 @@ impl Theme {
             #[cfg(not(target_family = "wasm"))]
             ThemeVariant::Custom => Theme::read_theme(cx, path).unwrap_or(Theme::custom()),
         };
+        #[cfg(target_family = "wasm")]
+        theme.sync_chrome();
         cx.set_global(theme);
     }
 
@@ -686,6 +764,11 @@ mod tests {
         });
 
         assert_eq!(config_content, expected);
+    }
+
+    #[test]
+    fn test_to_hex() {
+        assert_eq!(Theme::to_hex(Theme::rose_pine_moon().background), "#393552");
     }
 
     #[gpui::test]

@@ -3,13 +3,19 @@
 
 { pkgs, deps }:
 
+let
+  rustPlatformNightly = pkgs.makeRustPlatform {
+    cargo = deps.rustNightly;
+    rustc = deps.rustNightly;
+  };
+in
 {
   default = pkgs.rustPlatform.buildRustPackage {
     pname = "alc-calc";
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-dq0u7SLRO32smEvI4H3GGyJ/XqVb9cSevbgP/N7+gCM=";
+    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
     buildInputs = deps.build.os;
     nativeBuildInputs = deps.run.os;
     buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "runtime_shaders" ];
@@ -56,38 +62,31 @@
       '';
   };
 
-  web =
-    let
-      rustPlatformNightly = pkgs.makeRustPlatform {
-        cargo = deps.rustNightly;
-        rustc = deps.rustNightly;
-      };
-    in
-    rustPlatformNightly.buildRustPackage {
-      pname = "alc-calc-web";
-      version = "0.1.0";
-      src = ../.;
+  web = rustPlatformNightly.buildRustPackage {
+    pname = "alc-calc";
+    version = "0.1.0";
+    src = ../.;
 
-      cargoHash = "sha256-dq0u7SLRO32smEvI4H3GGyJ/XqVb9cSevbgP/N7+gCM=";
-      buildInputs = deps.build.web;
-      nativeBuildInputs = deps.run.web;
+    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
+    buildInputs = deps.build.web;
+    nativeBuildInputs = deps.run.web;
 
-      buildPhase = ''
-        runHook preBuild
-        export TRUNK_OFFLINE=true
-        export TRUNK_TOOLS_WASM_OPT="version_${pkgs.binaryen.version}"
-        trunk build --release --offline
-        runHook postBuild
-      '';
+    buildPhase = ''
+      runHook preBuild
+      export TRUNK_OFFLINE=true
+      export TRUNK_TOOLS_WASM_OPT="version_${pkgs.binaryen.version}"
+      trunk build --release --offline
+      runHook postBuild
+    '';
 
-      # unit tests target the host and can't execute as wasm
-      doCheck = false;
+    # unit tests target the host and can't execute as wasm
+    doCheck = false;
 
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out
-        cp -r target/wasm32-unknown-unknown/dist/* $out/
-        runHook postInstall
-      '';
-    };
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out
+      cp -r target/wasm32-unknown-unknown/dist/* $out/
+      runHook postInstall
+    '';
+  };
 }

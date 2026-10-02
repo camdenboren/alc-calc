@@ -12,14 +12,14 @@ use gpui::{
     WindowBounds, WindowDecorations, WindowOptions, canvas, div, point,
     prelude::FluentBuilder as _, px, size,
 };
-use std::process;
+use std::{borrow::Cow, process};
 
 const BORDER_RADIUS: Pixels = px(12.0);
 const BORDER_SIZE: Pixels = px(0.75);
 const SHADOW_SIZE: Pixels = px(12.0);
 
-/// Create a new window for the application, handling platform-specific `WindowOptions`
-/// and `on_window_closed()` behavior before attaching the `UI`
+/// Create a new window for the application, handling platform-specific `WindowOptions`,
+/// `on_window_closed()` behavior, and font loading before attaching the `UI`
 ///
 /// # Examples
 /// ```
@@ -40,7 +40,22 @@ const SHADOW_SIZE: Pixels = px(12.0);
 /// # }
 /// ```
 pub fn new_window(cx: &mut App) {
-    if let Ok(_window) = cx.open_window(window_options(cx), |window, cx| {
+    // by default, gpui_web explicitly does NOT load any fonts whatsoever.
+    // see: https://github.com/zed-industries/zed/blob/87f65de697bda93ad0a13dc92eabe941115b61de/crates/gpui_web/src/platform.rs#L30
+    #[cfg(target_family = "wasm")]
+    if let Err(error) = cx
+        .text_system()
+        .add_fonts(vec![Cow::Borrowed(include_bytes!(
+            "../../../web/AdwaitaSans-Regular.ttf"
+        ))])
+    {
+        web_sys::console::error_1(
+            &format!("alc-calc failed to load application fonts: {error:#}").into(),
+        );
+        return;
+    }
+
+    if let Err(error) = cx.open_window(window_options(cx), |window, cx| {
         // hacky approach for ensuring cmd-w doesn't prevent us from opening a new window
         // since a new one is created, just hidden. the "real" solution may be to create
         // a root layer underneath the UI which isn't closed on cmd-w (which may allow
@@ -56,9 +71,13 @@ pub fn new_window(cx: &mut App) {
 
         cx.new(|cx| UI::new(window, cx))
     }) {
-    } else {
-        eprintln!("alc-calc failed to open a window");
-        process::exit(1)
+        #[cfg(target_family = "wasm")]
+        web_sys::console::error_1(&format!("alc-calc failed to open a window: {error:#}").into());
+        #[cfg(not(target_family = "wasm"))]
+        {
+            eprintln!("alc-calc failed to open a window: {error:#}");
+            process::exit(1)
+        }
     };
 }
 

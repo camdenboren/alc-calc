@@ -18,7 +18,17 @@
       sizes="180x180"
       href="favicon-apple.png"
     />
-    <meta name="theme-color" content="#282828" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#e0e0e0"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#3c3c3c"
+    />
+    <meta name="color-scheme" content="dark light" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
@@ -27,11 +37,29 @@
     />
     <meta name="apple-mobile-web-app-title" content="alc-calc" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <!-- Reducing `initial-scale` is a hack to keep things visible on mobile since we don't yet -->
+    <!-- implement responsive design or scaling -->
     <meta
       name="viewport"
-      content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=0"
+      content="width=device-width, height=device-height, initial-scale=0.7"
     />
     <title>alc-calc</title>
+    <style>
+      /* Tints iOS Safari's status bar / toolbar on normal websites via the
+         `black-translucent` mode below, which takes the body background.
+         Must live in static HTML so the first paint is already themed
+         (pre-WASM); Rust keeps these in sync when the in-app theme changes. */
+      html,
+      body {
+        background: #3c3c3c;
+      }
+      @media (prefers-color-scheme: light) {
+        html,
+        body {
+          background: #e0e0e0;
+        }
+      }
+    </style>
     <link
       data-trunk
       rel="rust"
