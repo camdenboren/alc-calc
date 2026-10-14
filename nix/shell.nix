@@ -37,17 +37,24 @@
     nativeBuildInputs = deps.run.web;
     env.RUST_SRC_PATH = "${deps.rustNightly}/lib/rustlib/src/rust/library";
     env.TRUNK_TOOLS_WASM_OPT = "version_${pkgs.binaryen.version}";
+    env.CYPRESS_INSTALL_BINARY = "0";
+    env.CYPRESS_RUN_BINARY =
+      if pkgs.stdenv.hostPlatform.isDarwin then
+        "${pkgs.cypress}/opt/cypress/Cypress.app/Contents/MacOS/Cypress"
+      else
+        "${pkgs.cypress}/bin/Cypress";
 
     shellHook = ''
       echo -e "\nalc-calc web DevShell via Nix Flake\n"
 
-      echo -e "┌────────────────────────┐"
-      echo -e "│    Useful Commands     │"
-      echo -e "├────────┬───────────────┤"
-      echo -e "│ Build  │ $ trunk build │"
-      echo -e "│ Serve  │ $ trunk serve │"
-      echo -e "│ Clean  │ $ trunk clean │"
-      echo -e "└────────┴───────────────┘"
+      echo -e "┌─────────────────────────────┐"
+      echo -e "│       Useful Commands       │"
+      echo -e "├────────┬────────────────────┤"
+      echo -e "│ Build  │ $ trunk build      │"
+      echo -e "│ Serve  │ $ trunk serve      │"
+      echo -e "│ Test   │ $ npm run test:e2e │"
+      echo -e "│ Clean  │ $ trunk clean      │"
+      echo -e "└────────┴────────────────────┘"
     '';
   };
 

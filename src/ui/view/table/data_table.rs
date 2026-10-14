@@ -339,6 +339,52 @@ impl Table {
         })
     }
 
+    /// Mirror the table's inputs and calculated weights to the browser's
+    /// `localStorage` on `wasm`.
+    ///
+    /// The app renders to a `<canvas>`, which exposes no DOM for end-to-end
+    /// tests to assert on, so this seam lets Cypress drive the app via
+    /// keyboard and read results back via `window.localStorage`. The write is
+    /// tiny and infallible; failures (e.g., blocked storage) are ignored so
+    /// rendering never breaks.
+    #[cfg(target_family = "wasm")]
+    fn mirror_e2e_state(&self, cx: &Context<Self>) {
+        fn esc(input: &str) -> String {
+            input.replace('\\', "\\\\").replace('"', "\\\"")
+        }
+
+        let mut ingreds = String::from("[");
+        (0..self.count).for_each(|ix| {
+            if ix > 0 {
+                ingreds.push(',');
+            }
+            ingreds.push_str(&format!(
+                "{{\"type\":\"{}\",\"percentage\":\"{}\",\"parts\":\"{}\",\"weight\":\"{}\"}}",
+                esc(&self.ingred_type(ix, cx).current),
+                esc(&self.percentage(ix, cx).content),
+                esc(&self.parts(ix, cx).content),
+                esc(&self
+                    .ingreds
+                    .get(ix)
+                    .map(|ingred| ingred.read(cx).weight.to_string())
+                    .unwrap_or_default()),
+            ));
+        });
+        ingreds.push(']');
+
+        let state = format!(
+            "{{\"num_drinks\":\"{}\",\"ingreds\":{ingreds}}}",
+            esc(&self.num_drinks(cx).content)
+        );
+
+        if let Some(storage) = web_sys::window()
+            .and_then(|window| window.local_storage().ok())
+            .flatten()
+        {
+            let _ = storage.set_item("alc-calc/e2e", &state);
+        }
+    }
+
     fn num_drinks<'a>(&'a self, cx: &'a Context<Self>) -> &'a TextInput {
         self.num_drinks_input.read(cx)
     }
@@ -401,6 +447,9 @@ impl Render for Table {
         if self.ready(cx) {
             self.calc(cx, self.num_drinks);
         }
+
+        #[cfg(target_family = "wasm")]
+        self.mirror_e2e_state(cx);
 
         div()
             .key_context(CONTEXT)

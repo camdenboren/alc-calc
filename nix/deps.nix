@@ -45,11 +45,20 @@ in
       format
     ];
 
-    web = with pkgs; [
-      boxes
-      rustNightly
-      trunk
-    ];
+    web =
+      with pkgs;
+      [
+        boxes
+        rustNightly
+        trunk
+        nodejs
+        cypress
+        podman
+        podman-compose
+      ]
+      ++ lib.optionals stdenv.hostPlatform.isLinux [
+        xvfb-run
+      ];
 
     bundle =
       with pkgs;

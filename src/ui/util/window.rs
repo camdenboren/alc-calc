@@ -46,7 +46,7 @@ pub fn new_window(cx: &mut App) {
     if let Err(error) = cx
         .text_system()
         .add_fonts(vec![Cow::Borrowed(include_bytes!(
-            "../../../web/AdwaitaSans-Regular.ttf"
+            "../../../web/res/AdwaitaSans-Regular.ttf"
         ))])
     {
         web_sys::console::error_1(

@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: Camden Boren
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+.git
+.github
+target
+result
+result-*
+web/node_modules
+web/cypress
+docs
+__pycache__
+.env

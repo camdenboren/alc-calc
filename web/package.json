@@ -1,0 +1,13 @@
+{
+  "name": "alc-calc-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "serve": "cd .. && trunk serve",
+    "test:e2e": "cypress run --browser electron"
+  },
+  "dependencies": {
+    "cypress": "15.19.0",
+    "typescript": "6.0.3"
+  }
+}

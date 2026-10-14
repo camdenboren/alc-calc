@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: Camden Boren
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+services:
+  alc-calc:
+    build:
+      context: ../..
+      dockerfile: web/docker/Dockerfile
+    image: alc-calc:latest
+    container_name: alc-calc
+    restart: unless-stopped
+    ports:
+      - "8080:8080"

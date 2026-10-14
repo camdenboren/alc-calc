@@ -1,4 +1,7 @@
 /target
+**/node_modules
+**/cypress/screenshots
+**/cypress/videos
 **/result*
 **/*.DS_Store
 **/__pycache__
