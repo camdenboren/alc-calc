@@ -153,7 +153,7 @@ jobs:
         run: cargo install trunk
 
       - name: Build
-        run: trunk build
+        run: trunk build --release
 
       - name: Upload bundle
         uses: actions/upload-artifact@v4

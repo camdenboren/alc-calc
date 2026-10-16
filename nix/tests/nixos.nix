@@ -29,13 +29,15 @@ pkgs.testers.runNixOSTest {
     services.alc-calc = {
       enable = true;
       domain = "alc-calc.test";
-      nginx.enable = true;
-      nginx.virtualHost.listen = [
-        {
-          addr = "127.0.0.1";
-          port = 8080;
-        }
-      ];
+      nginx = {
+        enable = true;
+        virtualHost.listen = [
+          {
+            addr = "127.0.0.1";
+            port = 8080;
+          }
+        ];
+      };
     };
   };
 

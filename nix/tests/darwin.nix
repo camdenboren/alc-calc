@@ -19,17 +19,16 @@ nix-darwin.lib.darwinSystem {
       { pkgs, ... }:
       let
         support = import ./support.nix { inherit pkgs; };
-        webLog = "/var/log/alc-calc.log";
+        logPath = "/var/log/alc-calc.log";
       in
       {
         system.stateVersion = 5;
         system.primaryUser = "runner";
         nix.enable = !activate;
-        nixpkgs.overlays = [ (import ../overlay.nix) ];
-
-        # Cypress's bundled Electron is flagged insecure at this nixpkgs
-        # revision; the wasm smoke test needs the Cypress binary to run.
-        nixpkgs.config.permittedInsecurePackages = [ "cypress-15.19.0" ];
+        nixpkgs = {
+          overlays = [ (import ../overlay.nix) ];
+          config.permittedInsecurePackages = [ "cypress-15.19.0" ];
+        };
 
         services.alc-calc = {
           enable = true;
@@ -40,7 +39,7 @@ nix-darwin.lib.darwinSystem {
           (pkgs.writeShellScriptBin "testScript" ''
             set -euo pipefail
 
-            trap 'sudo launchctl print system/org.nixos.alc-calc || true; sudo tail -n 100 ${webLog} || true' ERR
+            trap 'sudo launchctl print system/org.nixos.alc-calc || true; sudo tail -n 100 ${logPath} || true' ERR
 
             sudo launchctl print system/org.nixos.alc-calc
 

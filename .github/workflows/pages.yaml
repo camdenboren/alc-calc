@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: Camden Boren
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: pages
+
+on:
+  push:
+    branches: [main, feat/web]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    env:
+      RUSTUP_TOOLCHAIN: nightly
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cargo Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            target
+          key: Web-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust nightly with wasm target
+        run: |
+          rustup toolchain install nightly --profile minimal \
+            --target wasm32-unknown-unknown --component rust-src
+
+      - name: Install trunk
+        continue-on-error: true
+        run: cargo install trunk
+
+      - name: Build
+        run: trunk build --release --public-url /alc-calc/
+
+      - name: Upload static files as artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: target/wasm32-unknown-unknown/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

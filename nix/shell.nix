@@ -35,14 +35,16 @@
     packages = deps.dev.web;
     buildInputs = deps.build.web;
     nativeBuildInputs = deps.run.web;
-    env.RUST_SRC_PATH = "${deps.rustNightly}/lib/rustlib/src/rust/library";
-    env.TRUNK_TOOLS_WASM_OPT = "version_${pkgs.binaryen.version}";
-    env.CYPRESS_INSTALL_BINARY = "0";
-    env.CYPRESS_RUN_BINARY =
-      if pkgs.stdenv.hostPlatform.isDarwin then
-        "${pkgs.cypress}/opt/cypress/Cypress.app/Contents/MacOS/Cypress"
-      else
-        "${pkgs.cypress}/bin/Cypress";
+    env = {
+      RUST_SRC_PATH = "${deps.rustNightly}/lib/rustlib/src/rust/library";
+      TRUNK_TOOLS_WASM_OPT = "version_${pkgs.binaryen.version}";
+      CYPRESS_INSTALL_BINARY = "0";
+      CYPRESS_RUN_BINARY =
+        if pkgs.stdenv.hostPlatform.isDarwin then
+          "${pkgs.cypress}/opt/cypress/Cypress.app/Contents/MacOS/Cypress"
+        else
+          "${pkgs.cypress}/bin/Cypress";
+    };
 
     shellHook = ''
       echo -e "\nalc-calc web DevShell via Nix Flake\n"
