@@ -27,6 +27,7 @@ nix-darwin.lib.darwinSystem {
         nix.enable = !activate;
         nixpkgs = {
           overlays = [ (import ../overlay.nix) ];
+          config.allowUnfreePredicate = pkg: pkgs.lib.getName pkg == "google-chrome";
         };
 
         services.alc-calc = {

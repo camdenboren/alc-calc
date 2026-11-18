@@ -36,7 +36,7 @@ in
 
       # skip build to prevent supposed missing metal shaders error
       export CARGO_BUNDLE_SKIP_BUILD=true
-      app_path=$(cargo bundle --release | xargs)
+      app_path=$(cargo bundle --release --format osx | xargs)
 
       # moving the binary to $out/bin works, but a wrapper might allow the icon to show
       mkdir -p $out/Applications $out/bin

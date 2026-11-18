@@ -8,6 +8,6 @@ failed() {
 trap 'failed' ERR
 
 echo -e "\033[1;33mcargo bundle...\033[0m"
-cargo bundle --release
+cargo bundle --release --format deb
 
 echo -e "\n\033[1;32mRelease build succeeded.\033[0m"

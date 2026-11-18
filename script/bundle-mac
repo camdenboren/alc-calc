@@ -20,6 +20,7 @@ fi
 echo -e "\033[1;33mcargo bundle...\033[0m"
 cargo bundle \
   --release \
+  --format osx \
   ${RUNTIME_SHADERS:+--features runtime_shaders}
 
 pushd . > /dev/null

@@ -43,7 +43,8 @@ jobs:
 
       - name: Install cargo-bundle
         continue-on-error: true
-        run: cargo install cargo-bundle
+        # 0.12.0 doesn't build on the runners' default toolchain
+        run: cargo +1.99.1 install cargo-bundle --version 0.12.0 --locked
 
       - name: Build
         run: COL=80 ./script/bundle-linux
@@ -79,7 +80,7 @@ jobs:
 
       - name: Install cargo-bundle
         continue-on-error: true
-        run: cargo install cargo-bundle
+        run: cargo +1.99.1 install cargo-bundle --version 0.12.0 --locked
 
       - name: Build
         run: COL=80 DONT_SIGN=true ./script/bundle-mac
