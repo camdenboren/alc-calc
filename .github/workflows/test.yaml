@@ -86,5 +86,5 @@ jobs:
           start: npm run serve
           wait-on: http://127.0.0.1:8080/index.html
           wait-on-timeout: 120
-          browser: electron
+          browser: chromium
           command: npm run test:e2e

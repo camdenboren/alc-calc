@@ -35,6 +35,7 @@ in
       cargo
       cargo-bundle
       cargo-edit
+      cargo-audit
       rust-analyzer
       rustfmt
       taplo
@@ -57,6 +58,7 @@ in
         podman-compose
       ]
       ++ lib.optionals stdenv.hostPlatform.isLinux [
+        chromium
         xvfb-run
       ];
 

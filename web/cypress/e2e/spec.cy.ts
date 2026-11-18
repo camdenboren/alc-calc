@@ -28,7 +28,7 @@ describe("wasm app", () => {
 
   it("calculates weights for multiple ingredients via keyboard", () => {
     cy.visit("/");
-    cy.get("canvas", { timeout: 30000 }).should("exist");
+    cy.get("textarea", { timeout: 30000 }).should("exist");
 
     // num_drinks is autofocused on launch, so this picks up where
     // test_table_calc_multiple_ingreds (src/ui/view/table/data_table.rs)

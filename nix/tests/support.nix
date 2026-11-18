@@ -10,7 +10,7 @@ let
     src = ../../web;
 
     env.CYPRESS_INSTALL_BINARY = 0;
-    npmDepsHash = "sha256-BE1ehuwS74Z1Fe05GvmsAonrJf1JoF9+Z+NyGAhvUas=";
+    npmDepsHash = "sha256-iwTBnSWXwVcGkThpR8SNRvgChRldeJZcQ8VW8kMKl2s=";
     dontNpmBuild = true;
 
     installPhase = ''
@@ -42,7 +42,13 @@ let
       pkgs.coreutils
       pkgs.nodejs
     ]
-    ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.xvfb-run ];
+    ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      pkgs.ungoogled-chromium
+      pkgs.xvfb-run
+    ]
+    ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+      pkgs.google-chrome
+    ];
     text = ''
       test_home=$(mktemp -d)
       trap 'rm -rf "$test_home"' EXIT
@@ -65,7 +71,7 @@ let
       ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux "xvfb-run --auto-servernum "}node \
         "$runner/node_modules/cypress/bin/cypress" \
         run \
-        --browser electron \
+        --browser ${if pkgs.stdenv.hostPlatform.isDarwin then "google-chrome" else "chromium"} \
         --config baseUrl=http://127.0.0.1:8080 \
         --project "$test_project"
     '';

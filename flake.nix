@@ -45,9 +45,6 @@
                 (import ./nix/overlay.nix)
                 (import rust-overlay)
               ];
-              # Cypress's bundled Electron is flagged insecure at this nixpkgs
-              # revision; the wasm smoke test needs the Cypress binary to run.
-              config.permittedInsecurePackages = [ "cypress-15.19.0" ];
             };
             deps = (import ./nix/deps.nix { inherit pkgs; });
           }

@@ -27,7 +27,6 @@ nix-darwin.lib.darwinSystem {
         nix.enable = !activate;
         nixpkgs = {
           overlays = [ (import ../overlay.nix) ];
-          config.permittedInsecurePackages = [ "cypress-15.19.0" ];
         };
 
         services.alc-calc = {

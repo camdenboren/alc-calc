@@ -15,7 +15,7 @@ in
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
+    cargoHash = "sha256-NIyumJEfxwhbEg8bC1Vtul6+pk4bZCnNyvIO/6pEATI=";
     buildInputs = deps.build.os;
     nativeBuildInputs = deps.run.os;
     buildFeatures = with pkgs; lib.optionals stdenv.hostPlatform.isDarwin [ "runtime_shaders" ];
@@ -67,7 +67,7 @@ in
     version = "0.1.0";
     src = ../.;
 
-    cargoHash = "sha256-BI6w1ar0e6ovdeD/L51hLXLTySIXAVDKjT64C+XG9b0=";
+    cargoHash = "sha256-NIyumJEfxwhbEg8bC1Vtul6+pk4bZCnNyvIO/6pEATI=";
     buildInputs = deps.build.web;
     nativeBuildInputs = deps.run.web;
 
