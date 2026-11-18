@@ -71,7 +71,7 @@ let
       ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux "xvfb-run --auto-servernum "}node \
         "$runner/node_modules/cypress/bin/cypress" \
         run \
-        --browser ${if pkgs.stdenv.hostPlatform.isDarwin then "google-chrome" else "chromium"} \
+        --browser ${if pkgs.stdenv.hostPlatform.isDarwin then "chrome" else "chromium"} \
         --config baseUrl=http://127.0.0.1:8080 \
         --project "$test_project"
     '';

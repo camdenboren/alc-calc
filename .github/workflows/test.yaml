@@ -75,8 +75,20 @@ jobs:
 
       - name: Install Chromium
         run: |
+          # Remove the snap-based wrapper if it's already present
+          sudo snap remove chromium 2>/dev/null || true
+          sudo apt-get remove -y chromium-browser 2>/dev/null || true
+
+          # Add the xtradeb PPA and prefer its packages over Ubuntu's
+          sudo add-apt-repository -y ppa:xtradeb/apps
+          sudo tee /etc/apt/preferences.d/chromium-xtradeb > /dev/null <<'EOF'
+          Package: *
+          Pin: release o=LP-PPA-xtradeb-apps
+          Pin-Priority: 1001
+          EOF
+
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
+          sudo apt-get install -y chromium
 
       - name: Install trunk
         continue-on-error: true
