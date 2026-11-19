@@ -36,6 +36,14 @@ let
     else
       "${pkgs.cypress}/bin/Cypress";
 
+  # launch the chrome app directly instead of through nixpkgs' wrapper
+  chrome = pkgs.writeShellScript "google-chrome" ''
+    exec "${pkgs.google-chrome}/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --no-sandbox \
+      --use-mock-keychain \
+      "$@"
+  '';
+
   cypress = pkgs.writeShellApplication {
     name = "alc-calc-cypress";
     runtimeInputs = [
@@ -45,9 +53,6 @@ let
     ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       pkgs.ungoogled-chromium
       pkgs.xvfb-run
-    ]
-    ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
-      pkgs.google-chrome
     ];
     text = ''
       test_home=$(mktemp -d)
@@ -71,7 +76,9 @@ let
       ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux "xvfb-run --auto-servernum "}node \
         "$runner/node_modules/cypress/bin/cypress" \
         run \
-        --browser ${if pkgs.stdenv.hostPlatform.isDarwin then "chrome" else "chromium"} \
+        --browser ${
+          if pkgs.stdenv.hostPlatform.isDarwin then pkgs.lib.escapeShellArg "${chrome}" else "chromium"
+        } \
         --config baseUrl=http://127.0.0.1:8080 \
         --project "$test_project"
     '';

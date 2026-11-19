@@ -101,7 +101,7 @@ jobs:
         with:
           working-directory: web
           start: npm run serve
-          wait-on: http://127.0.0.1:8080/index.html
+          wait-on: tcp:127.0.0.1:8080
           wait-on-timeout: 120
           browser: chromium
           command: npm run test:e2e
